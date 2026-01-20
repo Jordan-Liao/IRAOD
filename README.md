@@ -15,6 +15,8 @@ pip install -r requirements.txt
 ```
 
 ### 2. Prepare Dataset 
+For DIOR
+-
 
 - Download the DIOR dataset ([Google Drive](https://drive.google.com/drive/folders/1UdlgHk49iu6WpcJ5467iT-UqNPpx__CC) or [BaiduNetDisk](https://pan.baidu.com/s/1iLKT0JQoKXEJTGNxt5lSMg#list/path=%2F)).
 
@@ -44,6 +46,24 @@ Note : For more detail about other corruptions and original cloudy image, please
 ### 3. Download Checkpoints
 Before training，please download the pretrained Oriented-RCNN model weights [baseline.pth](https://drive.google.com/file/d/1JOxD7eHrMkDFe9rBEgSTxBFAuTW1jXza/view?usp=drive_link) trained from DIOR training set to `baseline` fold.
 
+For RSAR
+-
+  
+  Download the `RSAR` dataset from the[![dataset](https://img.shields.io/badge/GoogleDrive-dataset-blue.svg?logo=GoogleDrive&logoColor=white)](https://drive.google.com/file/d/1v-HXUSmwBQCtrq0MlTOkCaBQ_vbz5_qs/view?usp=sharing) or [![dataset](https://img.shields.io/badge/BaiduNetdisk-dataset-blue.svg?logo=baidu&logoColor=white)](https://pan.baidu.com/s/1g2NGfzf7Xgk_K9euKVjFEA?pwd=rsar) and extract the files to `$DATAROOT`. The directory structure should look like:
+
+```
+$DATAROOT
+|-- train
+|   |-- annfiles  # contains annotations :*.txt
+|   `-- images    # contains sar images  :*.jpg *.bmp *.png
+|-- val
+|   |-- annfiles
+|   `-- images
+`-- test
+    |-- annfiles
+    `-- images
+```
+
 ### 4. Training
 
 Take DIOR-Cloudy dataset as examples:
@@ -52,10 +72,21 @@ python train.py configs/unbiased_teacher/sfod/unbiased_teacher_oriented_rcnn_sel
 ```
 Note: If you want to retrain the Oriented-RCNN baseline model, please refer to [mmrotate](https://github.com/open-mmlab/mmrotate). 
 
+Take RSAR dataset as examples:
+```bash
+python train.py configs/unbiased_teacher/sfod/unbiased_teacher_oriented_rcnn_selftraining_cga_rsar.py --cfg-options corrupt="cloudy"
+```
 ### 5. Testing
 Take DIOR-Cloudy dataset as examples:
 ```bash
 python test.py configs/unbiased_teacher/sfod/unbiased_teacher_oriented_rcnn_selftraining_cga.py work_dirs/unbiased_teacher_oriented_rcnn_selftraining_cga/latest.pth --eval mAP --cfg-options corrupt="cloudy"
+```
+
+Take RSAR dataset as examples:
+```bash
+test.py configs/unbiased_teacher/sfod/unbiased_teacher_oriented_rcnn_selftaining_cga_rsar.py \
+work_dirs/unbiased_teacher_oriented_rcnn_selftaining_cga_rsar/latest.pth --eval mAP \
+   --show-dir vis_rsar
 ```
 
 ## 💡 Acknowledgement
