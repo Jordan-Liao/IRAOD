@@ -1,100 +1,187 @@
 
+# IRAOD: Infrared Remote-Sensing Object Detection
 
+<p align="center">
+  <strong>Oriented Object Detection for Remote Sensing Images with Advanced Methods</strong>
+</p>
+
+<p align="center">
+  <a href="#-getting-started">Getting Started</a> •
+  <a href="#-acknowledgement">Acknowledgement</a> •
+  <a href="#-citation">Citation</a>
+</p>
+
+---
+
+## 📋 Overview
+
+IRAOD is a comprehensive framework for oriented object detection in remote sensing images. It provides implementations of advanced semi-supervised learning methods including Unbiased Teacher, STAC, and CGA (Curriculum-Guided Augmentation) for detecting rotated objects in challenging conditions.
+
+**Key Features:**
+- 🔄 Semi-supervised learning with semi-supervised frameworks
+- 🎯 Oriented object detection for rotated bounding boxes
+- 📸 Support for DIOR and RSAR datasets
+- 🌧️ Corruption robustness (Cloudy, Brightness, Contrast, etc.)
+- 🚀 Easy training and testing pipeline
+
+---
 ## 🎮 Getting Started
 
-### 1. Install Environment
+### 1️⃣ Install Environment
+
 ```bash
-conda create --name sfod python=3.8
+# Create conda environment
+conda create --name IROAD python=3.8
 conda activate sfod
 
+# Install PyTorch (adjust CUDA version as needed)
 pip install torch===1.7.1+cu110 torchvision===0.8.2+cu110 torchaudio===0.7.2 -f https://download.pytorch.org/whl/torch_stable.html --no-cache
 
-git clone ithub.com/Jordan-Liao/IRAOD.git
+# Clone and install dependencies
+git clone https://github.com/Jordan-Liao/IRAOD.git
 cd IRAOD
 pip install -r requirements.txt
 ```
 
-### 2. Prepare Dataset 
-For DIOR
--
+### 2️⃣ Prepare Dataset
 
-- Download the DIOR dataset ([Google Drive](https://drive.google.com/drive/folders/1UdlgHk49iu6WpcJ5467iT-UqNPpx__CC) or [BaiduNetDisk](https://pan.baidu.com/s/1iLKT0JQoKXEJTGNxt5lSMg#list/path=%2F)).
+#### For DIOR Dataset
+- Download the DIOR dataset from:
+  - 🔗 [Google Drive](https://drive.google.com/drive/folders/1UdlgHk49iu6WpcJ5467iT-UqNPpx__CC)
+  - 🔗 [BaiduNetDisk](https://pan.baidu.com/s/1iLKT0JQoKXEJTGNxt5lSMg#list/path=%2F)
 
-- Download the corruption images with cloud (DIOR-Cloudy) from [Google Drive](https://drive.google.com/drive/folders/11l2L5ScsFQ7FH64vd0mub9hVcO1BK1py).
+- Download the corruption images with cloud (DIOR-Cloudy) from [Google Drive](https://drive.google.com/drive/folders/11l2L5ScsFQ7FH64vd0mub9hVcO1BK1py)
 
-Note : For more detail about other corruptions and original cloudy image, please refer to [DOTA-C](https://github.com/hehaodong530/DOTA-C).
+  > **Note:** For more details about other corruptions and original cloudy images, please refer to [DOTA-C](https://github.com/hehaodong530/DOTA-C).
 
-- Organize the dataset as follow:
+- Organize the dataset as follows:
 
-  ```shell
-  dataset/
-  ├──DIOR/
-  │   ├── Annotations 
-  │   ├── JPEGImages
-  │   ├── ImageSets
-  │   ├── Corruption/
-  │   │   ├── JPEGImages-brigtness
-  │   │   ├── JPEGImages-cloudy
-  │   │   ├── JPEGImages-contrast
-  │   │   ├── ...
-  │   │   ├── JPEGImages-zoom_blur  
   ```
-  - `JPEGImages` contains all images in DIOR dataset.
-  - `ImageSets` contains all train/val/test splits in DIOR dataset.
-  - `Corruption` contains all kinds of corrupted images on DIOR dataset.
+  dataset/
+  ├── DIOR/
+  │   ├── Annotations              # Annotation files
+  │   ├── JPEGImages               # Original images
+  │   ├── ImageSets                # Train/val/test splits
+  │   └── Corruption/
+  │       ├── JPEGImages-brightness
+  │       ├── JPEGImages-cloudy
+  │       ├── JPEGImages-contrast
+  │       └── ...
+  ```
 
-### 3. Download Checkpoints
-Before training，please download the pretrained Oriented-RCNN model weights [baseline.pth](https://drive.google.com/file/d/1JOxD7eHrMkDFe9rBEgSTxBFAuTW1jXza/view?usp=drive_link) trained from DIOR training set to `baseline` fold.
+  - `JPEGImages`: All images in DIOR dataset
+  - `ImageSets`: Train/val/test splits
+  - `Corruption`: Corrupted images (brightness, cloudy, contrast, etc.)
 
-For RSAR
--
+#### For RSAR Dataset
+- Download the `RSAR` dataset from:
+  - 🔗 [Google Drive](https://drive.google.com/file/d/1v-HXUSmwBQCtrq0MlTOkCaBQ_vbz5_qs/view?usp=sharing)
+  - 🔗 [BaiduNetDisk](https://pan.baidu.com/s/1g2NGfzf7Xgk_K9euKVjFEA?pwd=rsar)
+
+- Extract files to `$DATAROOT` with the following structure:
+
+  ```
+  $DATAROOT
+  ├── train
+  │   ├── annfiles    # Annotation files (*.txt)
+  │   └── images      # SAR images (*.jpg, *.bmp, *.png)
+  ├── val
+  │   ├── annfiles
+  │   └── images
+  └── test
+      ├── annfiles
+      └── images
+  ```
+
+---
+
+### 3️⃣ Download Checkpoints
+
+Before training, download the pretrained Oriented-RCNN model weights:
+
+- **Baseline Model** (trained on DIOR): [baseline.pth](https://drive.google.com/file/d/1JOxD7eHrMkDFe9rBEgSTxBFAuTW1jXza/view?usp=drive_link)
   
-  Download the `RSAR` dataset from the[![dataset](https://img.shields.io/badge/GoogleDrive-dataset-blue.svg?logo=GoogleDrive&logoColor=white)](https://drive.google.com/file/d/1v-HXUSmwBQCtrq0MlTOkCaBQ_vbz5_qs/view?usp=sharing) or [![dataset](https://img.shields.io/badge/BaiduNetdisk-dataset-blue.svg?logo=baidu&logoColor=white)](https://pan.baidu.com/s/1g2NGfzf7Xgk_K9euKVjFEA?pwd=rsar) and extract the files to `$DATAROOT`. The directory structure should look like:
+  Save to the `baseline/` directory.
 
-```
-$DATAROOT
-|-- train
-|   |-- annfiles  # contains annotations :*.txt
-|   `-- images    # contains sar images  :*.jpg *.bmp *.png
-|-- val
-|   |-- annfiles
-|   `-- images
-`-- test
-    |-- annfiles
-    `-- images
-```
+---
 
-### 4. Training
+### 4️⃣ Training
 
-Take DIOR-Cloudy dataset as examples:
+#### Training on DIOR Dataset (with Corruption)
+
 ```bash
-python train.py configs/unbiased_teacher/sfod/unbiased_teacher_oriented_rcnn_selftraining_cga.py --cfg-options corrupt="cloudy"
-```
-Note: If you want to retrain the Oriented-RCNN baseline model, please refer to [mmrotate](https://github.com/open-mmlab/mmrotate). 
-
-Take RSAR dataset as examples:
-```bash
-python train.py configs/unbiased_teacher/sfod/unbiased_teacher_oriented_rcnn_selftraining_cga_rsar.py --cfg-options corrupt="cloudy"
-```
-### 5. Testing
-Take DIOR-Cloudy dataset as examples:
-```bash
-python test.py configs/unbiased_teacher/sfod/unbiased_teacher_oriented_rcnn_selftraining_cga.py work_dirs/unbiased_teacher_oriented_rcnn_selftraining_cga/latest.pth --eval mAP --cfg-options corrupt="cloudy"
+python train.py configs/unbiased_teacher/sfod/unbiased_teacher_oriented_rcnn_selftraining_cga.py \
+  --cfg-options corrupt="cloudy"
 ```
 
-Take RSAR dataset as examples:
+#### Training on RSAR Dataset
+
 ```bash
-test.py configs/unbiased_teacher/sfod/unbiased_teacher_oriented_rcnn_selftaining_cga_rsar.py \
-work_dirs/unbiased_teacher_oriented_rcnn_selftaining_cga_rsar/latest.pth --eval mAP \
-   --show-dir vis_rsar
+python train.py configs/unbiased_teacher/sfod/unbiased_teacher_oriented_rcnn_selftraining_cga_rsar.py \
+  --cfg-options corrupt="cloudy"
 ```
+
+> **Note:** To retrain the Oriented-RCNN baseline model, please refer to [mmrotate](https://github.com/open-mmlab/mmrotate).
+
+---
+
+### 5️⃣ Testing
+
+#### Testing on DIOR Dataset (with Corruption)
+
+```bash
+python test.py \
+  configs/unbiased_teacher/sfod/unbiased_teacher_oriented_rcnn_selftraining_cga.py \
+  work_dirs/unbiased_teacher_oriented_rcnn_selftraining_cga/latest.pth \
+  --eval mAP \
+  --cfg-options corrupt="cloudy"
+```
+
+#### Testing on RSAR Dataset
+
+```bash
+python test.py \
+  configs/unbiased_teacher/sfod/unbiased_teacher_oriented_rcnn_selftaining_cga_rsar.py \
+  work_dirs/unbiased_teacher_oriented_rcnn_selftaining_cga_rsar/latest.pth \
+  --eval mAP \
+  --show-dir vis_rsar
+```
+
+---
 
 ## 💡 Acknowledgement
 
+We thank the authors of the following works for their open-source contributions:
 
+- [MMRotate](https://github.com/open-mmlab/mmrotate) - Rotated object detection framework
+- [DOTA-C](https://github.com/hehaodong530/DOTA-C) - Corruption robustness benchmark
+- [Unbiased Teacher](https://arxiv.org/abs/2102.05622) - Semi-supervised learning method
+- [STAC](https://arxiv.org/abs/2211.08871) - Scalable Teachers Are Better Role Models
+
+---
 
 ## 🖊️ Citation
 
+If you find this work useful in your research, please cite:
 
-
+```bibtex
+@article{IRAOD2024,
+  title={IRAOD: Infrared Remote-Sensing Object Detection},
+  author={Your Name},
+  year={2024}
+}
 ```
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+<div align="center">
+
+**Made with ❤️ for Remote Sensing Object Detection**
+
+</div>
