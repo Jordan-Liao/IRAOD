@@ -1,16 +1,4 @@
-# CLIP-Guided Source-Free Object Detection in Aerial Images
 
-## 💥 News
-
-This paper is accepted by IGARSS2024 as a oral representation and is accessible [here](https://arxiv.org/abs/2401.05168).
-
-## 🎨 Overview
-
-<div align="center">
-  <img width="600" src="assets/sfod.png"/>
-</div>
-
-Overview of the proposed SFOD framework. 
 
 ## 🎮 Getting Started
 
@@ -21,8 +9,8 @@ conda activate sfod
 
 pip install torch===1.7.1+cu110 torchvision===0.8.2+cu110 torchaudio===0.7.2 -f https://download.pytorch.org/whl/torch_stable.html --no-cache
 
-git clone https://github.com/Lans1ng/SFOD-RS.git
-cd SFOD-RS
+git clone ithub.com/Jordan-Liao/IRAOD.git
+cd IRAOD
 pip install -r requirements.txt
 ```
 
@@ -72,26 +60,10 @@ python test.py configs/unbiased_teacher/sfod/unbiased_teacher_oriented_rcnn_self
 
 ## 💡 Acknowledgement
 
-- [DOTA-C](https://github.com/hehaodong530/DOTA-C)
-- [mmrotate](https://github.com/open-mmlab/mmrotate)
-- [SSOD](https://github.com/hikvision-research/SSOD)
-- [SOOD](https://github.com/HamPerdredes/SOOD)
-- [VFA](https://github.com/csuhan/VFA)
-- [SoftTeacher](https://github.com/microsoft/SoftTeacher)
+
 
 ## 🖊️ Citation
 
-If you find this project useful in your research, please consider cite:
 
-```BibTeX
-@INPROCEEDINGS{10642376,
-  author={Liu, Nanqing and Xu, Xun and Su, Yongyi and Liu, Chengxin and Gong, Peiliang and Li, Heng-Chao},
-  booktitle={IGARSS 2024 - 2024 IEEE International Geoscience and Remote Sensing Symposium}, 
-  title={Clip-Guided Source-Free Object Detection in Aerial Images}, 
-  year={2024},
-  volume={},
-  number={},
-  pages={7964-7967},
-  doi={10.1109/IGARSS53475.2024.10642376}}
 
 ```
