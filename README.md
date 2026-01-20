@@ -1,9 +1,7 @@
 
-# IRAOD: Infrared Remote-Sensing Object Detection
+# IRAOD
 
-<p align="center">
-  <strong>Oriented Object Detection for Remote Sensing Images with Advanced Methods</strong>
-</p>
+
 
 <p align="center">
   <a href="#-getting-started">Getting Started</a> •
@@ -32,7 +30,7 @@ IRAOD is a comprehensive framework for oriented object detection in remote sensi
 ```bash
 # Create conda environment
 conda create --name IROAD python=3.8
-conda activate sfod
+conda activate IROAD
 
 # Install PyTorch (adjust CUDA version as needed)
 pip install torch===1.7.1+cu110 torchvision===0.8.2+cu110 torchaudio===0.7.2 -f https://download.pytorch.org/whl/torch_stable.html --no-cache
@@ -156,23 +154,13 @@ We thank the authors of the following works for their open-source contributions:
 - [MMRotate](https://github.com/open-mmlab/mmrotate) - Rotated object detection framework
 - [DOTA-C](https://github.com/hehaodong530/DOTA-C) - Corruption robustness benchmark
 - [Unbiased Teacher](https://arxiv.org/abs/2102.05622) - Semi-supervised learning method
-- [STAC](https://arxiv.org/abs/2211.08871) - Scalable Teachers Are Better Role Models
+
 
 ---
 
 ## 🖊️ Citation
 
-If you find this work useful in your research, please cite:
 
-```bibtex
-@article{IRAOD2024,
-  title={IRAOD: Infrared Remote-Sensing Object Detection},
-  author={Your Name},
-  year={2024}
-}
-```
-
----
 
 ## 📄 License
 
@@ -180,8 +168,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-<div align="center">
 
-**Made with ❤️ for Remote Sensing Object Detection**
-
-</div>
