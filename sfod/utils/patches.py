@@ -72,6 +72,31 @@ def patch_config(cfg):
     cfg_dict["cfg_name"] = osp.splitext(osp.basename(cfg.filename))[0]
     cfg_dict = resolve(cfg_dict)
     cfg = Config(cfg_dict, filename=cfg.filename)
+
+    # RSAR corruption switch: allow `--cfg-options corrupt=interf_xxx` to map
+    # img_prefix/img_prefix_u from `.../images/` -> `.../images-interf_xxx/`.
+    corrupt = str(cfg.get("corrupt", "")).strip()
+    if corrupt and corrupt not in ("clean", "none"):
+        def _patch_images_dir(p: str) -> str:
+            if not isinstance(p, str):
+                return p
+            # Preserve a trailing "/" if present.
+            trailing = "/" if p.endswith("/") else ""
+            norm = p.rstrip("/")
+            if osp.basename(norm) != "images":
+                return p
+            parent = osp.dirname(norm)
+            return osp.join(parent, f"images-{corrupt}") + trailing
+
+        if cfg.get("data", None) is not None:
+            for split_key in ("train", "val", "test"):
+                if split_key not in cfg.data:
+                    continue
+                ds = cfg.data[split_key]
+                for field in ("img_prefix", "img_prefix_u"):
+                    if field in ds and isinstance(ds[field], str):
+                        ds[field] = _patch_images_dir(ds[field])
+
     # wrap for semi
     if cfg.get("semi_wrapper", None) is not None:
         cfg.model = cfg.semi_wrapper

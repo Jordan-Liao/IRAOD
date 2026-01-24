@@ -37,7 +37,11 @@ class OrientedRCNN_CGA(RotatedTwoStageDetector, TestMixins):
 
         bbox_results = super().simple_test(img, img_metas, proposals, rescale)
         if with_cga:
-            return self.refine_test(bbox_results, img_metas)
+            try:
+                return self.refine_test(bbox_results, img_metas)
+            except Exception as e:
+                # Never crash long-running training due to CGA scorer issues.
+                print(f"[CGA] WARNING: refine_test failed, return raw results. err={e}")
+                return bbox_results
         else:
             return bbox_results
-

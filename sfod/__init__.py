@@ -1,3 +1,7 @@
+from .compat.mmrotate_nms import patch_mmrotate_multiclass_nms_rotated
+
+patch_mmrotate_multiclass_nms_rotated()
+
 from .semi_dior_dataset import SemiDIORDataset
 from .semi_dota_dataset import DOTADatasetAnySuffix,SemiDOTADataset
 

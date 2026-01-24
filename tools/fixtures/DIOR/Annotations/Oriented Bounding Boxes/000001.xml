@@ -1,0 +1,21 @@
+<annotation>
+  <filename>000001.jpg</filename>
+  <size>
+    <width>32</width>
+    <height>32</height>
+    <depth>3</depth>
+  </size>
+  <object>
+    <name>ship</name>
+    <robndbox>
+      <x_left_top>1</x_left_top>
+      <y_left_top>1</y_left_top>
+      <x_right_top>10</x_right_top>
+      <y_right_top>1</y_right_top>
+      <x_right_bottom>10</x_right_bottom>
+      <y_right_bottom>10</y_right_bottom>
+      <x_left_bottom>1</x_left_bottom>
+      <y_left_bottom>10</y_left_bottom>
+    </robndbox>
+  </object>
+</annotation>

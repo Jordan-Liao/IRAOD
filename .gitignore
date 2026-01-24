@@ -1,0 +1,28 @@
+# === Data / outputs (do NOT commit) ===
+dataset/DIOR/
+dataset/RSAR/
+dataset/RSAR_bak_*/
+dataset/_downloads/
+work_dirs/
+.rd_queue/
+
+# === Weights (downloaded artifacts) ===
+baseline/
+weights/
+
+# === Vendored/third-party checkouts (cloned on demand) ===
+third_party/
+
+# === Python cache ===
+__pycache__/
+*.py[cod]
+
+# === Logs / temporary files ===
+*.log
+*.log.json
+*.tmp
+.pytest_cache/
+
+# Environment snapshots are machine-specific; keep local by default.
+docs/env_lock.txt
+docs/system_info.md
