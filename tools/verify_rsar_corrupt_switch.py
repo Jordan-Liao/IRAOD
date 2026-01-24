@@ -103,6 +103,11 @@ def main() -> int:
     parser.add_argument("--corrupt", default="clean", help="clean or interf_xxx (maps to images-interf_xxx/)")
     parser.add_argument("--out-dir", default="work_dirs/sanity/rsar_corrupt_switch", help="Report output dir")
     parser.add_argument(
+        "--splits",
+        default="train,val,test",
+        help="comma-separated splits to verify (default: train,val,test)",
+    )
+    parser.add_argument(
         "--exts",
         default=".jpg,.jpeg,.png,.bmp,.tif,.tiff",
         help="comma-separated allowed extensions",
@@ -115,7 +120,9 @@ def main() -> int:
 
     exts = tuple(e.strip().lower() for e in args.exts.split(",") if e.strip())
 
-    splits = ("train", "val", "test")
+    splits = tuple(s.strip() for s in str(args.splits).split(",") if s.strip())
+    if not splits:
+        raise SystemExit("--splits must not be empty")
     total_missing = 0
     total_conflict = 0
 
@@ -151,4 +158,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

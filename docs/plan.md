@@ -228,6 +228,16 @@
   - Dependencies: `opencv-python`, `numpy`
   - Evidence: `dataset/RSAR/{train,val,test}/images-interf_jamB/`, `work_dirs/sanity/rsar_corrupt_switch/*_corrupt-interf_jamB.csv`
 
+- [x] P0026: 生成 RSAR-Interference severity 套件（test-only，interf_jamA_s1..s5 / interf_jamB_s1..s5）
+  - Summary: 为鲁棒性曲线准备轻量级扰动版本：只生成 `test` split 的 `images-interf_jamA_s{1..5}` 与 `images-interf_jamB_s{1..5}`。
+  - Rationale: 先用 test-only 版本快速做 mAP vs severity 曲线，筛选最有代表性的干扰强度/类型，再决定是否扩展到 train/val（避免磁盘爆炸）。
+  - Scope: `scripts/prepare_rsar_interf_severity_test.sh`, `tools/verify_rsar_corrupt_switch.py`, `dataset/RSAR/test/images-interf_jamA_s*/`, `dataset/RSAR/test/images-interf_jamB_s*/`
+  - Acceptance: 每个 `corrupt` 在 `--splits test` 下 `missing=0 conflict=0`；`tools/verify_rsar_interference_diff.py` 抽样对比不全相同（`identical < checked`）。
+  - Verification: `bash scripts/prepare_rsar_interf_severity_test.sh`
+  - Outputs: `dataset/RSAR/test/images-interf_jamA_s{1..5}/`, `dataset/RSAR/test/images-interf_jamB_s{1..5}/`
+  - Dependencies: 磁盘空间（噪声型扰动 PNG 体积会显著增大）
+  - Evidence: `dataset/RSAR/test/images-interf_jamA_s*/`, `dataset/RSAR/test/images-interf_jamB_s*/`, `work_dirs/sanity/rsar_corrupt_switch/test_corrupt-interf_jamA_s*.csv`, `work_dirs/sanity/rsar_corrupt_switch/test_corrupt-interf_jamB_s*.csv`
+
 ## Conclusions
 - [x] C0001: DIOR 与 RSAR 均能跑通 smoke 训练/测试闭环（含可视化与 mAP）
   - Evidence required: `work_dirs/exp_smoke_dior/` 与 `work_dirs/exp_smoke_rsar/` 中日志包含 mAP 且非 NaN；`work_dirs/vis_rsar/` 有输出图。
