@@ -26,6 +26,10 @@ def _infer_corrupt(work_dir: Path) -> str:
     for c in ["cloudy", "brightness", "contrast", "clean"]:
         if c in name:
             return c
+    # RSAR interference / custom corruptions (e.g. interf_jamA, interf_jamB_s3).
+    m = re.search(r"(interf_[a-z0-9]+(?:_[a-z0-9]+)*)", name)
+    if m:
+        return m.group(1)
     return "clean"
 
 
@@ -44,7 +48,9 @@ def _infer_method(work_dir: Path) -> str:
 
 
 def _infer_seed(work_dir: Path) -> int | None:
-    m = re.search(r"(?:seed|s)(\d+)", work_dir.name.lower())
+    # Only accept explicit `seedNN` patterns. Avoid matching corruption severities
+    # like `interf_jamB_s3` (the `_s3` is not a random seed).
+    m = re.search(r"(?:^|[_-])seed(\\d+)(?:$|[_-])", work_dir.name.lower())
     if not m:
         return 42  # train.py hard-codes seed=42 in this repo
     try:

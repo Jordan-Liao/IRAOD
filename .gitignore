@@ -3,7 +3,12 @@ dataset/DIOR/
 dataset/RSAR/
 dataset/RSAR_bak_*/
 dataset/_downloads/
-work_dirs/
+# Keep work_dirs outputs untracked by default, but commit lightweight summaries.
+work_dirs/*
+!work_dirs/results/
+work_dirs/results/*
+!work_dirs/results/metrics.csv
+!work_dirs/results/ablation_table.md
 .rd_queue/
 
 # === Weights (downloaded artifacts) ===

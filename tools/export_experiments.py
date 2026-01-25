@@ -38,8 +38,14 @@ def _infer_script_hint(exp_id: str) -> str:
         "exp_dior_ut": "bash scripts/exp_dior_ut.sh",
         "exp_dior_ut_cga_clip": "bash scripts/exp_dior_ut_cga_clip.sh",
         "exp_rsar_baseline": "bash scripts/exp_rsar_baseline.sh",
+        "exp_rsar_baseline_interf_jamB_s3": "CORRUPT=interf_jamB_s3 WORK_DIR=work_dirs/exp_rsar_baseline_interf_jamB_s3 bash scripts/exp_rsar_baseline.sh",
+        "exp_rsar_baseline_mix_interf_jamB_s3": "MIX_TRAIN=1 CORRUPT=interf_jamB_s3 WORK_DIR=work_dirs/exp_rsar_baseline_mix_interf_jamB_s3 bash scripts/exp_rsar_baseline.sh",
         "exp_rsar_ut_nocga": "CGA_SCORER=none WORK_DIR=work_dirs/exp_rsar_ut_nocga bash scripts/exp_rsar_ut.sh",
+        "exp_rsar_ut_nocga_interf_jamB_s3": "CGA_SCORER=none CORRUPT=interf_jamB_s3 TEACHER_CKPT=work_dirs/exp_rsar_baseline_interf_jamB_s3/latest.pth WORK_DIR=work_dirs/exp_rsar_ut_nocga_interf_jamB_s3 bash scripts/exp_rsar_ut.sh",
+        "exp_rsar_ut_nocga_mix_interf_jamB_s3": "CGA_SCORER=none CORRUPT=interf_jamB_s3 SUP_CLEAN=1 TEACHER_CKPT=work_dirs/exp_rsar_baseline_mix_interf_jamB_s3/latest.pth WORK_DIR=work_dirs/exp_rsar_ut_nocga_mix_interf_jamB_s3 bash scripts/exp_rsar_ut.sh",
         "exp_rsar_ut_cga_clip": "CGA_SCORER=clip WORK_DIR=work_dirs/exp_rsar_ut_cga_clip bash scripts/exp_rsar_ut.sh",
+        "exp_rsar_ut_cga_sarclip_tinit_t2_interf_jamB_s3": "CGA_SCORER=sarclip CORRUPT=interf_jamB_s3 TEACHER_CKPT=work_dirs/exp_rsar_baseline_interf_jamB_s3/latest.pth WORK_DIR=work_dirs/exp_rsar_ut_cga_sarclip_tinit_t2_interf_jamB_s3 bash scripts/exp_rsar_ut.sh",
+        "exp_rsar_ut_cga_sarclip_tinit_t2_mix_interf_jamB_s3": "CGA_SCORER=sarclip CORRUPT=interf_jamB_s3 SUP_CLEAN=1 TEACHER_CKPT=work_dirs/exp_rsar_baseline_mix_interf_jamB_s3/latest.pth WORK_DIR=work_dirs/exp_rsar_ut_cga_sarclip_tinit_t2_mix_interf_jamB_s3 bash scripts/exp_rsar_ut.sh",
     }
     return mapping.get(exp_id, "")
 
@@ -50,12 +56,32 @@ def _infer_config_hint(exp_id: str) -> str:
         "exp_dior_ut": "configs/unbiased_teacher/sfod/unbiased_teacher_oriented_rcnn_selftraining.py",
         "exp_dior_ut_cga_clip": "configs/unbiased_teacher/sfod/unbiased_teacher_oriented_rcnn_selftraining_cga.py",
         "exp_rsar_baseline": "configs/experiments/rsar/baseline_oriented_rcnn_rsar.py",
+        "exp_rsar_baseline_interf_jamB_s3": "configs/experiments/rsar/baseline_oriented_rcnn_rsar.py",
+        "exp_rsar_baseline_mix_interf_jamB_s3": "configs/experiments/rsar/baseline_oriented_rcnn_rsar.py",
         "exp_rsar_ut_nocga": "configs/unbiased_teacher/sfod/unbiased_teacher_oriented_rcnn_selftraining_cga_rsar.py",
+        "exp_rsar_ut_nocga_interf_jamB_s3": "configs/unbiased_teacher/sfod/unbiased_teacher_oriented_rcnn_selftraining_cga_rsar.py",
+        "exp_rsar_ut_nocga_mix_interf_jamB_s3": "configs/unbiased_teacher/sfod/unbiased_teacher_oriented_rcnn_selftraining_cga_rsar.py",
         "exp_rsar_ut_cga_clip": "configs/unbiased_teacher/sfod/unbiased_teacher_oriented_rcnn_selftraining_cga_rsar.py",
+        "exp_rsar_ut_cga_sarclip_tinit_t2_interf_jamB_s3": "configs/unbiased_teacher/sfod/unbiased_teacher_oriented_rcnn_selftraining_cga_rsar.py",
+        "exp_rsar_ut_cga_sarclip_tinit_t2_mix_interf_jamB_s3": "configs/unbiased_teacher/sfod/unbiased_teacher_oriented_rcnn_selftraining_cga_rsar.py",
         "exp_smoke_dior": "configs/unbiased_teacher/sfod/unbiased_teacher_oriented_rcnn_selftraining_cga.py",
         "exp_smoke_rsar": "configs/unbiased_teacher/sfod/unbiased_teacher_oriented_rcnn_selftraining_cga_rsar.py",
     }
     return mapping.get(exp_id, "")
+
+
+def _as_abs(repo_root: Path, path_str: str) -> Path:
+    p = Path(path_str)
+    if p.is_absolute():
+        return p
+    return (repo_root / p).resolve()
+
+
+def _rel(repo_root: Path, p: Path) -> str:
+    try:
+        return str(p.resolve().relative_to(repo_root.resolve()))
+    except Exception:
+        return str(p)
 
 
 def main() -> int:
@@ -79,14 +105,15 @@ def main() -> int:
     generated_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     def enrich_row(row: pd.Series) -> pd.Series:
-        work_dir = Path(str(row.get("work_dir", ""))).resolve()
+        work_dir_str = str(row.get("work_dir", ""))
+        work_dir = _as_abs(repo_root, work_dir_str) if work_dir_str else Path()
         exp_id = str(row.get("exp_id", ""))
 
         config_copy = ""
         if work_dir.is_dir():
             py = [p for p in work_dir.glob("*.py") if p.is_file()]
             if len(py) == 1:
-                config_copy = str(py[0])
+                config_copy = _rel(repo_root, py[0])
             elif py:
                 # Prefer configs copied by train.py (usually a single top-level config)
                 scored = []
@@ -98,23 +125,23 @@ def main() -> int:
                     score += min(int(p.stat().st_size / 1024), 50)
                     scored.append((score, p))
                 scored.sort(key=lambda t: t[0], reverse=True)
-                config_copy = str(scored[0][1])
+                config_copy = _rel(repo_root, scored[0][1])
 
         ckpt = ""
         if work_dir.is_dir():
             latest = work_dir / "latest.pth"
             if latest.is_file():
-                ckpt = str(latest)
+                ckpt = _rel(repo_root, latest)
 
         log_json = ""
         log_txt = ""
         if work_dir.is_dir():
             p = _latest_in_dir(work_dir, "*.log.json")
             if p is not None:
-                log_json = str(p)
+                log_json = _rel(repo_root, p)
             p = _latest_in_dir(work_dir, "*.log")
             if p is not None:
-                log_txt = str(p)
+                log_txt = _rel(repo_root, p)
 
         row["git_sha"] = git_sha
         row["generated_at"] = generated_at
@@ -137,4 +164,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

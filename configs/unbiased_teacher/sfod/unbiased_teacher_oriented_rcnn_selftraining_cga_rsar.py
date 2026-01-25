@@ -15,8 +15,12 @@ save_interval = 1
 classes = ('ship', 'aircraft', 'car', 'tank', 'bridge', 'harbor')
 
 # ------------------ 数据路径（DOTA/RSAR 目录结构） ------------------
-# 修改为你的真实目录，例如：'/home/storageSDA1/liaojr/dataset/RSAR/'
-data_root = '/home/storageSDA1/liaojr/dataset/RSAR/'
+# 默认使用仓库内的相对路径（推荐通过 `tools/verify_dataset_layout.py` 校验）：
+#   dataset/RSAR/{train,val,test}/{images,annfiles}
+#
+# 也可在运行时通过脚本覆盖（例如 `scripts/exp_rsar_ut.sh` 会用 `--cfg-options` 注入
+# ann/img 路径，从而无需修改 config）。
+data_root = 'dataset/RSAR/'
 
 train_img = data_root + 'train/images/'
 train_ann = data_root + 'train/annfiles/'
@@ -173,8 +177,10 @@ dist_params = dict(backend='nccl')
 log_level = 'INFO'
 resume_from = None
 
-# ------------------ EMA / teacher（如暂无合适权重可设为 None） ------------------
-load_from = f'/home/storageSDA1/liaojr/RSAR/work_dirs/oriented-rcnn-le90_r50_fpn_1x_rsar/epoch_12.pth'
+# ------------------ EMA / teacher ------------------
+# 默认不指定 teacher-init。若需要 teacher-init，请通过脚本/命令行传入：
+#   --cfg-options load_from=<ckpt> model.ema_ckpt=<ckpt>
+load_from = None
 ema_config = './configs/baseline/ema_config/baseline_oriented_rcnn_ema_rsar_cga.py'
 workflow = [('train', 1)]
 

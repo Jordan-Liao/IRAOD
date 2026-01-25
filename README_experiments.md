@@ -47,10 +47,18 @@ RSAR：
 
 ## 3. 结果汇总与可视化
 
-导出指标：
+一键刷新指标/实验追踪表（推荐）：
 ```bash
-conda run -n dino_sar python tools/export_metrics.py --work-dirs work_dirs/exp_* --out-csv work_dirs/results/metrics.csv
+bash scripts/refresh_results.sh
+```
+
+等价的手动命令（可自定义 work-dir 范围；默认不包含 `exp_rsar_severity` 这类“评估套件”目录）：
+```bash
+conda run -n dino_sar python tools/export_metrics.py \
+  --work-dirs work_dirs/exp_smoke_* work_dirs/exp_dior_* work_dirs/exp_rsar_baseline* work_dirs/exp_rsar_ut* \
+  --out-csv work_dirs/results/metrics.csv
 conda run -n dino_sar python tools/ablation_table.py --csv work_dirs/results/metrics.csv --out-md work_dirs/results/ablation_table.md
+conda run -n dino_sar python tools/export_experiments.py --metrics-csv work_dirs/results/metrics.csv --out-csv experiments.csv
 ```
 
 生成图表：
@@ -67,7 +75,5 @@ conda run -n dino_sar python tools/vis_random_samples.py --vis-dirs \
   --num 8 --out-dir work_dirs/results/vis_compare/dior_clean
 ```
 
-生成实验追踪表：
-```bash
-conda run -n dino_sar python tools/export_experiments.py --metrics-csv work_dirs/results/metrics.csv --out-csv experiments.csv
-```
+说明：
+- `docs/experiment.md` 是“逐实验”的权威记录（cmd/log/artifacts/results）；`work_dirs/results/metrics.csv` 与 `experiments.csv` 是从产物自动汇总的表格视图。
