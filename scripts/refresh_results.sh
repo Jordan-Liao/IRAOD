@@ -8,7 +8,7 @@ set -euo pipefail
 #
 # This script is intentionally lightweight and does NOT run training/eval.
 
-ENV_NAME="${ENV_NAME:-dino_sar}"
+ENV_NAME="${ENV_NAME:-iraod}"
 
 METRICS_CSV="${METRICS_CSV:-work_dirs/results/metrics.csv}"
 ABLATION_MD="${ABLATION_MD:-work_dirs/results/ablation_table.md}"

@@ -6,25 +6,25 @@
   - Rationale: 后续任何训练/评估问题都能快速定位到“代码版本+环境版本”。
   - Scope: `tools/env_snapshot.py`, `docs/env_lock.txt`, `docs/system_info.md`
   - Acceptance: 在目标 conda 环境下可运行；生成的文件包含 torch/mmcv/mmdet/mmrotate 版本与 GPU/CUDA 信息。
-  - Verification: `conda run -n dino_sar python tools/env_snapshot.py --out-dir docs`
+  - Verification: `conda run -n iraod python tools/env_snapshot.py --out-dir docs`
   - Outputs: `docs/env_lock.txt`, `docs/system_info.md`
-  - Dependencies: conda env `dino_sar`
+  - Dependencies: conda env `iraod`
 
 - [x] P0002: 下载并整理 DIOR/RSAR 数据集到统一目录
   - Summary: 把 DIOR 与 RSAR 按 README 目录结构放到 `dataset/DIOR` 与 `dataset/RSAR`，并提供自动校验脚本。
   - Rationale: 训练/测试入口强依赖数据目录结构；先把数据整理好再做 smoke 与后续实验。
   - Scope: `tools/verify_dataset_layout.py`, `dataset/`
   - Acceptance: `dataset/DIOR` 与 `dataset/RSAR` 均满足 README 结构；校验脚本返回 0。
-  - Verification: `conda run -n dino_sar python tools/verify_dataset_layout.py --dior dataset/DIOR --rsar dataset/RSAR`
+  - Verification: `conda run -n iraod python tools/verify_dataset_layout.py --dior dataset/DIOR --rsar dataset/RSAR`
   - Outputs: 数据目录 + 校验输出
-  - Dependencies: 数据源（Baidu/Google Drive；或 bypy: `conda run -n dino_sar python tools/download_datasets.py rsar --source bypy --bypy-remote RSAR.tar --dest dataset/RSAR`）；磁盘空间
+  - Dependencies: 数据源（Baidu/Google Drive；或 bypy: `conda run -n iraod python tools/download_datasets.py rsar --source bypy --bypy-remote RSAR.tar --dest dataset/RSAR`）；磁盘空间
 
 - [x] P0003: DIOR dataloader sanity（抽样可视化+统计）
   - Summary: 随机抽样图像，读取标注并输出可视化与统计报告。
   - Rationale: 避免训练前因路径/标注格式问题浪费时间。
   - Scope: `tools/sanity_check_dior.py`, `work_dirs/sanity/dior_vis/`
   - Acceptance: 运行无报错；输出 20 张叠框图；统计报告包含图片数/标注数/空标注数/异常框数。
-  - Verification: `conda run -n dino_sar python tools/sanity_check_dior.py --data-root dataset/DIOR --split train --num 20 --out-dir work_dirs/sanity/dior_vis`
+  - Verification: `conda run -n iraod python tools/sanity_check_dior.py --data-root dataset/DIOR --split train --num 20 --out-dir work_dirs/sanity/dior_vis`
   - Outputs: `work_dirs/sanity/dior_vis/`, `work_dirs/sanity/dior_sanity_report.json`
   - Dependencies: `dataset/DIOR`
 
@@ -42,7 +42,7 @@
   - Rationale: 先解决“找不到图片/同名多后缀冲突”类工程问题。
   - Scope: `tools/check_image_ann_alignment.py`, `sfod/semi_dota_dataset.py`
   - Acceptance: missing=0；conflict=0（或给出明确的冲突处理规则）；输出 CSV 报告。
-  - Verification: `conda run -n dino_sar python tools/check_image_ann_alignment.py --ann-dir dataset/RSAR/train/annfiles --img-dir dataset/RSAR/train/images --out-csv work_dirs/sanity/rsar_alignment_train.csv`
+  - Verification: `conda run -n iraod python tools/check_image_ann_alignment.py --ann-dir dataset/RSAR/train/annfiles --img-dir dataset/RSAR/train/images --out-csv work_dirs/sanity/rsar_alignment_train.csv`
   - Outputs: `work_dirs/sanity/rsar_alignment_train.csv`
   - Dependencies: `dataset/RSAR`
 
@@ -51,7 +51,7 @@
   - Rationale: 确认标注解析、角度版本与可视化一致。
   - Scope: `tools/sanity_check_rsar.py`, `work_dirs/sanity/rsar_vis/`
   - Acceptance: 运行无报错；输出样例可视化；统计报告 missing=0/conflict=0。
-  - Verification: `conda run -n dino_sar python tools/sanity_check_rsar.py --data-root dataset/RSAR --split train --num 20 --out-dir work_dirs/sanity/rsar_vis`
+  - Verification: `conda run -n iraod python tools/sanity_check_rsar.py --data-root dataset/RSAR --split train --num 20 --out-dir work_dirs/sanity/rsar_vis`
   - Outputs: `work_dirs/sanity/rsar_vis/`, `work_dirs/sanity/rsar_sanity_report.json`
   - Dependencies: `dataset/RSAR`
 
@@ -69,7 +69,7 @@
   - Rationale: RSAR 域内 VLM 评分更合理；先把 scorer 跑通避免训练时才暴雷。
   - Scope: `tools/sarclip_smoke.py`, `sfod/cga.py`
   - Acceptance: smoke 脚本在目标环境下可运行并输出 score；缺失权重时给出明确报错与下载指引。
-  - Verification: `conda run -n dino_sar python tools/sarclip_smoke.py --image <path> --prompts \"an SAR image of ship\"`
+  - Verification: `conda run -n iraod python tools/sarclip_smoke.py --image <path> --prompts \"an SAR image of ship\"`
   - Outputs: `work_dirs/sanity/sarclip_smoke.log`
   - Dependencies: SARCLIP 代码与权重
 
@@ -78,7 +78,7 @@
   - Rationale: DIOR 用 CLIP；RSAR 用 SARCLIP；cache 可避免训练中重复打分导致极慢。
   - Scope: `sfod/cga.py`（或新模块）, configs（新增 scorer 配置项）
   - Acceptance: 同一批输入两种 scorer 输出维度一致；cache 第二次命中率接近 100% 且速度提升明显。
-  - Verification: `conda run -n dino_sar python tools/cache_benchmark.py --scorer clip --image <path> --prompt \"an aerial image of ship\"`
+  - Verification: `conda run -n iraod python tools/cache_benchmark.py --scorer clip --image <path> --prompt \"an aerial image of ship\"`
   - Outputs: cache 文件 + benchmark 日志
   - Dependencies: CLIP/SARCLIP 权重
 
@@ -87,7 +87,7 @@
   - Rationale: 未来加入干扰集时无需改训练代码，仅新增数据目录与配置项。
   - Scope: RSAR dataset 配置/封装（`sfod/semi_dota_dataset.py` 与 configs）
   - Acceptance: clean 与 interfered 均可被 resolve；sanity 脚本对两者均通过。
-  - Verification: `conda run -n dino_sar python tools/verify_rsar_corrupt_switch.py --data-root dataset/RSAR --corrupt interf_jamA`
+  - Verification: `conda run -n iraod python tools/verify_rsar_corrupt_switch.py --data-root dataset/RSAR --corrupt interf_jamA`
   - Outputs: 校验日志/报告
   - Dependencies: `dataset/RSAR` 干扰版本目录
 
@@ -96,7 +96,7 @@
   - Rationale: 根目录 `plan.md` 的实验组 B 需要 DIOR corruption 可被 `--cfg-options corrupt=...` 直接评估/训练。
   - Scope: `tools/prepare_dior_corruption.py`, `dataset/DIOR/Corruption/`
   - Acceptance: 目标目录存在；对 `ImageSets/val.txt` 与 `ImageSets/test.txt` 涉及的所有 image_id，都能在对应 `JPEGImages-<corrupt>/` 下找到同名 `.jpg`。
-  - Verification: `conda run -n dino_sar python tools/prepare_dior_corruption.py --data-root dataset/DIOR --corrupt clean cloudy brightness contrast --splits val,test --workers 8`
+  - Verification: `conda run -n iraod python tools/prepare_dior_corruption.py --data-root dataset/DIOR --corrupt clean cloudy brightness contrast --splits val,test --workers 8`
   - Outputs: `dataset/DIOR/Corruption/JPEGImages-*/`
   - Dependencies: `dataset/DIOR/JPEGImages/`
 
@@ -105,7 +105,7 @@
   - Rationale: DIOR 默认用 CLIP；RSAR 可选 SARCLIP；并确保长跑训练时不会因权重/依赖问题中途崩溃。
   - Scope: `sfod/cga.py`, `sfod/oriented_rcnn_cga.py`, `tools/cga_smoke.py`
   - Acceptance: `CGA_SCORER=clip` 时能输出分数；`CGA_SCORER=sarclip` 且权重缺失时给出 warning 并不中断；`CGA_SCORER=sarclip` 且权重存在时正常输出分数。
-  - Verification: `conda run -n dino_sar python tools/cga_smoke.py --image dataset/RSAR/train/images/0000002.png --scorer clip --classes ship,aircraft,car,tank,bridge,harbor`
+  - Verification: `conda run -n iraod python tools/cga_smoke.py --image dataset/RSAR/train/images/0000002.png --scorer clip --classes ship,aircraft,car,tank,bridge,harbor`
   - Outputs: `work_dirs/sanity/cga_smoke.json`
   - Dependencies: `clip`；可选 `SARCLIP` + 权重（`weights/README.md`）
 
@@ -123,7 +123,7 @@
   - Rationale: 根目录 `plan.md` 需要“可分析/可复现”的实验追踪与最终验收材料。
   - Scope: `tools/export_metrics.py`, `tools/ablation_table.py`, `work_dirs/results/`
   - Acceptance: 能从指定 `work_dirs/*/eval_*.json` 解析出 mAP 并生成 CSV；CSV 行包含 exp_id/method/dataset/corrupt/seed/work_dir/mAP。
-  - Verification: `conda run -n dino_sar python tools/export_metrics.py --work-dirs work_dirs/exp_* --out-csv work_dirs/results/metrics.csv`
+  - Verification: `conda run -n iraod python tools/export_metrics.py --work-dirs work_dirs/exp_* --out-csv work_dirs/results/metrics.csv`
   - Outputs: `work_dirs/results/metrics.csv`
   - Dependencies: `pandas`
 
@@ -132,7 +132,7 @@
   - Rationale: 根目录 `plan.md` 的“必备可视化（定性）”需要一个稳定的抽样对比工具。
   - Scope: `tools/vis_random_samples.py`, `work_dirs/results/vis_compare/`
   - Acceptance: 支持传入多个 `--vis-dirs`；自动取同名文件交集并采样；输出对比图到 `--out-dir`；无交集时给出明确报错并返回非 0。
-  - Verification: `conda run -n dino_sar python tools/vis_random_samples.py --vis-dirs work_dirs/exp_dior_baseline_eval/vis_clean work_dirs/exp_dior_ut/vis_clean work_dirs/exp_dior_ut_cga_clip/vis_clean --num 8 --out-dir work_dirs/results/vis_compare/dior_clean`
+  - Verification: `conda run -n iraod python tools/vis_random_samples.py --vis-dirs work_dirs/exp_dior_baseline_eval/vis_clean work_dirs/exp_dior_ut/vis_clean work_dirs/exp_dior_ut_cga_clip/vis_clean --num 8 --out-dir work_dirs/results/vis_compare/dior_clean`
   - Outputs: `work_dirs/results/vis_compare/dior_clean/`
   - Dependencies: `Pillow`
 
@@ -141,7 +141,7 @@
   - Rationale: 根目录 `plan.md` 的“必备可视化（定量）”需要一个可复用的绘图入口。
   - Scope: `tools/plot_all.py`, `work_dirs/results/plots/`
   - Acceptance: 在仅提供 `metrics.csv` 时也能生成 mAP 图；提供 `--log-json-glob` 时额外生成训练曲线；输出 PNG 到 `--out-dir`。
-  - Verification: `conda run -n dino_sar python tools/plot_all.py --metrics-csv work_dirs/results/metrics.csv --log-json-glob 'work_dirs/exp_*/*.log.json' --out-dir work_dirs/results/plots`
+  - Verification: `conda run -n iraod python tools/plot_all.py --metrics-csv work_dirs/results/metrics.csv --log-json-glob 'work_dirs/exp_*/*.log.json' --out-dir work_dirs/results/plots`
   - Outputs: `work_dirs/results/plots/`
   - Dependencies: `matplotlib`, `pandas`
 
@@ -150,7 +150,7 @@
   - Rationale: 根目录 `plan.md` 的“实验追踪与复现材料”需要统一落盘与可重建的生成脚本。
   - Scope: `tools/export_experiments.py`, `experiments.csv`, `README_experiments.md`, `MODEL_ZOO.md`
   - Acceptance: `tools/export_experiments.py` 可从 `metrics.csv` 生成 `experiments.csv`（包含 git hash、log/config 指针等）；`README_experiments.md` 与 `MODEL_ZOO.md` 可直接指引复现与查找 ckpt。
-  - Verification: `bash -lc 'conda run -n dino_sar python tools/export_experiments.py --metrics-csv work_dirs/results/metrics.csv --out-csv experiments.csv && test -f README_experiments.md && test -f MODEL_ZOO.md'`
+  - Verification: `bash -lc 'conda run -n iraod python tools/export_experiments.py --metrics-csv work_dirs/results/metrics.csv --out-csv experiments.csv && test -f README_experiments.md && test -f MODEL_ZOO.md'`
   - Outputs: `experiments.csv`, `README_experiments.md`, `MODEL_ZOO.md`
   - Dependencies: `pandas`
 
@@ -177,7 +177,7 @@
   - Rationale: 确保对比结论可复现且可视化材料齐全。
   - Scope: `tools/export_metrics.py`, `tools/ablation_table.py`, `tools/plot_all.py`, `tools/export_experiments.py`
   - Acceptance: `metrics.csv` 包含 teacher-init 的 RSAR 行；图表刷新；`experiments.csv` 行数增加。
-  - Verification: `bash -lc 'conda run -n dino_sar python tools/export_metrics.py --work-dirs work_dirs/exp_* --out-csv work_dirs/results/metrics.csv && conda run -n dino_sar python tools/ablation_table.py --csv work_dirs/results/metrics.csv --out-md work_dirs/results/ablation_table.md && conda run -n dino_sar python tools/plot_all.py --metrics-csv work_dirs/results/metrics.csv --log-json-glob \"work_dirs/exp_*/*.log.json\" --out-dir work_dirs/results/plots && conda run -n dino_sar python tools/export_experiments.py --metrics-csv work_dirs/results/metrics.csv --out-csv experiments.csv'`
+  - Verification: `bash -lc 'conda run -n iraod python tools/export_metrics.py --work-dirs work_dirs/exp_* --out-csv work_dirs/results/metrics.csv && conda run -n iraod python tools/ablation_table.py --csv work_dirs/results/metrics.csv --out-md work_dirs/results/ablation_table.md && conda run -n iraod python tools/plot_all.py --metrics-csv work_dirs/results/metrics.csv --log-json-glob \"work_dirs/exp_*/*.log.json\" --out-dir work_dirs/results/plots && conda run -n iraod python tools/export_experiments.py --metrics-csv work_dirs/results/metrics.csv --out-csv experiments.csv'`
   - Outputs: `work_dirs/results/metrics.csv`, `work_dirs/results/ablation_table.md`, `work_dirs/results/plots/`, `experiments.csv`
   - Dependencies: `pandas`, `matplotlib`
 
@@ -204,7 +204,7 @@
   - Rationale: 避免 RSAR 对比里混用不同大小的 test 子集导致误读。
   - Scope: `scripts/exp_rsar_ut.sh`, `docs/experiment.md`, `docs/plan.md`, `work_dirs/results/metrics.csv`, `experiments.csv`
   - Acceptance: `work_dirs/exp_rsar_ut_cga_clip_tinit/` 产生新的 `eval_*.json`（N_TEST=1000）；`metrics.csv` 的 RSAR ut+cga 行更新为最新 eval。
-  - Verification: `bash -lc 'CGA_SCORER=clip DO_TRAIN=0 DO_TEST=1 SMOKE=1 N_TRAIN=50 N_VAL=50 N_TEST=1000 SAMPLES_PER_GPU=4 WORKERS_PER_GPU=4 WORK_DIR=work_dirs/exp_rsar_ut_cga_clip_tinit VIS_DIR=work_dirs/vis_rsar_ut_cga_clip_tinit_eval1000 SPLIT_DIR=work_dirs/smoke_splits/rsar_ut_cga_clip_tinit_eval1000 CKPT=work_dirs/exp_rsar_ut_cga_clip_tinit/latest.pth bash scripts/exp_rsar_ut.sh && conda run -n dino_sar python tools/export_metrics.py --work-dirs work_dirs/exp_* --out-csv work_dirs/results/metrics.csv'`
+  - Verification: `bash -lc 'CGA_SCORER=clip DO_TRAIN=0 DO_TEST=1 SMOKE=1 N_TRAIN=50 N_VAL=50 N_TEST=1000 SAMPLES_PER_GPU=4 WORKERS_PER_GPU=4 WORK_DIR=work_dirs/exp_rsar_ut_cga_clip_tinit VIS_DIR=work_dirs/vis_rsar_ut_cga_clip_tinit_eval1000 SPLIT_DIR=work_dirs/smoke_splits/rsar_ut_cga_clip_tinit_eval1000 CKPT=work_dirs/exp_rsar_ut_cga_clip_tinit/latest.pth bash scripts/exp_rsar_ut.sh && conda run -n iraod python tools/export_metrics.py --work-dirs work_dirs/exp_* --out-csv work_dirs/results/metrics.csv'`
   - Outputs: `work_dirs/exp_rsar_ut_cga_clip_tinit/eval_*.json`, `work_dirs/results/metrics.csv`
   - Dependencies: `work_dirs/exp_rsar_ut_cga_clip_tinit/latest.pth`, `dataset/RSAR`
 

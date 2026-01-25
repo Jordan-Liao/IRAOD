@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ENV_NAME="${ENV_NAME:-dino_sar}"
+ENV_NAME="${ENV_NAME:-iraod}"
 CONFIG="${CONFIG:-configs/unbiased_teacher/sfod/unbiased_teacher_oriented_rcnn_selftraining.py}"
 DATA_ROOT="${DATA_ROOT:-dataset/DIOR}"
 WORK_DIR="${WORK_DIR:-work_dirs/exp_dior_ut}"

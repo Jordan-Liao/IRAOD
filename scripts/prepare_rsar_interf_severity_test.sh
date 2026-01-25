@@ -9,6 +9,7 @@ set -euo pipefail
 #   dataset/RSAR/test/images-interf_jamB_s{1..5}/
 
 DATA_ROOT="${DATA_ROOT:-dataset/RSAR}"
+ENV_NAME="${ENV_NAME:-iraod}"
 SPLITS="${SPLITS:-test}"
 WORKERS="${WORKERS:-8}"
 SEED="${SEED:-0}"
@@ -33,13 +34,13 @@ run_one() {
   local params_json="$3"
   echo "[prepare_rsar_interf_severity_test] === ${corrupt} type=${itype} splits=${SPLITS} ==="
 
-  PYTHONUNBUFFERED=1 conda run -n dino_sar python -u tools/prepare_rsar_interference.py \
+  PYTHONUNBUFFERED=1 conda run -n "${ENV_NAME}" python -u tools/prepare_rsar_interference.py \
     --corrupt "${corrupt}" \
     --type "${itype}" \
     --params-json "${params_json}" \
     "${COMMON_ARGS[@]}"
 
-  conda run -n dino_sar python tools/verify_rsar_corrupt_switch.py \
+  conda run -n "${ENV_NAME}" python tools/verify_rsar_corrupt_switch.py \
     --data-root "${DATA_ROOT}" \
     --corrupt "${corrupt}" \
     --splits "${SPLITS}"
@@ -49,7 +50,7 @@ run_one() {
   if [[ "${SPLITS}" != *"test"* ]]; then
     diff_split="${SPLITS%%,*}"
   fi
-  conda run -n dino_sar python tools/verify_rsar_interference_diff.py \
+  conda run -n "${ENV_NAME}" python tools/verify_rsar_interference_diff.py \
     --data-root "${DATA_ROOT}" \
     --corrupt "${corrupt}" \
     --split "${diff_split}" \
@@ -87,4 +88,3 @@ for i in "${!JAMB_NOISE_SIGMA[@]}"; do
 done
 
 echo "[prepare_rsar_interf_severity_test] OK"
-

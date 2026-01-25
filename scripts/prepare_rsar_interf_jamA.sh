@@ -5,6 +5,7 @@ set -euo pipefail
 # then verifies layout + that corrupt images are not identical to clean.
 
 DATA_ROOT="${DATA_ROOT:-dataset/RSAR}"
+ENV_NAME="${ENV_NAME:-iraod}"
 CORRUPT="${CORRUPT:-interf_jamA}"
 ITYPE="${ITYPE:-noise_jamming}"
 PARAMS_JSON="${PARAMS_JSON:-{\"jsRatio\":10,\"stripeFreq\":0.01,\"stripeAmplitude\":50}}"
@@ -12,7 +13,7 @@ SPLITS="${SPLITS:-test,val,train}"
 WORKERS="${WORKERS:-8}"
 SEED="${SEED:-0}"
 
-PYTHONUNBUFFERED=1 conda run -n dino_sar python -u tools/prepare_rsar_interference.py \
+PYTHONUNBUFFERED=1 conda run -n "${ENV_NAME}" python -u tools/prepare_rsar_interference.py \
   --data-root "${DATA_ROOT}" \
   --corrupt "${CORRUPT}" \
   --type "${ITYPE}" \
@@ -23,11 +24,11 @@ PYTHONUNBUFFERED=1 conda run -n dino_sar python -u tools/prepare_rsar_interferen
   --force-replace-symlink \
   --diff-samples 128
 
-conda run -n dino_sar python tools/verify_rsar_corrupt_switch.py \
+conda run -n "${ENV_NAME}" python tools/verify_rsar_corrupt_switch.py \
   --data-root "${DATA_ROOT}" \
   --corrupt "${CORRUPT}"
 
-conda run -n dino_sar python tools/verify_rsar_interference_diff.py \
+conda run -n "${ENV_NAME}" python tools/verify_rsar_interference_diff.py \
   --data-root "${DATA_ROOT}" \
   --corrupt "${CORRUPT}" \
   --split test \
@@ -35,4 +36,3 @@ conda run -n dino_sar python tools/verify_rsar_interference_diff.py \
   --seed "${SEED}"
 
 echo "[prepare_rsar_interf_jamA] OK"
-

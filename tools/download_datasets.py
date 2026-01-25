@@ -112,7 +112,7 @@ def download_rsar(args) -> int:
     # 1) bypy syncdown (optional)
     if args.source == "bypy":
         if shutil.which("bypy") is None:
-            _err("`bypy` not found in PATH")
+            _err("`bypy` not found in PATH. Install via: `pip install bypy` (then run `bypy info` to login)")
             return 2
         if not args.bypy_remote:
             _err("--bypy-remote is required when --source bypy")
@@ -197,7 +197,7 @@ def download_dior(args) -> int:
         _err("DIOR downloader currently supports only: --source bypy")
         return 2
     if shutil.which("bypy") is None:
-        _err("`bypy` not found in PATH")
+        _err("`bypy` not found in PATH. Install via: `pip install bypy` (then run `bypy info` to login)")
         return 2
     if not args.bypy_remote:
         _err("--bypy-remote is required when --source bypy")

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ENV_NAME="${ENV_NAME:-dino_sar}"
+ENV_NAME="${ENV_NAME:-iraod}"
 CONFIG="${CONFIG:-configs/experiments/dior/baseline_oriented_rcnn_dior.py}"
 CKPT="${CKPT:-baseline/baseline.pth}"
 DATA_ROOT="${DATA_ROOT:-dataset/DIOR}"

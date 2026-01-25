@@ -9,6 +9,7 @@ set -euo pipefail
 #   dataset/RSAR/val/images-interf_jamB_s3/
 
 DATA_ROOT="${DATA_ROOT:-dataset/RSAR}"
+ENV_NAME="${ENV_NAME:-iraod}"
 SPLITS="${SPLITS:-train,val}"
 WORKERS="${WORKERS:-8}"
 SEED="${SEED:-0}"
@@ -34,16 +35,15 @@ PARAMS_JSON='{"lineFrequency":0.05,"baseIntensity":150,"noiseSigma":120,"lineWid
 
 echo "[prepare_rsar_interf_jamB_s3_trainval] data_root=${DATA_ROOT} splits=${SPLITS} workers=${WORKERS} seed=${SEED}"
 
-PYTHONUNBUFFERED=1 conda run -n dino_sar python -u tools/prepare_rsar_interference.py \
+PYTHONUNBUFFERED=1 conda run -n "${ENV_NAME}" python -u tools/prepare_rsar_interference.py \
   --corrupt "interf_jamB_s3" \
   --type "noise_am_jamming" \
   --params-json "${PARAMS_JSON}" \
   "${COMMON_ARGS[@]}"
 
-conda run -n dino_sar python tools/verify_rsar_corrupt_switch.py \
+conda run -n "${ENV_NAME}" python tools/verify_rsar_corrupt_switch.py \
   --data-root "${DATA_ROOT}" \
   --corrupt "interf_jamB_s3" \
   --splits "${SPLITS}"
 
 echo "[prepare_rsar_interf_jamB_s3_trainval] OK"
-

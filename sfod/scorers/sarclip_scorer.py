@@ -73,7 +73,7 @@ def _ensure_sarclip_on_path() -> Path:
         sys.path.insert(0, str(sarclip_dir))
         return sarclip_dir
     raise RuntimeError(
-        "SARCLIP code not found. Run `conda run -n dino_sar python tools/sarclip_smoke.py --image <img> --prompts <p>` "
+        "SARCLIP code not found. Run `python tools/sarclip_smoke.py --image <img> --prompts <p>` "
         "once to auto-clone it into `third_party/SARCLIP`."
     )
 

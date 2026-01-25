@@ -7,6 +7,28 @@ For the full experiment ledger (smoke/full commands + logs + artifacts + results
 
 ## Getting Started (Reproducible)
 
+### TL;DR (5 commands)
+
+```bash
+# 1) install env (CUDA 11.8 by default)
+bash scripts/setup_env_iraod.sh
+conda activate iraod
+
+# 2) download datasets (optional helper)
+conda run -n iraod python tools/download_datasets.py rsar --source gdrive
+# (DIOR needs bypy: see "Datasets" below)
+
+# 3) verify layout
+conda run -n iraod python tools/verify_dataset_layout.py --dior dataset/DIOR --rsar dataset/RSAR
+
+# 4) smoke
+bash scripts/smoke_dior.sh
+bash scripts/smoke_rsar.sh
+
+# 5) refresh tables
+bash scripts/refresh_results.sh
+```
+
 ### 1) Environment
 
 Tested environment (this repo’s default scripts assume it):
@@ -16,10 +38,26 @@ Tested environment (this repo’s default scripts assume it):
 - MMDetection `2.28.2`
 - MMRotate `0.3.4`
 
-Create a conda env (name is arbitrary; docs use `dino_sar`):
+Repo scripts default to conda env name `iraod`. If you use another env name, export `ENV_NAME=<your_env>` when running `scripts/*.sh`, and replace `conda run -n iraod ...` accordingly.
+
+Recommended (one-shot):
 ```bash
-conda create -n dino_sar python=3.10 -y
-conda activate dino_sar
+bash scripts/setup_env_iraod.sh
+conda activate iraod
+```
+
+CPU-only install:
+```bash
+CUDA_VARIANT=cpu bash scripts/setup_env_iraod.sh
+conda activate iraod
+```
+
+Manual install (if you prefer step-by-step):
+
+Create a conda env:
+```bash
+conda create -n iraod python=3.10 -y
+conda activate iraod
 ```
 
 Install PyTorch (example for CUDA 11.8; adjust if your CUDA differs):
@@ -32,7 +70,6 @@ Install OpenMMLab stack (MMCV must match your torch/cuda; example below is for t
 ```bash
 pip install -U openmim
 mim install "mmcv-full==1.7.2" -f https://download.openmmlab.com/mmcv/dist/cu118/torch2.0/index.html
-pip install "mmdet==2.28.2" "mmrotate==0.3.4"
 ```
 
 Install the remaining deps:
@@ -45,6 +82,28 @@ pip install -r requirements.txt
 All scripts assume datasets live under:
 - `dataset/DIOR`
 - `dataset/RSAR`
+
+Optional: auto download / organize (recommended for reproducibility):
+
+Install and login `bypy` (only needed if you use Baidu NetDisk / `--source bypy`):
+```bash
+# bypy is installed via requirements.txt; login is a one-time step.
+conda run -n iraod bypy info
+```
+
+Notes about `bypy`:
+- `bypy` cannot download a Baidu share link directly; you must first save/transfer files into your own `/apps/bypy` via browser.
+- If you are behind a proxy, this repo’s downloader will unset `HTTP_PROXY/HTTPS_PROXY/ALL_PROXY` for `bypy` calls.
+
+Download datasets using the helper (see `tools/download_datasets.py --help`):
+```bash
+# DIOR: requires you already saved the dataset folder into /apps/bypy/<REMOTE_DIR>
+conda run -n iraod python tools/download_datasets.py dior --source bypy --bypy-remote <REMOTE_DIR>
+
+# RSAR: default is Google Drive; or use bypy if you already saved RSAR.tar under /apps/bypy/
+conda run -n iraod python tools/download_datasets.py rsar --source gdrive
+# conda run -n iraod python tools/download_datasets.py rsar --source bypy --bypy-remote RSAR.tar --dest dataset/RSAR
+```
 
 Expected layouts:
 ```text
@@ -74,13 +133,20 @@ dataset/RSAR/
 
 Verify layouts:
 ```bash
-conda run -n dino_sar python tools/verify_dataset_layout.py --dior dataset/DIOR --rsar dataset/RSAR
+conda run -n iraod python tools/verify_dataset_layout.py --dior dataset/DIOR --rsar dataset/RSAR
+```
+
+Prepare DIOR corruption folders (needed by DIOR corruption eval):
+```bash
+conda run -n iraod python tools/prepare_dior_corruption.py \
+  --data-root dataset/DIOR --corrupt clean cloudy brightness contrast \
+  --splits val,test --workers 8
 ```
 
 ### 3) Checkpoints / Weights
 
-- Oriented-RCNN baseline weights (DIOR pretrain) go to `baseline/` (see `MODEL_ZOO.md`).
-- SARCLIP weights go to `weights/sarclip/<MODEL>/` (see `weights/README.md`).
+- Oriented-RCNN baseline weights (DIOR pretrain) go to `baseline/baseline.pth` (not tracked by git; see `MODEL_ZOO.md`).
+- SARCLIP weights go to `weights/sarclip/<MODEL>/` (see `weights/README.md` for Baidu/bypy instructions).
 
 ### 4) Quick Smoke (recommended first run)
 
@@ -152,4 +218,3 @@ We thank the authors of the following works for their open-source contributions:
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
-

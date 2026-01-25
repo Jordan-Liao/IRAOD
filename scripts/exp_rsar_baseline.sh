@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ENV_NAME="${ENV_NAME:-dino_sar}"
+ENV_NAME="${ENV_NAME:-iraod}"
 CONFIG="${CONFIG:-configs/experiments/rsar/baseline_oriented_rcnn_rsar.py}"
 WORK_DIR="${WORK_DIR:-work_dirs/exp_rsar_baseline}"
 VIS_DIR="${VIS_DIR:-work_dirs/vis_rsar_baseline}"

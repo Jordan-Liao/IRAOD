@@ -34,7 +34,7 @@
 ### 4.1 全量对齐检查（missing/conflict）
 
 ```bash
-conda run -n dino_sar python tools/check_image_ann_alignment.py \
+conda run -n iraod python tools/check_image_ann_alignment.py \
   --ann-dir dataset/RSAR/train/annfiles \
   --img-dir dataset/RSAR/train/images \
   --out-csv work_dirs/sanity/rsar_alignment_train.csv
@@ -43,7 +43,7 @@ conda run -n dino_sar python tools/check_image_ann_alignment.py \
 ### 4.2 dataloader 抽样可视化 sanity
 
 ```bash
-conda run -n dino_sar python tools/sanity_check_rsar.py \
+conda run -n iraod python tools/sanity_check_rsar.py \
   --data-root dataset/RSAR --split train --num 20 \
   --out-dir work_dirs/sanity/rsar_vis
 ```
@@ -52,4 +52,3 @@ conda run -n dino_sar python tools/sanity_check_rsar.py \
 
 - 干扰版本建议按 `images-<corrupt>` 目录组织；本仓库验证脚本：`tools/verify_rsar_corrupt_switch.py`。
 - 只要干扰图与 clean 保持同名（stem 一致），上述解析机制不依赖后缀即可直接工作。
-

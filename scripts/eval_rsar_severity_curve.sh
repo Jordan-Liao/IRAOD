@@ -17,7 +17,7 @@ set -euo pipefail
 #   work_dirs/exp_rsar_severity/<tag>/<corrupt_base>/severity_summary.csv
 #   work_dirs/exp_rsar_severity/<tag>/<corrupt_base>/<corrupt>/eval_*.json
 
-ENV_NAME="${ENV_NAME:-dino_sar}"
+ENV_NAME="${ENV_NAME:-iraod}"
 CONFIG="${CONFIG:-configs/unbiased_teacher/sfod/unbiased_teacher_oriented_rcnn_selftraining_cga_rsar.py}"
 DATA_ROOT="${DATA_ROOT:-dataset/RSAR}"
 
