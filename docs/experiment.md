@@ -631,3 +631,187 @@
 | Logs | smoke: `.rd_queue/logs/J20260122-122901-0968__e0025-smoke.log`；full: `.rd_queue/logs/J20260122-123848-b5bf__e0025-full.log`；rerun(real data, ckpt updated): `.rd_queue/logs/J20260124-180200-1f99__e0025-full-real2.log` |
 | Artifacts | `work_dirs/exp_rsar_ut_cga_sarclip_mix_eval_*`, `work_dirs/vis_rsar_ut_cga_sarclip_mix_eval_*` |
 | Results | placeholder（软链占位）smoke(N_TEST=50): clean mAP=0.3012（`work_dirs/exp_rsar_ut_cga_sarclip_mix_eval_clean50/eval_20260122_203455.json`）；interf_jamA mAP=0.3012（`work_dirs/exp_rsar_ut_cga_sarclip_mix_eval_interf_jamA50/eval_20260122_203606.json`）；placeholder full(N_TEST=1000): clean mAP=0.2575（`work_dirs/exp_rsar_ut_cga_sarclip_mix_eval_clean1000/eval_20260122_205237.json`）；interf_jamA mAP=0.2575（`work_dirs/exp_rsar_ut_cga_sarclip_mix_eval_interf_jamA1000/eval_20260122_205529.json`）；rerun(real data, N_TEST=1000): clean mAP=0.2575（`work_dirs/exp_rsar_ut_cga_sarclip_mix_eval_clean1000/eval_20260125_010910.json`），interf_jamA mAP=0.0510（`work_dirs/exp_rsar_ut_cga_sarclip_mix_eval_interf_jamA1000/eval_20260125_011050.json`）；rerun(real data, N_TEST=1000, ckpt=E0024-full-real latest.pth): clean mAP=0.2697（`work_dirs/exp_rsar_ut_cga_sarclip_mix_eval_clean1000/eval_20260125_020236.json`），interf_jamA mAP=0.0467（`work_dirs/exp_rsar_ut_cga_sarclip_mix_eval_interf_jamA1000/eval_20260125_020403.json`） |
+
+
+### E0026: RSAR Severity Curve Eval (interf_jamA_s1..s5, N_TEST=1000)
+| Field | Value |
+| --- | --- |
+| Objective | 用同一个 ckpt 在 `clean` 与 `interf_jamA_s1..s5`（test-only）上做鲁棒性曲线评估（mAP vs severity） |
+| Baseline | clean（同 ckpt） |
+| Model | UnbiasedTeacher + OrientedRCNN_CGA（推理仅做检测） |
+| Weights | `CKPT=work_dirs/exp_rsar_ut_cga_sarclip_tinit_t2/latest.pth` |
+| Code path | `scripts/eval_rsar_severity_curve.sh`, `scripts/exp_rsar_ut.sh`, `tools/verify_rsar_corrupt_switch.py` |
+| Params | `CORRUPT_BASE=interf_jamA`；`SEVERITIES=1..5`；`N_TEST=50/1000`；`CUDA_VISIBLE_DEVICES=0` |
+| Metrics (must save) | `severity_summary.csv`；各 severity 的 `eval_*.json` |
+| Checks | CSV 行数=1(clean)+5；每行 mAP 非 NaN；severity 目录必须存在（脚本会硬检查） |
+| VRAM | ~4–10 GB |
+| Time/epoch | N/A |
+| Total time | ~6–10 min |
+| Single-GPU script | `bash scripts/eval_rsar_severity_curve.sh` |
+| Multi-GPU script | `N/A` |
+| Smoke cmd | `bash -lc 'CUDA_VISIBLE_DEVICES=0 CKPT=work_dirs/exp_rsar_ut_cga_sarclip_tinit_t2/latest.pth CORRUPT_BASE=interf_jamA SEVERITIES=3 INCLUDE_CLEAN=1 N_TEST=50 bash scripts/eval_rsar_severity_curve.sh'` |
+| Full cmd | `bash -lc 'CUDA_VISIBLE_DEVICES=0 CKPT=work_dirs/exp_rsar_ut_cga_sarclip_tinit_t2/latest.pth CORRUPT_BASE=interf_jamA SEVERITIES=1,2,3,4,5 INCLUDE_CLEAN=1 N_TEST=1000 bash scripts/eval_rsar_severity_curve.sh'` |
+| Smoke | [x] |
+| Full | [x] |
+| Logs | N/A（交互式运行，未生成 `.rd_queue/logs/*`；以 `severity_summary.csv`+`eval_*.json` 为准） |
+| Artifacts | `work_dirs/exp_rsar_severity/exp_rsar_ut_cga_sarclip_tinit_t2/interf_jamA/` |
+| Results | smoke(N_TEST=50, SEVERITIES=3): clean mAP=0.291350（`work_dirs/exp_rsar_severity/exp_rsar_ut_cga_sarclip_tinit_t2/interf_jamA/clean/eval_20260125_023529.json`），interf_jamA_s3 mAP=0.362827（`work_dirs/exp_rsar_severity/exp_rsar_ut_cga_sarclip_tinit_t2/interf_jamA/interf_jamA_s3/eval_20260125_023549.json`）；full(N_TEST=1000, SEVERITIES=1..5): `work_dirs/exp_rsar_severity/exp_rsar_ut_cga_sarclip_tinit_t2/interf_jamA/severity_summary.csv`（mAP: clean=0.259225, s1=0.262595, s2=0.260502, s3=0.251422, s4=0.248343, s5=0.240369；每行含 `eval_json` 路径） |
+
+
+### E0027: RSAR Severity Curve Eval (interf_jamB_s1..s5, N_TEST=1000)
+| Field | Value |
+| --- | --- |
+| Objective | 用同一个 ckpt 在 `clean` 与 `interf_jamB_s1..s5`（test-only）上做鲁棒性曲线评估（mAP vs severity） |
+| Baseline | clean（同 ckpt） |
+| Model | UnbiasedTeacher + OrientedRCNN_CGA（推理仅做检测） |
+| Weights | `CKPT=work_dirs/exp_rsar_ut_cga_sarclip_tinit_t2/latest.pth` |
+| Code path | `scripts/eval_rsar_severity_curve.sh`, `scripts/exp_rsar_ut.sh`, `tools/verify_rsar_corrupt_switch.py` |
+| Params | `CORRUPT_BASE=interf_jamB`；`SEVERITIES=1..5`；`N_TEST=50/1000`；`CUDA_VISIBLE_DEVICES=0` |
+| Metrics (must save) | `severity_summary.csv`；各 severity 的 `eval_*.json` |
+| Checks | CSV 行数=1(clean)+5；每行 mAP 非 NaN；severity 目录必须存在（脚本会硬检查） |
+| VRAM | ~4–10 GB |
+| Time/epoch | N/A |
+| Total time | ~6–10 min |
+| Single-GPU script | `bash scripts/eval_rsar_severity_curve.sh` |
+| Multi-GPU script | `N/A` |
+| Smoke cmd | `bash -lc 'CUDA_VISIBLE_DEVICES=0 CKPT=work_dirs/exp_rsar_ut_cga_sarclip_tinit_t2/latest.pth CORRUPT_BASE=interf_jamB SEVERITIES=3 INCLUDE_CLEAN=1 N_TEST=50 bash scripts/eval_rsar_severity_curve.sh'` |
+| Full cmd | `bash -lc 'CUDA_VISIBLE_DEVICES=0 CKPT=work_dirs/exp_rsar_ut_cga_sarclip_tinit_t2/latest.pth CORRUPT_BASE=interf_jamB SEVERITIES=1,2,3,4,5 INCLUDE_CLEAN=1 N_TEST=1000 bash scripts/eval_rsar_severity_curve.sh'` |
+| Smoke | [x] |
+| Full | [x] |
+| Logs | N/A（交互式运行，未生成 `.rd_queue/logs/*`；以 `severity_summary.csv`+`eval_*.json` 为准） |
+| Artifacts | `work_dirs/exp_rsar_severity/exp_rsar_ut_cga_sarclip_tinit_t2/interf_jamB/` |
+| Results | smoke(N_TEST=50, SEVERITIES=3): clean mAP=0.291350（`work_dirs/exp_rsar_severity/exp_rsar_ut_cga_sarclip_tinit_t2/interf_jamB/clean/eval_20260125_023624.json`），interf_jamB_s3 mAP=0.222065（`work_dirs/exp_rsar_severity/exp_rsar_ut_cga_sarclip_tinit_t2/interf_jamB/interf_jamB_s3/eval_20260125_023645.json`）；full(N_TEST=1000, SEVERITIES=1..5): `work_dirs/exp_rsar_severity/exp_rsar_ut_cga_sarclip_tinit_t2/interf_jamB/severity_summary.csv`（mAP: clean=0.259225, s1=0.261777, s2=0.217373, s3=0.172148, s4=0.077893, s5=0.028767；每行含 `eval_json` 路径） |
+
+
+### E0028: RSAR Baseline Train (interf_jamB_s3 only)
+| Field | Value |
+| --- | --- |
+| Objective | supervised baseline（OrientedRCNN）仅用 `interf_jamB_s3` 做训练/验证/测试（关注 jamB_s3 域内收敛与 mAP） |
+| Baseline | RSAR clean baseline（E0012 / E0009） |
+| Model | OrientedRCNN (mmrotate baseline) |
+| Weights | `CKPT=work_dirs/exp_rsar_baseline_interf_jamB_s3/latest.pth` |
+| Code path | `scripts/exp_rsar_baseline.sh`, `sfod/utils/patches.py` |
+| Params | `CORRUPT=interf_jamB_s3`；SMOKE 子集 `N_TRAIN/N_VAL/N_TEST`；`CUDA_VISIBLE_DEVICES=0` |
+| Metrics (must save) | `eval_*.json`（mAP）+ show-dir 可视化 |
+| Checks | `eval_*.json` 存在且 mAP 非 NaN；`tools/verify_rsar_corrupt_switch.py --corrupt interf_jamB_s3 --splits train,val,test` missing=0/conflict=0 |
+| VRAM | ~6–12 GB |
+| Total time | smoke ~5–15 min；full ~?（取决于 N 与 epoch） |
+| Single-GPU script | `bash scripts/exp_rsar_baseline.sh` |
+| Smoke cmd | `bash -lc 'conda run -n dino_sar python tools/verify_rsar_corrupt_switch.py --data-root dataset/RSAR --corrupt interf_jamB_s3 --splits train,val,test && CUDA_VISIBLE_DEVICES=0 CORRUPT=interf_jamB_s3 SMOKE=1 MAX_EPOCHS=1 N_TRAIN=50 N_VAL=50 N_TEST=50 SAMPLES_PER_GPU=2 WORKERS_PER_GPU=2 WORK_DIR=work_dirs/exp_rsar_baseline_interf_jamB_s3 VIS_DIR=work_dirs/vis_rsar_baseline_interf_jamB_s3 SPLIT_DIR=work_dirs/smoke_splits/rsar_baseline_interf_jamB_s3_smoke bash scripts/exp_rsar_baseline.sh'` |
+| Full cmd | `bash -lc 'conda run -n dino_sar python tools/verify_rsar_corrupt_switch.py --data-root dataset/RSAR --corrupt interf_jamB_s3 --splits train,val,test && CUDA_VISIBLE_DEVICES=0 CORRUPT=interf_jamB_s3 SMOKE=1 MAX_EPOCHS=6 N_TRAIN=2000 N_VAL=500 N_TEST=1000 SAMPLES_PER_GPU=2 WORKERS_PER_GPU=2 WORK_DIR=work_dirs/exp_rsar_baseline_interf_jamB_s3 VIS_DIR=work_dirs/vis_rsar_baseline_interf_jamB_s3 SPLIT_DIR=work_dirs/smoke_splits/rsar_baseline_interf_jamB_s3_full bash scripts/exp_rsar_baseline.sh && CUDA_VISIBLE_DEVICES=0 CKPT=work_dirs/exp_rsar_baseline_interf_jamB_s3/latest.pth CORRUPT_BASE=interf_jamB N_TEST=1000 bash scripts/eval_rsar_severity_curve_baseline.sh'` |
+| Smoke | [x] |
+| Full | [x] |
+| Logs | smoke: `work_dirs/exp_rsar_baseline_interf_jamB_s3/20260125_121848.log`；full: `.rd_queue/logs/J20260125-043738-e279__e0028-full.log`；train: `work_dirs/exp_rsar_baseline_interf_jamB_s3/20260125_131146.log` |
+| Artifacts | `work_dirs/exp_rsar_baseline_interf_jamB_s3/`, `work_dirs/vis_rsar_baseline_interf_jamB_s3/`, `work_dirs/exp_rsar_severity/exp_rsar_baseline_interf_jamB_s3/interf_jamB/severity_summary.csv` |
+| Results | smoke(N=50,epoch=1): mAP=0.0000（`work_dirs/exp_rsar_baseline_interf_jamB_s3/eval_20260125_121911.json`）；full(N_TRAIN=2000,epoch=6): mAP=0.1986（`work_dirs/exp_rsar_baseline_interf_jamB_s3/eval_20260125_132251.json`）；jamB severity（`work_dirs/exp_rsar_severity/exp_rsar_baseline_interf_jamB_s3/interf_jamB/severity_summary.csv`）mAP: clean=0.1975,s1=0.2038,s2=0.2029,s3=0.1986,s4=0.1756,s5=0.1131 |
+
+
+### E0029: RSAR Baseline Train (mix clean + interf_jamB_s3, 1:1)
+| Field | Value |
+| --- | --- |
+| Objective | supervised baseline 以 1:1 混训 clean 与 `interf_jamB_s3`（同标注、不同图像目录） |
+| Baseline | E0028（interf-only） |
+| Model | OrientedRCNN (mmrotate baseline) |
+| Weights | `CKPT=work_dirs/exp_rsar_baseline_mix_interf_jamB_s3/latest.pth` |
+| Code path | `scripts/exp_rsar_baseline.sh`, `sfod/utils/patches.py`（`mix_train=1`） |
+| Params | `CORRUPT=interf_jamB_s3`；`MIX_TRAIN=1`；`MIX_TRAIN_*_TIMES=1`；`CUDA_VISIBLE_DEVICES=0` |
+| Metrics (must save) | `eval_*.json`（mAP）+ jamB severity CSV |
+| Checks | `eval_*.json` 存在且 mAP 非 NaN；train split 下存在 `images-clean`（脚本会创建） |
+| VRAM | ~6–12 GB |
+| Total time | smoke ~5–20 min；full ~? |
+| Single-GPU script | `bash scripts/exp_rsar_baseline.sh` |
+| Smoke cmd | `bash -lc 'conda run -n dino_sar python tools/verify_rsar_corrupt_switch.py --data-root dataset/RSAR --corrupt interf_jamB_s3 --splits train,val,test && CUDA_VISIBLE_DEVICES=0 CORRUPT=interf_jamB_s3 MIX_TRAIN=1 MIX_TRAIN_CLEAN_TIMES=1 MIX_TRAIN_CORRUPT_TIMES=1 SMOKE=1 MAX_EPOCHS=1 N_TRAIN=50 N_VAL=50 N_TEST=50 SAMPLES_PER_GPU=2 WORKERS_PER_GPU=2 WORK_DIR=work_dirs/exp_rsar_baseline_mix_interf_jamB_s3 VIS_DIR=work_dirs/vis_rsar_baseline_mix_interf_jamB_s3 SPLIT_DIR=work_dirs/smoke_splits/rsar_baseline_mix_interf_jamB_s3_smoke bash scripts/exp_rsar_baseline.sh'` |
+| Full cmd | `bash -lc 'conda run -n dino_sar python tools/verify_rsar_corrupt_switch.py --data-root dataset/RSAR --corrupt interf_jamB_s3 --splits train,val,test && CUDA_VISIBLE_DEVICES=0 CORRUPT=interf_jamB_s3 MIX_TRAIN=1 MIX_TRAIN_CLEAN_TIMES=1 MIX_TRAIN_CORRUPT_TIMES=1 SMOKE=1 MAX_EPOCHS=6 N_TRAIN=2000 N_VAL=500 N_TEST=1000 SAMPLES_PER_GPU=2 WORKERS_PER_GPU=2 WORK_DIR=work_dirs/exp_rsar_baseline_mix_interf_jamB_s3 VIS_DIR=work_dirs/vis_rsar_baseline_mix_interf_jamB_s3 SPLIT_DIR=work_dirs/smoke_splits/rsar_baseline_mix_interf_jamB_s3_full bash scripts/exp_rsar_baseline.sh && CUDA_VISIBLE_DEVICES=0 CKPT=work_dirs/exp_rsar_baseline_mix_interf_jamB_s3/latest.pth CORRUPT_BASE=interf_jamB N_TEST=1000 bash scripts/eval_rsar_severity_curve_baseline.sh'` |
+| Smoke | [x] |
+| Full | [x] |
+| Logs | smoke: `work_dirs/exp_rsar_baseline_mix_interf_jamB_s3/20260125_121942.log`；full: `.rd_queue/logs/J20260125-043738-0b8e__e0029-full.log`；train: `work_dirs/exp_rsar_baseline_mix_interf_jamB_s3/20260125_124005.log` |
+| Artifacts | `work_dirs/exp_rsar_baseline_mix_interf_jamB_s3/`, `work_dirs/vis_rsar_baseline_mix_interf_jamB_s3/`, `work_dirs/exp_rsar_severity/exp_rsar_baseline_mix_interf_jamB_s3/interf_jamB/severity_summary.csv` |
+| Results | smoke(N=50,epoch=1): mAP=0.0000（`work_dirs/exp_rsar_baseline_mix_interf_jamB_s3/eval_20260125_122008.json`）；full(N_TRAIN=2000,epoch=6): mAP=0.3246（`work_dirs/exp_rsar_baseline_mix_interf_jamB_s3/eval_20260125_125952.json`）；jamB severity（`work_dirs/exp_rsar_severity/exp_rsar_baseline_mix_interf_jamB_s3/interf_jamB/severity_summary.csv`）mAP: clean=0.3739,s1=0.3842,s2=0.3828,s3=0.3246,s4=0.2065,s5=0.0768 |
+
+
+### E0030: RSAR UT Train (no CGA, interf_jamB_s3 only)
+| Field | Value |
+| --- | --- |
+| Objective | UnbiasedTeacher（无 CGA）仅用 `interf_jamB_s3`（sup/unsup/val/test 统一在 s3 域）训练并评估 |
+| Baseline | E0028 baseline（teacher init） |
+| Model | UnbiasedTeacher + OrientedRCNN (no CGA) |
+| Weights | `CKPT=work_dirs/exp_rsar_ut_nocga_interf_jamB_s3/latest.pth` |
+| Code path | `scripts/exp_rsar_ut.sh`, `scripts/eval_rsar_severity_curve.sh` |
+| Params | `CORRUPT=interf_jamB_s3`；`CGA_SCORER=none`；`TEACHER_CKPT=E0028/latest.pth`；`CUDA_VISIBLE_DEVICES=0` |
+| Metrics (must save) | `eval_*.json` + jamB severity CSV |
+| Checks | 训练/测试完成；mAP 非 NaN；ckpt 文件存在 |
+| VRAM | ~8–16 GB |
+| Total time | smoke ~10–30 min；full ~? |
+| Smoke cmd | `bash -lc 'test -f work_dirs/exp_rsar_baseline_interf_jamB_s3/latest.pth && conda run -n dino_sar python tools/verify_rsar_corrupt_switch.py --data-root dataset/RSAR --corrupt interf_jamB_s3 --splits train,val,test && CUDA_VISIBLE_DEVICES=0 CGA_SCORER=none TEACHER_CKPT=work_dirs/exp_rsar_baseline_interf_jamB_s3/latest.pth CORRUPT=interf_jamB_s3 SMOKE=1 MAX_EPOCHS=1 N_TRAIN=50 N_VAL=50 N_TEST=50 SAMPLES_PER_GPU=2 WORKERS_PER_GPU=2 WORK_DIR=work_dirs/exp_rsar_ut_nocga_interf_jamB_s3 VIS_DIR=work_dirs/vis_rsar_ut_nocga_interf_jamB_s3 SPLIT_DIR=work_dirs/smoke_splits/rsar_ut_nocga_interf_jamB_s3_smoke bash scripts/exp_rsar_ut.sh'` |
+| Full cmd | `bash -lc 'test -f work_dirs/exp_rsar_baseline_interf_jamB_s3/latest.pth && conda run -n dino_sar python tools/verify_rsar_corrupt_switch.py --data-root dataset/RSAR --corrupt interf_jamB_s3 --splits train,val,test && CUDA_VISIBLE_DEVICES=0 CGA_SCORER=none TEACHER_CKPT=work_dirs/exp_rsar_baseline_interf_jamB_s3/latest.pth CORRUPT=interf_jamB_s3 SMOKE=1 MAX_EPOCHS=6 N_TRAIN=2000 N_VAL=500 N_TEST=1000 SAMPLES_PER_GPU=2 WORKERS_PER_GPU=2 WORK_DIR=work_dirs/exp_rsar_ut_nocga_interf_jamB_s3 VIS_DIR=work_dirs/vis_rsar_ut_nocga_interf_jamB_s3 SPLIT_DIR=work_dirs/smoke_splits/rsar_ut_nocga_interf_jamB_s3_full bash scripts/exp_rsar_ut.sh && CUDA_VISIBLE_DEVICES=0 CKPT=work_dirs/exp_rsar_ut_nocga_interf_jamB_s3/latest.pth CORRUPT_BASE=interf_jamB N_TEST=1000 bash scripts/eval_rsar_severity_curve.sh'` |
+| Smoke | [x] |
+| Full | [x] |
+| Logs | smoke: `work_dirs/exp_rsar_ut_nocga_interf_jamB_s3/20260125_122156.log`；full: `.rd_queue/logs/J20260125-043738-d33b__e0030-full.log`；train: `work_dirs/exp_rsar_ut_nocga_interf_jamB_s3/20260125_133445.log` |
+| Artifacts | `work_dirs/exp_rsar_ut_nocga_interf_jamB_s3/`, `work_dirs/vis_rsar_ut_nocga_interf_jamB_s3/`, `work_dirs/exp_rsar_severity/exp_rsar_ut_nocga_interf_jamB_s3/interf_jamB/severity_summary.csv` |
+| Results | smoke(N=50,epoch=1): mAP=0.0000（`work_dirs/exp_rsar_ut_nocga_interf_jamB_s3/eval_20260125_122230.json`）；full(N_TRAIN=2000,epoch=6): mAP=0.1317（`work_dirs/exp_rsar_ut_nocga_interf_jamB_s3/eval_20260125_134639.json`）；jamB severity（`work_dirs/exp_rsar_severity/exp_rsar_ut_nocga_interf_jamB_s3/interf_jamB/severity_summary.csv`）mAP: clean=0.1430,s1=0.1433,s2=0.1396,s3=0.1317,s4=0.0926,s5=0.0495 |
+
+
+### E0031: RSAR UT Train (no CGA, SUP clean + unsup/val/test interf_jamB_s3)
+| Field | Value |
+| --- | --- |
+| Objective | UnbiasedTeacher（无 CGA）在 `CORRUPT=interf_jamB_s3` 下启用 `SUP_CLEAN=1`：监督分支用 clean，unsup/val/test 用 s3 域（对齐已有 mix_interf_jamA 方案） |
+| Baseline | E0029 baseline mix（teacher init） |
+| Model | UnbiasedTeacher + OrientedRCNN (no CGA) |
+| Weights | `CKPT=work_dirs/exp_rsar_ut_nocga_mix_interf_jamB_s3/latest.pth` |
+| Code path | `scripts/exp_rsar_ut.sh`, `scripts/eval_rsar_severity_curve.sh` |
+| Params | `CORRUPT=interf_jamB_s3`；`SUP_CLEAN=1`；`TEACHER_CKPT=E0029/latest.pth`；`CUDA_VISIBLE_DEVICES=0` |
+| Metrics (must save) | `eval_*.json` + jamB severity CSV |
+| Checks | 训练/测试完成；mAP 非 NaN |
+| VRAM | ~8–16 GB |
+| Total time | smoke ~10–30 min；full ~? |
+| Smoke cmd | `bash -lc 'test -f work_dirs/exp_rsar_baseline_mix_interf_jamB_s3/latest.pth && conda run -n dino_sar python tools/verify_rsar_corrupt_switch.py --data-root dataset/RSAR --corrupt interf_jamB_s3 --splits train,val,test && CUDA_VISIBLE_DEVICES=0 CGA_SCORER=none TEACHER_CKPT=work_dirs/exp_rsar_baseline_mix_interf_jamB_s3/latest.pth CORRUPT=interf_jamB_s3 SUP_CLEAN=1 SMOKE=1 MAX_EPOCHS=1 N_TRAIN=50 N_VAL=50 N_TEST=50 SAMPLES_PER_GPU=2 WORKERS_PER_GPU=2 WORK_DIR=work_dirs/exp_rsar_ut_nocga_mix_interf_jamB_s3 VIS_DIR=work_dirs/vis_rsar_ut_nocga_mix_interf_jamB_s3 SPLIT_DIR=work_dirs/smoke_splits/rsar_ut_nocga_mix_interf_jamB_s3_smoke bash scripts/exp_rsar_ut.sh'` |
+| Full cmd | `bash -lc 'test -f work_dirs/exp_rsar_baseline_mix_interf_jamB_s3/latest.pth && conda run -n dino_sar python tools/verify_rsar_corrupt_switch.py --data-root dataset/RSAR --corrupt interf_jamB_s3 --splits train,val,test && CUDA_VISIBLE_DEVICES=0 CGA_SCORER=none TEACHER_CKPT=work_dirs/exp_rsar_baseline_mix_interf_jamB_s3/latest.pth CORRUPT=interf_jamB_s3 SUP_CLEAN=1 SMOKE=1 MAX_EPOCHS=6 N_TRAIN=2000 N_VAL=500 N_TEST=1000 SAMPLES_PER_GPU=2 WORKERS_PER_GPU=2 WORK_DIR=work_dirs/exp_rsar_ut_nocga_mix_interf_jamB_s3 VIS_DIR=work_dirs/vis_rsar_ut_nocga_mix_interf_jamB_s3 SPLIT_DIR=work_dirs/smoke_splits/rsar_ut_nocga_mix_interf_jamB_s3_full bash scripts/exp_rsar_ut.sh && CUDA_VISIBLE_DEVICES=0 CKPT=work_dirs/exp_rsar_ut_nocga_mix_interf_jamB_s3/latest.pth CORRUPT_BASE=interf_jamB N_TEST=1000 bash scripts/eval_rsar_severity_curve.sh'` |
+| Smoke | [x] |
+| Full | [x] |
+| Logs | smoke: `work_dirs/exp_rsar_ut_nocga_mix_interf_jamB_s3/20260125_122306.log`；full: `.rd_queue/logs/J20260125-043738-d0c6__e0031-full.log`；train: `work_dirs/exp_rsar_ut_nocga_mix_interf_jamB_s3/20260125_135833.log` |
+| Artifacts | `work_dirs/exp_rsar_ut_nocga_mix_interf_jamB_s3/`, `work_dirs/vis_rsar_ut_nocga_mix_interf_jamB_s3/`, `work_dirs/exp_rsar_severity/exp_rsar_ut_nocga_mix_interf_jamB_s3/interf_jamB/severity_summary.csv` |
+| Results | smoke(N=50,epoch=1): mAP=0.0000（`work_dirs/exp_rsar_ut_nocga_mix_interf_jamB_s3/eval_20260125_122339.json`）；full(N_TRAIN=2000,epoch=6): mAP=0.2260（`work_dirs/exp_rsar_ut_nocga_mix_interf_jamB_s3/eval_20260125_141022.json`）；jamB severity（`work_dirs/exp_rsar_severity/exp_rsar_ut_nocga_mix_interf_jamB_s3/interf_jamB/severity_summary.csv`）mAP: clean=0.2900,s1=0.2854,s2=0.2887,s3=0.2260,s4=0.1283,s5=0.0788 |
+
+
+### E0032: RSAR UT+CGA(SARCLIP) Train (interf_jamB_s3 only)
+| Field | Value |
+| --- | --- |
+| Objective | UnbiasedTeacher + CGA(SARCLIP) 在 `interf_jamB_s3` 域内训练并评估（interf-only） |
+| Baseline | E0030（no CGA） |
+| Model | UnbiasedTeacher + OrientedRCNN_CGA (SARCLIP scorer) |
+| Weights | `CKPT=work_dirs/exp_rsar_ut_cga_sarclip_tinit_t2_interf_jamB_s3/latest.pth`；SARCLIP `weights/sarclip/RN50/rn50_model.safetensors` |
+| Code path | `scripts/exp_rsar_ut.sh`, `sfod/cga.py`, `scripts/eval_rsar_severity_curve.sh` |
+| Params | `CGA_SCORER=sarclip`；`CGA_TEMPLATES=\"a noisy SAR image of a {}|this SAR patch shows a {} under interference\"`；`CORRUPT=interf_jamB_s3`；teacher=E0028；`CUDA_VISIBLE_DEVICES=0` |
+| Metrics (must save) | `eval_*.json` + jamB severity CSV |
+| Checks | 训练/测试完成；mAP 非 NaN；权重路径存在 |
+| VRAM | ~10–18 GB |
+| Total time | smoke ~15–40 min；full ~? |
+| Smoke cmd | `bash -lc 'test -f weights/sarclip/RN50/rn50_model.safetensors && test -f work_dirs/exp_rsar_baseline_interf_jamB_s3/latest.pth && conda run -n dino_sar python tools/verify_rsar_corrupt_switch.py --data-root dataset/RSAR --corrupt interf_jamB_s3 --splits train,val,test && CUDA_VISIBLE_DEVICES=0 CGA_SCORER=sarclip CGA_TEMPLATES=\"a noisy SAR image of a {}|this SAR patch shows a {} under interference\" SARCLIP_MODEL=RN50 SARCLIP_PRETRAINED=weights/sarclip/RN50/rn50_model.safetensors TEACHER_CKPT=work_dirs/exp_rsar_baseline_interf_jamB_s3/latest.pth CORRUPT=interf_jamB_s3 SMOKE=1 MAX_EPOCHS=1 N_TRAIN=50 N_VAL=50 N_TEST=50 SAMPLES_PER_GPU=2 WORKERS_PER_GPU=2 WORK_DIR=work_dirs/exp_rsar_ut_cga_sarclip_tinit_t2_interf_jamB_s3 VIS_DIR=work_dirs/vis_rsar_ut_cga_sarclip_tinit_t2_interf_jamB_s3 SPLIT_DIR=work_dirs/smoke_splits/rsar_ut_cga_sarclip_tinit_t2_interf_jamB_s3_smoke bash scripts/exp_rsar_ut.sh'` |
+| Full cmd | `bash -lc 'test -f weights/sarclip/RN50/rn50_model.safetensors && test -f work_dirs/exp_rsar_baseline_interf_jamB_s3/latest.pth && conda run -n dino_sar python tools/verify_rsar_corrupt_switch.py --data-root dataset/RSAR --corrupt interf_jamB_s3 --splits train,val,test && CUDA_VISIBLE_DEVICES=0 CGA_SCORER=sarclip CGA_TEMPLATES=\"a noisy SAR image of a {}|this SAR patch shows a {} under interference\" SARCLIP_MODEL=RN50 SARCLIP_PRETRAINED=weights/sarclip/RN50/rn50_model.safetensors TEACHER_CKPT=work_dirs/exp_rsar_baseline_interf_jamB_s3/latest.pth CORRUPT=interf_jamB_s3 SMOKE=1 MAX_EPOCHS=6 N_TRAIN=2000 N_VAL=500 N_TEST=1000 SAMPLES_PER_GPU=2 WORKERS_PER_GPU=2 WORK_DIR=work_dirs/exp_rsar_ut_cga_sarclip_tinit_t2_interf_jamB_s3 VIS_DIR=work_dirs/vis_rsar_ut_cga_sarclip_tinit_t2_interf_jamB_s3 SPLIT_DIR=work_dirs/smoke_splits/rsar_ut_cga_sarclip_tinit_t2_interf_jamB_s3_full bash scripts/exp_rsar_ut.sh && CUDA_VISIBLE_DEVICES=0 CKPT=work_dirs/exp_rsar_ut_cga_sarclip_tinit_t2_interf_jamB_s3/latest.pth CORRUPT_BASE=interf_jamB N_TEST=1000 bash scripts/eval_rsar_severity_curve.sh'` |
+| Smoke | [x] |
+| Full | [x] |
+| Logs | smoke: `work_dirs/exp_rsar_ut_cga_sarclip_tinit_t2_interf_jamB_s3/20260125_122437.log`；full: `.rd_queue/logs/J20260125-043851-3815__e0032-full.log`；train: `work_dirs/exp_rsar_ut_cga_sarclip_tinit_t2_interf_jamB_s3/20260125_142242.log` |
+| Artifacts | `work_dirs/exp_rsar_ut_cga_sarclip_tinit_t2_interf_jamB_s3/`, `work_dirs/vis_rsar_ut_cga_sarclip_tinit_t2_interf_jamB_s3/`, `work_dirs/exp_rsar_severity/exp_rsar_ut_cga_sarclip_tinit_t2_interf_jamB_s3/interf_jamB/severity_summary.csv` |
+| Results | smoke(N=50,epoch=1): mAP=0.0000（`work_dirs/exp_rsar_ut_cga_sarclip_tinit_t2_interf_jamB_s3/eval_20260125_122514.json`）；full(N_TRAIN=2000,epoch=6): mAP=0.1330（`work_dirs/exp_rsar_ut_cga_sarclip_tinit_t2_interf_jamB_s3/eval_20260125_143501.json`）；jamB severity（`work_dirs/exp_rsar_severity/exp_rsar_ut_cga_sarclip_tinit_t2_interf_jamB_s3/interf_jamB/severity_summary.csv`）mAP: clean=0.1398,s1=0.1460,s2=0.1404,s3=0.1330,s4=0.0954,s5=0.0377 |
+
+
+### E0033: RSAR UT+CGA(SARCLIP) Train (SUP clean + unsup/val/test interf_jamB_s3)
+| Field | Value |
+| --- | --- |
+| Objective | UnbiasedTeacher + CGA(SARCLIP) 在 `CORRUPT=interf_jamB_s3` 下启用 `SUP_CLEAN=1` 的 mix 方案，并跑 jamB severity 曲线 |
+| Baseline | E0032（interf-only） |
+| Model | UnbiasedTeacher + OrientedRCNN_CGA (SARCLIP scorer) |
+| Weights | `CKPT=work_dirs/exp_rsar_ut_cga_sarclip_tinit_t2_mix_interf_jamB_s3/latest.pth`；SARCLIP `weights/sarclip/RN50/rn50_model.safetensors` |
+| Code path | `scripts/exp_rsar_ut.sh`, `scripts/eval_rsar_severity_curve.sh` |
+| Params | `SUP_CLEAN=1`；`CORRUPT=interf_jamB_s3`；teacher=E0029；模板同 E0032；`CUDA_VISIBLE_DEVICES=0` |
+| Metrics (must save) | `eval_*.json` + jamB severity CSV |
+| Checks | 训练/测试完成；mAP 非 NaN |
+| VRAM | ~10–18 GB |
+| Total time | smoke ~15–40 min；full ~? |
+| Smoke cmd | `bash -lc 'test -f weights/sarclip/RN50/rn50_model.safetensors && test -f work_dirs/exp_rsar_baseline_mix_interf_jamB_s3/latest.pth && conda run -n dino_sar python tools/verify_rsar_corrupt_switch.py --data-root dataset/RSAR --corrupt interf_jamB_s3 --splits train,val,test && CUDA_VISIBLE_DEVICES=0 CGA_SCORER=sarclip CGA_TEMPLATES=\"a noisy SAR image of a {}|this SAR patch shows a {} under interference\" SARCLIP_MODEL=RN50 SARCLIP_PRETRAINED=weights/sarclip/RN50/rn50_model.safetensors TEACHER_CKPT=work_dirs/exp_rsar_baseline_mix_interf_jamB_s3/latest.pth CORRUPT=interf_jamB_s3 SUP_CLEAN=1 SMOKE=1 MAX_EPOCHS=1 N_TRAIN=50 N_VAL=50 N_TEST=50 SAMPLES_PER_GPU=2 WORKERS_PER_GPU=2 WORK_DIR=work_dirs/exp_rsar_ut_cga_sarclip_tinit_t2_mix_interf_jamB_s3 VIS_DIR=work_dirs/vis_rsar_ut_cga_sarclip_tinit_t2_mix_interf_jamB_s3 SPLIT_DIR=work_dirs/smoke_splits/rsar_ut_cga_sarclip_tinit_t2_mix_interf_jamB_s3_smoke bash scripts/exp_rsar_ut.sh'` |
+| Full cmd | `bash -lc 'test -f weights/sarclip/RN50/rn50_model.safetensors && test -f work_dirs/exp_rsar_baseline_mix_interf_jamB_s3/latest.pth && conda run -n dino_sar python tools/verify_rsar_corrupt_switch.py --data-root dataset/RSAR --corrupt interf_jamB_s3 --splits train,val,test && CUDA_VISIBLE_DEVICES=0 CGA_SCORER=sarclip CGA_TEMPLATES=\"a noisy SAR image of a {}|this SAR patch shows a {} under interference\" SARCLIP_MODEL=RN50 SARCLIP_PRETRAINED=weights/sarclip/RN50/rn50_model.safetensors TEACHER_CKPT=work_dirs/exp_rsar_baseline_mix_interf_jamB_s3/latest.pth CORRUPT=interf_jamB_s3 SUP_CLEAN=1 SMOKE=1 MAX_EPOCHS=6 N_TRAIN=2000 N_VAL=500 N_TEST=1000 SAMPLES_PER_GPU=2 WORKERS_PER_GPU=2 WORK_DIR=work_dirs/exp_rsar_ut_cga_sarclip_tinit_t2_mix_interf_jamB_s3 VIS_DIR=work_dirs/vis_rsar_ut_cga_sarclip_tinit_t2_mix_interf_jamB_s3 SPLIT_DIR=work_dirs/smoke_splits/rsar_ut_cga_sarclip_tinit_t2_mix_interf_jamB_s3_full bash scripts/exp_rsar_ut.sh && CUDA_VISIBLE_DEVICES=0 CKPT=work_dirs/exp_rsar_ut_cga_sarclip_tinit_t2_mix_interf_jamB_s3/latest.pth CORRUPT_BASE=interf_jamB N_TEST=1000 bash scripts/eval_rsar_severity_curve.sh'` |
+| Smoke | [x] |
+| Full | [x] |
+| Logs | smoke: `work_dirs/exp_rsar_ut_cga_sarclip_tinit_t2_mix_interf_jamB_s3/20260125_122548.log`；full: `.rd_queue/logs/J20260125-043851-29f5__e0033-full.log`；train: `work_dirs/exp_rsar_ut_cga_sarclip_tinit_t2_mix_interf_jamB_s3/20260125_144651.log` |
+| Artifacts | `work_dirs/exp_rsar_ut_cga_sarclip_tinit_t2_mix_interf_jamB_s3/`, `work_dirs/vis_rsar_ut_cga_sarclip_tinit_t2_mix_interf_jamB_s3/`, `work_dirs/exp_rsar_severity/exp_rsar_ut_cga_sarclip_tinit_t2_mix_interf_jamB_s3/interf_jamB/severity_summary.csv` |
+| Results | smoke(N=50,epoch=1): mAP=0.0000（`work_dirs/exp_rsar_ut_cga_sarclip_tinit_t2_mix_interf_jamB_s3/eval_20260125_122623.json`）；full(N_TRAIN=2000,epoch=6): mAP=0.2317（`work_dirs/exp_rsar_ut_cga_sarclip_tinit_t2_mix_interf_jamB_s3/eval_20260125_145932.json`）；jamB severity（`work_dirs/exp_rsar_severity/exp_rsar_ut_cga_sarclip_tinit_t2_mix_interf_jamB_s3/interf_jamB/severity_summary.csv`）mAP: clean=0.2961,s1=0.2960,s2=0.2963,s3=0.2317,s4=0.1403,s5=0.0782 |

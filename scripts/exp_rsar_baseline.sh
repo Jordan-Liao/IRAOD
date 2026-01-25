@@ -12,12 +12,21 @@ SPLIT_DIR="${SPLIT_DIR:-work_dirs/smoke_splits/rsar_baseline}"
 SMOKE="${SMOKE:-1}"
 MAX_EPOCHS="${MAX_EPOCHS:-1}"
 
+DO_TRAIN="${DO_TRAIN:-1}"
+DO_TEST="${DO_TEST:-1}"
+CKPT="${CKPT:-${WORK_DIR}/latest.pth}"
+
 SAMPLES_PER_GPU="${SAMPLES_PER_GPU:-1}"
 WORKERS_PER_GPU="${WORKERS_PER_GPU:-0}"
 
 N_TRAIN="${N_TRAIN:-50}"
 N_VAL="${N_VAL:-50}"
 N_TEST="${N_TEST:-50}"
+
+CORRUPT="${CORRUPT:-clean}"
+MIX_TRAIN="${MIX_TRAIN:-0}"
+MIX_TRAIN_CLEAN_TIMES="${MIX_TRAIN_CLEAN_TIMES:-1}"
+MIX_TRAIN_CORRUPT_TIMES="${MIX_TRAIN_CORRUPT_TIMES:-1}"
 
 mkdir -p "${WORK_DIR}" "${VIS_DIR}"
 
@@ -119,28 +128,84 @@ PY
   TEST_IMG_DIR="${SPLIT_DIR}/test/images"
 fi
 
-echo "[exp_rsar_baseline] train (ENV=${ENV_NAME}) ..."
-conda run -n "${ENV_NAME}" python train.py "${CONFIG}" --work-dir "${WORK_DIR}" \
-  --cfg-options \
-    data.samples_per_gpu="${SAMPLES_PER_GPU}" \
-    data.workers_per_gpu="${WORKERS_PER_GPU}" \
-    runner.max_epochs="${MAX_EPOCHS}" \
-    data.train.ann_file="${TRAIN_ANN_DIR}" \
-    data.train.img_prefix="${TRAIN_IMG_DIR}" \
-    data.val.ann_file="${VAL_ANN_DIR}" \
-    data.val.img_prefix="${VAL_IMG_DIR}" \
-    data.test.ann_file="${TEST_ANN_DIR}" \
-    data.test.img_prefix="${TEST_IMG_DIR}"
+if [[ "${CORRUPT}" != "clean" && "${CORRUPT}" != "none" && "${CORRUPT}" != "" ]]; then
+  echo "[exp_rsar_baseline] prepare corrupt switch images-${CORRUPT} links under ${SPLIT_DIR} ..."
+  for s in train val test; do
+    mkdir -p "${SPLIT_DIR}/${s}"
+    link_path="${SPLIT_DIR}/${s}/images-${CORRUPT}"
+    target_dir=""
+    if [[ -d "${DATA_ROOT}/${s}/images-${CORRUPT}" ]]; then
+      target_dir="$(cd "${DATA_ROOT}/${s}" && pwd)/images-${CORRUPT}"
+    fi
 
-echo "[exp_rsar_baseline] test (ENV=${ENV_NAME}) ..."
-conda run -n "${ENV_NAME}" python test.py "${CONFIG}" "${WORK_DIR}/latest.pth" \
-  --eval mAP \
-  --work-dir "${WORK_DIR}" \
-  --show-dir "${VIS_DIR}" \
-  --cfg-options \
-    data.samples_per_gpu="${SAMPLES_PER_GPU}" \
-    data.workers_per_gpu="${WORKERS_PER_GPU}" \
-    data.test.ann_file="${TEST_ANN_DIR}" \
-    data.test.img_prefix="${TEST_IMG_DIR}"
+    if [[ -n "${target_dir}" ]]; then
+      if [[ -L "${link_path}" ]]; then
+        rm -f "${link_path}"
+      fi
+      if [[ ! -e "${link_path}" ]]; then
+        ln -s "${target_dir}" "${link_path}"
+      fi
+    else
+      if [[ ! -e "${link_path}" ]]; then
+        ln -s images "${link_path}"
+      fi
+    fi
+  done
+fi
+
+# Ensure images-clean exists for mix_train (and won't be patched by corrupt switch).
+if [[ "${MIX_TRAIN}" == "1" ]]; then
+  for s in train; do
+    base_dir="$(dirname "${TRAIN_IMG_DIR}")"
+    clean_link="${base_dir}/images-clean"
+    if [[ ! -e "${clean_link}" ]]; then
+      ln -s images "${clean_link}"
+    fi
+  done
+fi
+
+echo "[exp_rsar_baseline] train (ENV=${ENV_NAME}, corrupt=${CORRUPT}, mix_train=${MIX_TRAIN}) ..."
+if [[ "${DO_TRAIN}" == "1" ]]; then
+  conda run -n "${ENV_NAME}" python train.py "${CONFIG}" --work-dir "${WORK_DIR}" \
+    --cfg-options \
+      corrupt="${CORRUPT}" \
+      mix_train="${MIX_TRAIN}" \
+      mix_train_clean_times="${MIX_TRAIN_CLEAN_TIMES}" \
+      mix_train_corrupt_times="${MIX_TRAIN_CORRUPT_TIMES}" \
+      data.samples_per_gpu="${SAMPLES_PER_GPU}" \
+      data.workers_per_gpu="${WORKERS_PER_GPU}" \
+      runner.max_epochs="${MAX_EPOCHS}" \
+      lr_config.step="[$((${MAX_EPOCHS}))]" \
+      data.train.ann_file="${TRAIN_ANN_DIR}" \
+      data.train.img_prefix="${TRAIN_IMG_DIR}" \
+      data.val.ann_file="${VAL_ANN_DIR}" \
+      data.val.img_prefix="${VAL_IMG_DIR}" \
+      data.test.ann_file="${TEST_ANN_DIR}" \
+      data.test.img_prefix="${TEST_IMG_DIR}"
+else
+  echo "[exp_rsar_baseline] skip train (DO_TRAIN=0)"
+fi
+
+if [[ "${DO_TEST}" == "1" ]]; then
+  if [[ ! -f "${CKPT}" ]]; then
+    echo "[exp_rsar_baseline] ERROR: ckpt not found: ${CKPT}" >&2
+    exit 2
+  fi
+
+  echo "[exp_rsar_baseline] test (ENV=${ENV_NAME}, corrupt=${CORRUPT}, CKPT=${CKPT}) ..."
+  conda run -n "${ENV_NAME}" python test.py "${CONFIG}" "${CKPT}" \
+    --eval mAP \
+    --work-dir "${WORK_DIR}" \
+    --show-dir "${VIS_DIR}" \
+    --cfg-options \
+      corrupt="${CORRUPT}" \
+      mix_train=0 \
+      data.samples_per_gpu="${SAMPLES_PER_GPU}" \
+      data.workers_per_gpu="${WORKERS_PER_GPU}" \
+      data.test.ann_file="${TEST_ANN_DIR}" \
+      data.test.img_prefix="${TEST_IMG_DIR}"
+else
+  echo "[exp_rsar_baseline] skip test (DO_TEST=0)"
+fi
 
 echo "[exp_rsar_baseline] done: ${WORK_DIR}"

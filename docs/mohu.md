@@ -3,6 +3,12 @@
 ## 1) Not Implemented
 ## 2) Ambiguities
 ## Resolved (archive)
+- [x] M0030 (plan: P0028): 跑完 jamB_s3 鲁棒训练矩阵（baseline / UT / UT+CGA；interf-only & mix）
+  - Evidence: `docs/experiment.md` 中 E0028–E0033 已全部完成并回填（每个实验均包含 `eval_*.json` 与对应 `work_dirs/exp_rsar_severity/.../severity_summary.csv`）。
+
+- [x] M0029 (plan: P0027): 扩展代表性 severity（interf_jamB_s3）到 train/val
+  - Evidence: 已运行 `bash scripts/prepare_rsar_interf_jamB_s3_trainval.sh` 生成 `dataset/RSAR/train/images-interf_jamB_s3/`（78837 files, 7.8G）与 `dataset/RSAR/val/images-interf_jamB_s3/`（8467 files, 1.1G）；校验 `work_dirs/sanity/rsar_corrupt_switch/{train,val}_corrupt-interf_jamB_s3.csv` 均为 missing=0/conflict=0；diff check 抽样 `identical=0`
+
 - [x] M0028 (plan: P0024): RSAR-Interference(interf_jamA) 已落盘真实扰动图像并通过校验
   - Evidence: `dataset/RSAR/{train,val,test}/images-interf_jamA/`（真实目录，文件数与 clean 一致）；`work_dirs/sanity/rsar_corrupt_switch/*_corrupt-interf_jamA.csv`（missing=0/conflict=0）；`bash scripts/prepare_rsar_interf_jamA.sh` 输出 `mean_abs_diff>0` 且 `identical=0`（抽样对比 clean != interfered）
 

@@ -238,6 +238,26 @@
   - Dependencies: 磁盘空间（噪声型扰动 PNG 体积会显著增大）
   - Evidence: `dataset/RSAR/test/images-interf_jamA_s*/`, `dataset/RSAR/test/images-interf_jamB_s*/`, `work_dirs/sanity/rsar_corrupt_switch/test_corrupt-interf_jamA_s*.csv`, `work_dirs/sanity/rsar_corrupt_switch/test_corrupt-interf_jamB_s*.csv`
 
+- [x] P0027: 扩展代表性 severity（interf_jamB_s3）到 train/val（用于混训/鲁棒训练）
+  - Summary: 基于 `E0027` 的 severity 曲线（jamB 随 severity 单调下降明显），选择中等强度 `interf_jamB_s3`，生成 `train/val` 的 `images-interf_jamB_s3/`。
+  - Rationale: 只扩展一个代表性等级，控制磁盘开销，同时为后续“混训/鲁棒训练 + 再跑 severity 曲线”提供数据基础。
+  - Scope: `scripts/prepare_rsar_interf_jamB_s3_trainval.sh`, `tools/prepare_rsar_interference.py`, `tools/verify_rsar_corrupt_switch.py`, `dataset/RSAR/{train,val}/images-interf_jamB_s3/`
+  - Acceptance: 在 `--splits train,val` 下 `missing=0 conflict=0`；抽样 diff check 通过（非全相同）。
+  - Verification: `bash scripts/prepare_rsar_interf_jamB_s3_trainval.sh`
+  - Outputs: `dataset/RSAR/train/images-interf_jamB_s3/`, `dataset/RSAR/val/images-interf_jamB_s3/`
+  - Dependencies: 磁盘空间（约 +数 GB）；CPU/IO（一次性生成 78k+ 图）
+  - Evidence: `dataset/RSAR/train/images-interf_jamB_s3/`（78837 files, 7.8G）, `dataset/RSAR/val/images-interf_jamB_s3/`（8467 files, 1.1G）, `work_dirs/sanity/rsar_corrupt_switch/train_corrupt-interf_jamB_s3.csv`, `work_dirs/sanity/rsar_corrupt_switch/val_corrupt-interf_jamB_s3.csv`
+
+- [x] P0028: RSAR jamB_s3 鲁棒训练实验矩阵（baseline / UT / UT+CGA；interf-only & mix）
+  - Summary: 在 `interf_jamB_s3` 上做两种训练数据策略：A) 仅用 interfered（interf-only）；B) clean+interf 混训（mix）。模型覆盖 baseline / UT / UT+CGA(SARCLIP)。
+  - Rationale: `E0027` 显示 jamB severity 对性能影响显著；用代表性 s3 做训练策略对比，验证“混训/课程/打分”是否提升鲁棒性曲线。
+  - Scope: `scripts/exp_rsar_baseline.sh`, `scripts/eval_rsar_severity_curve.sh`, `scripts/eval_rsar_severity_curve_baseline.sh`, `sfod/utils/patches.py`, `docs/experiment.md`
+  - Acceptance: 每个实验 smoke 跑通（训练+测试产出 `eval_*.json` 且非 NaN）；full 跑通并记录 mAP；对每个 ckpt 至少产出一份 jamB severity 曲线 CSV（clean + s1..s5）。
+  - Verification: 见 `docs/experiment.md` 中 E0028+（smoke/full cmd）。
+  - Outputs: `work_dirs/exp_rsar_*_interf_jamB_s3*/` + `work_dirs/exp_rsar_severity/<tag>/interf_jamB/severity_summary.csv`
+  - Dependencies: GPU0（避免被 `vram_fill` 占用）；磁盘（训练 ckpt + show-dir）
+  - Evidence: `docs/experiment.md` E0028–E0033；eval json: `work_dirs/exp_rsar_baseline_interf_jamB_s3/eval_20260125_132251.json`, `work_dirs/exp_rsar_baseline_mix_interf_jamB_s3/eval_20260125_125952.json`, `work_dirs/exp_rsar_ut_nocga_interf_jamB_s3/eval_20260125_134639.json`, `work_dirs/exp_rsar_ut_nocga_mix_interf_jamB_s3/eval_20260125_141022.json`, `work_dirs/exp_rsar_ut_cga_sarclip_tinit_t2_interf_jamB_s3/eval_20260125_143501.json`, `work_dirs/exp_rsar_ut_cga_sarclip_tinit_t2_mix_interf_jamB_s3/eval_20260125_145932.json`；severity csv: `work_dirs/exp_rsar_severity/exp_rsar_baseline_interf_jamB_s3/interf_jamB/severity_summary.csv`, `work_dirs/exp_rsar_severity/exp_rsar_baseline_mix_interf_jamB_s3/interf_jamB/severity_summary.csv`, `work_dirs/exp_rsar_severity/exp_rsar_ut_nocga_interf_jamB_s3/interf_jamB/severity_summary.csv`, `work_dirs/exp_rsar_severity/exp_rsar_ut_nocga_mix_interf_jamB_s3/interf_jamB/severity_summary.csv`, `work_dirs/exp_rsar_severity/exp_rsar_ut_cga_sarclip_tinit_t2_interf_jamB_s3/interf_jamB/severity_summary.csv`, `work_dirs/exp_rsar_severity/exp_rsar_ut_cga_sarclip_tinit_t2_mix_interf_jamB_s3/interf_jamB/severity_summary.csv`
+
 ## Conclusions
 - [x] C0001: DIOR 与 RSAR 均能跑通 smoke 训练/测试闭环（含可视化与 mAP）
   - Evidence required: `work_dirs/exp_smoke_dior/` 与 `work_dirs/exp_smoke_rsar/` 中日志包含 mAP 且非 NaN；`work_dirs/vis_rsar/` 有输出图。
