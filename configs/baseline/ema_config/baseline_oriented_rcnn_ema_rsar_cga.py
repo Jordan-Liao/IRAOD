@@ -1,8 +1,56 @@
 # EMA teacher config for RSAR (6 classes, CGA variant)
-# 仅定义“模型结构”，不要写 data/optimizer/schedule 等
-# 避免把 20 类 DIOR 的 data/classes 混进来导致不一致
+# - Used as `ema_config` inside UnbiasedTeacher (which only consumes `model`).
+# - Also includes `data` so it can be evaluated standalone via `test.py`.
 
-angle_version = 'le90'
+custom_imports = dict(imports=["sfod", "mmrotate.datasets.pipelines"], allow_failed_imports=False)
+
+classes = ("ship", "aircraft", "car", "tank", "bridge", "harbor")
+
+import os
+import os.path as osp
+
+_repo_root = osp.abspath(osp.join("{{ fileDirname }}", "..", "..", ".."))
+_rsar_root = os.environ.get("RSAR_DATA_ROOT", "").strip()
+if _rsar_root:
+    data_root = osp.abspath(osp.expanduser(_rsar_root)) + "/"
+else:
+    data_root = osp.abspath(osp.join(_repo_root, "dataset", "RSAR")) + "/"
+
+test_img = data_root + "test/images/"
+test_ann = data_root + "test/annfiles/"
+
+angle_version = "le90"
+
+img_norm_cfg = dict(mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
+image_size = (800, 800)
+
+test_pipeline = [
+    dict(type="LoadImageFromFile"),
+    dict(
+        type="MultiScaleFlipAug",
+        img_scale=image_size,
+        flip=False,
+        transforms=[
+            dict(type="RResize"),
+            dict(type="Normalize", **img_norm_cfg),
+            dict(type="Pad", size_divisor=32),
+            dict(type="DefaultFormatBundle"),
+            dict(type="Collect", keys=["img"]),
+        ],
+    ),
+]
+
+data = dict(
+    samples_per_gpu=1,
+    workers_per_gpu=2,
+    test=dict(
+        type="DOTADatasetAnySuffix",
+        ann_file=test_ann,
+        img_prefix=test_img,
+        classes=classes,
+        pipeline=test_pipeline,
+    ),
+)
 
 model = dict(
     type='OrientedRCNN_CGA',
