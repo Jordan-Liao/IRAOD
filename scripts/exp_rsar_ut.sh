@@ -3,13 +3,17 @@ set -euo pipefail
 
 ENV_NAME="${ENV_NAME:-iraod}"
 CONFIG="${CONFIG:-configs/unbiased_teacher/sfod/unbiased_teacher_oriented_rcnn_selftraining_cga_rsar.py}"
-DATA_ROOT="${DATA_ROOT:-dataset/RSAR}"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+DATA_ROOT="${DATA_ROOT:-${RSAR_DATA_ROOT:-${REPO_ROOT}/dataset/RSAR}}"
 WORK_DIR="${WORK_DIR:-work_dirs/exp_rsar_ut}"
 VIS_DIR="${VIS_DIR:-work_dirs/vis_rsar_ut}"
 SPLIT_DIR="${SPLIT_DIR:-work_dirs/smoke_splits/rsar_ut}"
 
-SMOKE="${SMOKE:-1}"
-MAX_EPOCHS="${MAX_EPOCHS:-1}"
+# Default to full data; set SMOKE=1 for subset runs.
+SMOKE="${SMOKE:-0}"
+# If set, override runner.max_epochs/lr_config.step; otherwise use config defaults.
+MAX_EPOCHS="${MAX_EPOCHS:-}"
 N_TRAIN="${N_TRAIN:-50}"
 N_VAL="${N_VAL:-50}"
 N_TEST="${N_TEST:-50}"
@@ -39,6 +43,9 @@ TEST_ANN_DIR="${DATA_ROOT}/test/annfiles"
 TEST_IMG_DIR="${DATA_ROOT}/test/images"
 
 if [[ "${SMOKE}" == "1" ]]; then
+  if [[ -z "${MAX_EPOCHS}" ]]; then
+    MAX_EPOCHS="1"
+  fi
   export DATA_ROOT SPLIT_DIR N_TRAIN N_VAL N_TEST
   python - <<'PY'
 import os
@@ -124,6 +131,7 @@ fi
 if [[ "${CORRUPT}" != "clean" && "${CORRUPT}" != "none" && "${CORRUPT}" != "" ]]; then
   echo "[exp_rsar_ut] prepare corrupt switch images-${CORRUPT} links under ${SPLIT_DIR} ..."
   for s in train val test; do
+    mkdir -p "${SPLIT_DIR}/${s}"
     link_path="${SPLIT_DIR}/${s}/images-${CORRUPT}"
     target_dir=""
     if [[ -d "${DATA_ROOT}/${s}/images-${CORRUPT}" ]]; then
@@ -169,8 +177,6 @@ CFG_OPTS=(
   corrupt="${CORRUPT}"
   data.samples_per_gpu="${SAMPLES_PER_GPU}"
   data.workers_per_gpu="${WORKERS_PER_GPU}"
-  runner.max_epochs="${MAX_EPOCHS}"
-  lr_config.step="[$((${MAX_EPOCHS}))]"
   data.train.ann_file="${TRAIN_ANN_DIR}"
   data.train.img_prefix="${TRAIN_IMG_DIR_SUP}"
   data.train.ann_file_u="${VAL_ANN_DIR}"
@@ -180,6 +186,14 @@ CFG_OPTS=(
   data.test.ann_file="${TEST_ANN_DIR}"
   data.test.img_prefix="${TEST_IMG_DIR}"
 )
+
+if [[ -n "${MAX_EPOCHS}" ]]; then
+  epoch_int="$((MAX_EPOCHS))"
+  CFG_OPTS+=(
+    runner.max_epochs="${epoch_int}"
+    lr_config.step="[${epoch_int}]"
+  )
+fi
 
 if [[ "${DO_TRAIN}" == "1" ]]; then
   if [[ -n "${TEACHER_CKPT}" && "${TEACHER_CKPT}" != "none" ]]; then

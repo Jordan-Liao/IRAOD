@@ -3,7 +3,9 @@ set -euo pipefail
 
 ENV_NAME="${ENV_NAME:-iraod}"
 CONFIG="configs/unbiased_teacher/sfod/unbiased_teacher_oriented_rcnn_selftraining_cga_rsar.py"
-DATA_ROOT="${DATA_ROOT:-dataset/RSAR}"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+DATA_ROOT="${DATA_ROOT:-${REPO_ROOT}/dataset/RSAR}"
 WORK_DIR="${WORK_DIR:-work_dirs/exp_smoke_rsar}"
 VIS_DIR="${VIS_DIR:-work_dirs/vis_rsar}"
 SPLIT_DIR="${SPLIT_DIR:-work_dirs/smoke_splits/rsar}"

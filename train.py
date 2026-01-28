@@ -3,6 +3,7 @@ import argparse
 import copy
 import os
 import os.path as osp
+from pathlib import Path
 import time
 import warnings
 import torch
@@ -85,6 +86,74 @@ def parse_args():
         default='none',
         help='job launcher')
     parser.add_argument('--local_rank', type=int, default=0)
+    parser.add_argument(
+        '--data-root',
+        default=os.environ.get('RSAR_DATA_ROOT') or None,
+        help='Dataset root dir (RSAR layout: {train,val,test}/{images,annfiles}). '
+             'If set, rewrites data.* paths to absolute paths under this root.',
+    )
+    parser.add_argument(
+        '--samples-per-gpu',
+        type=int,
+        default=None,
+        help='Override dataloader batch size (sets cfg.data.samples_per_gpu).',
+    )
+    parser.add_argument(
+        '--workers-per-gpu',
+        type=int,
+        default=None,
+        help='Override dataloader workers (sets cfg.data.workers_per_gpu).',
+    )
+    parser.add_argument(
+        '--max-epochs',
+        type=int,
+        default=None,
+        help='Override runner.max_epochs (also rewrites lr_config.step when it is a single-step schedule).',
+    )
+    parser.add_argument(
+        '--teacher-ckpt',
+        default=None,
+        help='Teacher init checkpoint (sets cfg.load_from and cfg.model.ema_ckpt).',
+    )
+
+    # CGA / CLIP / SARCLIP runtime knobs (mapped to env vars so existing code paths work)
+    parser.add_argument(
+        '--cga-scorer',
+        default=None,
+        help='Set CGA scorer backend (maps to $CGA_SCORER, e.g. none|clip|sarclip).',
+    )
+    parser.add_argument(
+        '--cga-templates',
+        default=None,
+        help='Prompt templates separated by "|" (maps to $CGA_TEMPLATES).',
+    )
+    parser.add_argument(
+        '--cga-tau',
+        type=float,
+        default=None,
+        help='Softmax temperature (maps to $CGA_TAU).',
+    )
+    parser.add_argument(
+        '--cga-expand-ratio',
+        type=float,
+        default=None,
+        help='Patch expand ratio (maps to $CGA_EXPAND_RATIO).',
+    )
+    parser.add_argument(
+        '--sarclip-model',
+        default=None,
+        help='SARCLIP model name (maps to $SARCLIP_MODEL, e.g. RN50).',
+    )
+    parser.add_argument(
+        '--sarclip-pretrained',
+        default=None,
+        help='Path to SARCLIP weights (maps to $SARCLIP_PRETRAINED).',
+    )
+    parser.add_argument(
+        '--clip-model',
+        default=None,
+        help='CLIP model name (maps to $CLIP_MODEL, e.g. RN50).',
+    )
     args = parser.parse_args()
     if 'LOCAL_RANK' not in os.environ:
         os.environ['LOCAL_RANK'] = str(args.local_rank)
@@ -95,9 +164,75 @@ def parse_args():
 def main():
     args = parse_args()#获取解析后的命令行参数
 
+    def _set_env_if_provided(key: str, value) -> None:
+        if value is None:
+            return
+        v = str(value).strip()
+        if v == "":
+            return
+        os.environ[key] = v
+
+    _set_env_if_provided("CGA_SCORER", args.cga_scorer)
+    _set_env_if_provided("CGA_TEMPLATES", args.cga_templates)
+    _set_env_if_provided("CGA_TAU", args.cga_tau)
+    _set_env_if_provided("CGA_EXPAND_RATIO", args.cga_expand_ratio)
+    _set_env_if_provided("SARCLIP_MODEL", args.sarclip_model)
+    _set_env_if_provided("SARCLIP_PRETRAINED", args.sarclip_pretrained)
+    _set_env_if_provided("CLIP_MODEL", args.clip_model)
+
     cfg = Config.fromfile(args.config)
     if args.cfg_options is not None:
         cfg.merge_from_dict(args.cfg_options)
+
+    def _infer_rsar_split(path_str: str):
+        p = str(path_str).replace("\\", "/")
+        for split in ("train", "val", "test"):
+            if f"/{split}/" in p:
+                return split
+        return None
+
+    def _apply_rsar_data_root(cfg: Config, data_root: str) -> None:
+        root = Path(data_root).expanduser().resolve()
+        if cfg.get("data", None) is None:
+            return
+        for split_key in ("train", "val", "test"):
+            if split_key not in cfg.data:
+                continue
+            ds = cfg.data[split_key]
+            if not isinstance(ds, dict):
+                continue
+            for field in ("ann_file", "ann_file_u", "img_prefix", "img_prefix_u"):
+                if field not in ds or not isinstance(ds[field], str):
+                    continue
+                split = _infer_rsar_split(ds[field])
+                if split is None:
+                    continue
+                subdir = "annfiles" if field.startswith("ann_") else "images"
+                ds[field] = str(root / split / subdir) + "/"
+
+    if args.data_root is not None:
+        _apply_rsar_data_root(cfg, args.data_root)
+
+    if args.samples_per_gpu is not None and cfg.get("data", None) is not None:
+        cfg.data.samples_per_gpu = int(args.samples_per_gpu)
+    if args.workers_per_gpu is not None and cfg.get("data", None) is not None:
+        cfg.data.workers_per_gpu = int(args.workers_per_gpu)
+
+    if args.max_epochs is not None and cfg.get("runner", None) is not None and "max_epochs" in cfg.runner:
+        new_max_epochs = int(args.max_epochs)
+        old_max_epochs = int(cfg.runner.max_epochs)
+        cfg.runner.max_epochs = new_max_epochs
+        if cfg.get("lr_config", None) is not None:
+            step = cfg.lr_config.get("step", None)
+            if isinstance(step, list) and len(step) == 1 and int(step[0]) == old_max_epochs:
+                cfg.lr_config.step = [new_max_epochs]
+
+    if args.teacher_ckpt is not None:
+        teacher_ckpt = str(args.teacher_ckpt).strip()
+        if teacher_ckpt != "" and teacher_ckpt.lower() != "none":
+            cfg.load_from = teacher_ckpt
+            if isinstance(cfg.get("model", None), dict) and "ema_ckpt" in cfg.model:
+                cfg.model.ema_ckpt = teacher_ckpt
 
     # set multi-process settings
     setup_multi_processes(cfg)
@@ -134,10 +269,38 @@ def main():
             cfg.gpu_ids = cfg.gpu_ids[0:1]
     else:
         distributed = True
+        # Some clusters export aggressive NCCL tuning vars globally; these can
+        # trigger NCCL "internal error" during DDP init. Prefer library defaults
+        # unless the user explicitly sets them inside the job command.
+        for k in (
+            "NCCL_P2P_DISABLE",
+            "NCCL_MIN_NCHANNELS",
+            "NCCL_P2P_LEVEL",
+            "NCCL_PROTO",
+            "NCCL_MAX_NCHANNELS",
+        ):
+            os.environ.pop(k, None)
         init_dist(args.launcher, **cfg.dist_params)
         # re-set gpu_ids with distributed training mode
         _, world_size = get_dist_info()
         cfg.gpu_ids = range(world_size)
+
+    # Optional: auto scale lr by total batch size.
+    # Enable per-config via:
+    #   auto_scale_lr = dict(enable=True, base_batch_size=16)
+    auto_scale_lr_note = None
+    auto_scale_lr_cfg = cfg.get("auto_scale_lr", None)
+    if auto_scale_lr_cfg and bool(auto_scale_lr_cfg.get("enable", False)):
+        base_bs = int(auto_scale_lr_cfg.get("base_batch_size", 0) or 0)
+        if base_bs > 0 and cfg.get("data", None) is not None and cfg.get("optimizer", None) is not None:
+            samples_per_gpu = int(cfg.data.get("samples_per_gpu", 0) or 0)
+            world_size = len(cfg.gpu_ids) if cfg.get("gpu_ids", None) is not None else 1
+            total_bs = samples_per_gpu * max(1, world_size)
+            if total_bs > 0 and "lr" in cfg.optimizer:
+                old_lr = float(cfg.optimizer["lr"])
+                new_lr = old_lr * float(total_bs) / float(base_bs)
+                cfg.optimizer["lr"] = new_lr
+                auto_scale_lr_note = dict(old_lr=old_lr, new_lr=new_lr, base_batch_size=base_bs, total_batch_size=total_bs)
 
     # create work_dir
     mmcv.mkdir_or_exist(osp.abspath(cfg.work_dir))
@@ -147,6 +310,15 @@ def main():
     timestamp = time.strftime('%Y%m%d_%H%M%S', time.localtime())
     log_file = osp.join(cfg.work_dir, f'{timestamp}.log')
     logger = get_root_logger(log_file=log_file, log_level=cfg.log_level)
+
+    if auto_scale_lr_note is not None:
+        logger.info(
+            "Auto scale lr: %.6g -> %.6g (total_bs=%s, base_bs=%s)",
+            auto_scale_lr_note["old_lr"],
+            auto_scale_lr_note["new_lr"],
+            auto_scale_lr_note["total_batch_size"],
+            auto_scale_lr_note["base_batch_size"],
+        )
 
     # init the meta dict to record some important information such as
     # environment info and seed, which will be logged  创建 meta 字典用于记录重要信息，如环境信息和随机种子等
@@ -181,6 +353,19 @@ def main():
     meta['seed'] = seed
 
     meta['exp_name'] = osp.basename(args.config)
+
+    # When loading from a checkpoint, avoid distributed init_cfg downloads
+    # (e.g. torchvision://resnet50) which may trigger extra barriers and can
+    # fail with NCCL/internal errors on some clusters.
+    if cfg.get("load_from", None):
+        try:
+            model_cfg = cfg.get("model", None)
+            if isinstance(model_cfg, dict):
+                backbone_cfg = model_cfg.get("backbone", None)
+                if isinstance(backbone_cfg, dict) and backbone_cfg.get("init_cfg", None) is not None:
+                    backbone_cfg["init_cfg"] = None
+        except Exception:
+            pass
 
     model = build_detector(
         cfg.model,

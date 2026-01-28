@@ -815,3 +815,143 @@
 | Logs | smoke: `work_dirs/exp_rsar_ut_cga_sarclip_tinit_t2_mix_interf_jamB_s3/20260125_122548.log`；full: `.rd_queue/logs/J20260125-043851-29f5__e0033-full.log`；train: `work_dirs/exp_rsar_ut_cga_sarclip_tinit_t2_mix_interf_jamB_s3/20260125_144651.log` |
 | Artifacts | `work_dirs/exp_rsar_ut_cga_sarclip_tinit_t2_mix_interf_jamB_s3/`, `work_dirs/vis_rsar_ut_cga_sarclip_tinit_t2_mix_interf_jamB_s3/`, `work_dirs/exp_rsar_severity/exp_rsar_ut_cga_sarclip_tinit_t2_mix_interf_jamB_s3/interf_jamB/severity_summary.csv` |
 | Results | smoke(N=50,epoch=1): mAP=0.0000（`work_dirs/exp_rsar_ut_cga_sarclip_tinit_t2_mix_interf_jamB_s3/eval_20260125_122623.json`）；full(N_TRAIN=2000,epoch=6): mAP=0.2317（`work_dirs/exp_rsar_ut_cga_sarclip_tinit_t2_mix_interf_jamB_s3/eval_20260125_145932.json`）；jamB severity（`work_dirs/exp_rsar_severity/exp_rsar_ut_cga_sarclip_tinit_t2_mix_interf_jamB_s3/interf_jamB/severity_summary.csv`）mAP: clean=0.2961,s1=0.2960,s2=0.2963,s3=0.2317,s4=0.1403,s5=0.0782 |
+
+
+### E0034: RSAR Full-Sample Mode + CLI Args Verification
+| Field | Value |
+| --- | --- |
+| Objective | 验证 RSAR 默认不再强制 50-sample 子集（len(train)>50），并可通过 `train.py/test.py --data-root/--cga-scorer/--sarclip-*` 等短命令运行 |
+| Baseline | N/A |
+| Model | N/A（config 解析 + dataset build） |
+| Weights | N/A |
+| Code path | `tools/verify_full_sample_mode.py`, `train.py`, `test.py`, `scripts/exp_rsar_ut.sh`, `scripts/exp_rsar_baseline.sh`, `configs/unbiased_teacher/sfod/unbiased_teacher_oriented_rcnn_selftraining_cga_rsar.py` |
+| Params | `--data-root $(pwd)/dataset/RSAR`；`--min-annfiles` |
+| Metrics (must save) | `work_dirs/sanity/full_sample_mode.json`（包含 split annfile counts + dataset len） |
+| Checks | JSON 中 `ok=true` 且 `dataset_lens.lens.train>50` |
+| VRAM | ~0 GB |
+| Total time | ~10–60 s |
+| Single-GPU script | `conda run -n iraod python tools/verify_full_sample_mode.py --config configs/unbiased_teacher/sfod/unbiased_teacher_oriented_rcnn_selftraining_cga_rsar.py --data-root "$(pwd)/dataset/RSAR"` |
+| Multi-GPU script | `N/A` |
+| Smoke cmd | `bash -lc 'conda run -n iraod python tools/verify_full_sample_mode.py --config configs/unbiased_teacher/sfod/unbiased_teacher_oriented_rcnn_selftraining_cga_rsar.py --data-root \"$(pwd)/dataset/RSAR\" --min-annfiles 51'` |
+| Full cmd | `bash -lc 'conda run -n iraod python tools/verify_full_sample_mode.py --config configs/unbiased_teacher/sfod/unbiased_teacher_oriented_rcnn_selftraining_cga_rsar.py --data-root \"$(pwd)/dataset/RSAR\" --min-annfiles 1000'` |
+| Smoke | [x] |
+| Full | [x] |
+| Logs | smoke: stdout；full: `.rd_queue/logs/J20260126-171458-539a__e0034-full.log` |
+| Artifacts | `work_dirs/sanity/full_sample_mode.json` |
+| Results | len(train)=78837, len(test)=8538（见 `work_dirs/sanity/full_sample_mode.json`） |
+
+
+### E0035: RSAR Baseline Train/Test (FULL dataset)
+| Field | Value |
+| --- | --- |
+| Objective | 用 RSAR 全量数据（train/val/test 全部样本）训练 supervised baseline，并在 full test 上评估 mAP |
+| Baseline | E0009（子集版 baseline） |
+| Model | OrientedRCNN R50-FPN (le90) |
+| Weights | `None` |
+| Code path | `configs/experiments/rsar/baseline_oriented_rcnn_rsar.py`, `train.py`, `test.py` |
+| Params | `--data-root $(pwd)/dataset/RSAR`；`--no-validate`（训练期不做 eval，末尾单独 full test） |
+| Metrics (must save) | `work_dirs/exp_rsar_baseline_full_nanfix/latest.pth`；`work_dirs/exp_rsar_baseline_full_nanfix/eval_*.json`（mAP） |
+| Checks | ckpt 与 eval json 存在；mAP 非 NaN |
+| VRAM | ~6–16 GB |
+| Total time | ~hours–days（取决于 GPU 与 IO） |
+| Single-GPU script | `CUDA_VISIBLE_DEVICES=8 conda run -n iraod python train.py configs/experiments/rsar/baseline_oriented_rcnn_rsar.py --work-dir work_dirs/exp_rsar_baseline_full_nanfix --data-root "$(pwd)/dataset/RSAR" --no-validate` |
+| Multi-GPU script | `bash -lc 'set -euo pipefail; unset NCCL_P2P_DISABLE NCCL_MIN_NCHANNELS NCCL_P2P_LEVEL NCCL_PROTO NCCL_MAX_NCHANNELS || true; DATA_ROOT=\"$(pwd)/dataset/RSAR\"; CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 conda run -n iraod torchrun --nproc_per_node=8 --master_port=29501 train.py configs/experiments/rsar/baseline_oriented_rcnn_rsar.py --work-dir work_dirs/exp_rsar_baseline_full_nanfix --data-root \"${DATA_ROOT}\" --no-validate --launcher pytorch'` |
+| Smoke cmd | 参考 E0009（子集 smoke 已通过） |
+| Full cmd | `bash -lc 'set -euo pipefail; unset NCCL_P2P_DISABLE NCCL_MIN_NCHANNELS NCCL_P2P_LEVEL NCCL_PROTO NCCL_MAX_NCHANNELS || true; DATA_ROOT=\"$(pwd)/dataset/RSAR\"; CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 conda run -n iraod torchrun --nproc_per_node=8 --master_port=29501 train.py configs/experiments/rsar/baseline_oriented_rcnn_rsar.py --work-dir work_dirs/exp_rsar_baseline_full_nanfix --data-root \"${DATA_ROOT}\" --no-validate --launcher pytorch && CUDA_VISIBLE_DEVICES=0 conda run -n iraod python test.py configs/experiments/rsar/baseline_oriented_rcnn_rsar.py work_dirs/exp_rsar_baseline_full_nanfix/latest.pth --eval mAP --work-dir work_dirs/exp_rsar_baseline_full_nanfix --data-root \"${DATA_ROOT}\"'` |
+| Smoke | [x] |
+| Full | [x] |
+| Logs | `.rd_queue/logs/J20260127-080433-13a6__e0035-full-nanfix-nccl.log`（训练 log: `work_dirs/exp_rsar_baseline_full_nanfix/20260127_160444.log`；旧跑崩: `work_dirs/exp_rsar_baseline_full/20260127_012944.log`） |
+| Artifacts | `work_dirs/exp_rsar_baseline_full_nanfix/` |
+| Results | mAP=0.6535（`work_dirs/exp_rsar_baseline_full_nanfix/eval_20260127_180332.json`） |
+
+
+### E0036: RSAR UnbiasedTeacher (CGA off) Train/Test (FULL dataset)
+| Field | Value |
+| --- | --- |
+| Objective | 用 RSAR 全量数据训练 UT（禁用 CGA），teacher 从 E0035 初始化，并在 full test 上评估 mAP |
+| Baseline | E0010（子集版 UT no-CGA） |
+| Model | UnbiasedTeacher + OrientedRCNN_CGA（但 `CGA_SCORER=none`） |
+| Weights | teacher-init: `work_dirs/exp_rsar_baseline_full_nanfix/latest.pth` |
+| Code path | `configs/unbiased_teacher/sfod/unbiased_teacher_oriented_rcnn_selftraining_cga_rsar.py`, `train.py`, `test.py` |
+| Params | `--cga-scorer none`；`--no-validate`；`--cfg-options load_from=<baseline> model.ema_ckpt=<baseline> data.samples_per_gpu=16 data.workers_per_gpu=4` |
+| Metrics (must save) | `work_dirs/exp_rsar_ut_nocga_full_nanfix_vram16/latest.pth`；`work_dirs/exp_rsar_ut_nocga_full_nanfix_vram16/eval_*.json`（mAP） |
+| Checks | ckpt 与 eval json 存在；mAP 非 NaN |
+| VRAM | ~35–47 GB（目标：尽量接近 48GB/卡） |
+| Total time | ~hours–days |
+| Single-GPU script | `CUDA_VISIBLE_DEVICES=8 conda run -n iraod python train.py configs/unbiased_teacher/sfod/unbiased_teacher_oriented_rcnn_selftraining_cga_rsar.py --work-dir work_dirs/exp_rsar_ut_nocga_full_nanfix_vram16 --data-root "$(pwd)/dataset/RSAR" --cga-scorer none --no-validate --cfg-options load_from=work_dirs/exp_rsar_baseline_full_nanfix/latest.pth model.ema_ckpt=work_dirs/exp_rsar_baseline_full_nanfix/latest.pth data.samples_per_gpu=16 data.workers_per_gpu=4` |
+| Multi-GPU script | `bash -lc 'set -euo pipefail; unset NCCL_P2P_DISABLE NCCL_MIN_NCHANNELS NCCL_P2P_LEVEL NCCL_PROTO NCCL_MAX_NCHANNELS || true; DATA_ROOT=\"$(pwd)/dataset/RSAR\"; BASELINE_CKPT=work_dirs/exp_rsar_baseline_full_nanfix/latest.pth; test -f \"${BASELINE_CKPT}\"; CUDA_VISIBLE_DEVICES=4,5,6 conda run -n iraod torchrun --nproc_per_node=3 --master_port=29502 train.py configs/unbiased_teacher/sfod/unbiased_teacher_oriented_rcnn_selftraining_cga_rsar.py --work-dir work_dirs/exp_rsar_ut_nocga_full_nanfix_vram16 --data-root \"${DATA_ROOT}\" --cga-scorer none --no-validate --launcher pytorch --cfg-options load_from=\"${BASELINE_CKPT}\" model.ema_ckpt=\"${BASELINE_CKPT}\" data.samples_per_gpu=16 data.workers_per_gpu=4'` |
+| Smoke cmd | 参考 E0010（子集 smoke 已通过） |
+| Full cmd | `bash -lc 'set -euo pipefail; unset NCCL_P2P_DISABLE NCCL_MIN_NCHANNELS NCCL_P2P_LEVEL NCCL_PROTO NCCL_MAX_NCHANNELS || true; DATA_ROOT=\"$(pwd)/dataset/RSAR\"; BASELINE_CKPT=work_dirs/exp_rsar_baseline_full_nanfix/latest.pth; test -f \"${BASELINE_CKPT}\"; CUDA_VISIBLE_DEVICES=4,5,6 conda run -n iraod torchrun --nproc_per_node=3 --master_port=29502 train.py configs/unbiased_teacher/sfod/unbiased_teacher_oriented_rcnn_selftraining_cga_rsar.py --work-dir work_dirs/exp_rsar_ut_nocga_full_nanfix_vram16 --data-root \"${DATA_ROOT}\" --cga-scorer none --no-validate --launcher pytorch --cfg-options load_from=\"${BASELINE_CKPT}\" model.ema_ckpt=\"${BASELINE_CKPT}\" data.samples_per_gpu=16 data.workers_per_gpu=4 && CUDA_VISIBLE_DEVICES=4 conda run -n iraod python test.py configs/unbiased_teacher/sfod/unbiased_teacher_oriented_rcnn_selftraining_cga_rsar.py work_dirs/exp_rsar_ut_nocga_full_nanfix_vram16/latest.pth --eval mAP --work-dir work_dirs/exp_rsar_ut_nocga_full_nanfix_vram16 --data-root \"${DATA_ROOT}\" --cga-scorer none --cfg-options load_from=None model.ema_ckpt=None'` |
+| Smoke | [x] |
+| Full | [x] |
+| Logs | `.rd_queue_ut_nocga/logs/J20260127-141036-aadb__e0036-full-vram16-nanfix.log`（训练 log: `work_dirs/exp_rsar_ut_nocga_full_nanfix_vram16/20260127_221047.log`；旧版本手动停掉: `.rd_queue_ut_nocga/logs/J20260127-080710-5fc7__e0036-full-nanfix-nccl.log`） |
+| Artifacts | `work_dirs/exp_rsar_ut_nocga_full_nanfix_vram16/` |
+| Results | mAP=0.1205（`work_dirs/exp_rsar_ut_nocga_full_nanfix_vram16/eval_20260127_231517.json`）；注：当时 `SemiDOTADataset.flag` 与 `__len__` 不一致导致 epoch 被 sampler 截断（日志为 `Epoch[1][*/177]`），且配置 `weight_l=0/use_bbox_reg=False` 使监督/回归损失恒为 0，因此该结果不可作为最终对比；修复后重跑见 E0038 |
+
+
+### E0037: RSAR UnbiasedTeacher + CGA(SARCLIP) Train/Test (FULL dataset)
+| Field | Value |
+| --- | --- |
+| Objective | 用 RSAR 全量数据训练 UT+CGA(SARCLIP)，teacher 从 E0035 初始化，并在 full test 上评估 mAP |
+| Baseline | E0016/E0019（子集版 UT+CGA(SARCLIP)） |
+| Model | UnbiasedTeacher + OrientedRCNN_CGA (SARCLIP scorer) |
+| Weights | teacher-init: `work_dirs/exp_rsar_baseline_full_nanfix/latest.pth`；SARCLIP: `weights/sarclip/RN50/rn50_model.safetensors` |
+| Code path | `configs/unbiased_teacher/sfod/unbiased_teacher_oriented_rcnn_selftraining_cga_rsar.py`, `train.py`, `test.py`, `sfod/cga.py` |
+| Params | `--cga-scorer sarclip`；`--sarclip-model RN50`；`--sarclip-pretrained weights/sarclip/RN50/rn50_model.safetensors`；`--no-validate`；`--cfg-options data.samples_per_gpu=14 data.workers_per_gpu=4` |
+| Metrics (must save) | `work_dirs/exp_rsar_ut_cga_sarclip_full_nanfix_vram14/latest.pth`；`work_dirs/exp_rsar_ut_cga_sarclip_full_nanfix_vram14/eval_*.json`（mAP） |
+| Checks | ckpt 与 eval json 存在；mAP 非 NaN；SARCLIP 权重存在 |
+| VRAM | ~35–47 GB（目标：尽量接近 48GB/卡） |
+| Total time | ~hours–days |
+| Single-GPU script | `CUDA_VISIBLE_DEVICES=8 conda run -n iraod python train.py configs/unbiased_teacher/sfod/unbiased_teacher_oriented_rcnn_selftraining_cga_rsar.py --work-dir work_dirs/exp_rsar_ut_cga_sarclip_full_nanfix_vram14 --data-root "$(pwd)/dataset/RSAR" --cga-scorer sarclip --sarclip-model RN50 --sarclip-pretrained weights/sarclip/RN50/rn50_model.safetensors --no-validate --cfg-options load_from=work_dirs/exp_rsar_baseline_full_nanfix/latest.pth model.ema_ckpt=work_dirs/exp_rsar_baseline_full_nanfix/latest.pth data.samples_per_gpu=14 data.workers_per_gpu=4` |
+| Multi-GPU script | `bash -lc 'set -euo pipefail; unset NCCL_P2P_DISABLE NCCL_MIN_NCHANNELS NCCL_P2P_LEVEL NCCL_PROTO NCCL_MAX_NCHANNELS || true; test -f weights/sarclip/RN50/rn50_model.safetensors; DATA_ROOT=\"$(pwd)/dataset/RSAR\"; BASELINE_CKPT=work_dirs/exp_rsar_baseline_full_nanfix/latest.pth; test -f \"${BASELINE_CKPT}\"; CUDA_VISIBLE_DEVICES=7,8,9 conda run -n iraod torchrun --nproc_per_node=3 --master_port=29503 train.py configs/unbiased_teacher/sfod/unbiased_teacher_oriented_rcnn_selftraining_cga_rsar.py --work-dir work_dirs/exp_rsar_ut_cga_sarclip_full_nanfix_vram14 --data-root \"${DATA_ROOT}\" --cga-scorer sarclip --sarclip-model RN50 --sarclip-pretrained weights/sarclip/RN50/rn50_model.safetensors --no-validate --launcher pytorch --cfg-options load_from=\"${BASELINE_CKPT}\" model.ema_ckpt=\"${BASELINE_CKPT}\" data.samples_per_gpu=14 data.workers_per_gpu=4'` |
+| Smoke cmd | 参考 E0016（子集 smoke 已通过） |
+| Full cmd | `bash -lc 'set -euo pipefail; unset NCCL_P2P_DISABLE NCCL_MIN_NCHANNELS NCCL_P2P_LEVEL NCCL_PROTO NCCL_MAX_NCHANNELS || true; test -f weights/sarclip/RN50/rn50_model.safetensors; DATA_ROOT=\"$(pwd)/dataset/RSAR\"; BASELINE_CKPT=work_dirs/exp_rsar_baseline_full_nanfix/latest.pth; test -f \"${BASELINE_CKPT}\"; CUDA_VISIBLE_DEVICES=7,8,9 conda run -n iraod torchrun --nproc_per_node=3 --master_port=29503 train.py configs/unbiased_teacher/sfod/unbiased_teacher_oriented_rcnn_selftraining_cga_rsar.py --work-dir work_dirs/exp_rsar_ut_cga_sarclip_full_nanfix_vram14 --data-root \"${DATA_ROOT}\" --cga-scorer sarclip --sarclip-model RN50 --sarclip-pretrained weights/sarclip/RN50/rn50_model.safetensors --no-validate --launcher pytorch --cfg-options load_from=\"${BASELINE_CKPT}\" model.ema_ckpt=\"${BASELINE_CKPT}\" data.samples_per_gpu=14 data.workers_per_gpu=4 && CUDA_VISIBLE_DEVICES=7 conda run -n iraod python test.py configs/unbiased_teacher/sfod/unbiased_teacher_oriented_rcnn_selftraining_cga_rsar.py work_dirs/exp_rsar_ut_cga_sarclip_full_nanfix_vram14/latest.pth --eval mAP --work-dir work_dirs/exp_rsar_ut_cga_sarclip_full_nanfix_vram14 --data-root \"${DATA_ROOT}\" --cga-scorer sarclip --sarclip-model RN50 --sarclip-pretrained weights/sarclip/RN50/rn50_model.safetensors --cfg-options load_from=None model.ema_ckpt=None'` |
+| Smoke | [x] |
+| Full | [x] |
+| Logs | `.rd_queue_ut_cga/logs/J20260127-141038-5d9a__e0037-full-vram14-nanfix.log`（训练 log: `work_dirs/exp_rsar_ut_cga_sarclip_full_nanfix_vram14/20260127_221049.log`；旧版本手动停掉: `.rd_queue_ut_cga/logs/J20260127-080724-ce51__e0037-full-nanfix-nccl.log`） |
+| Artifacts | `work_dirs/exp_rsar_ut_cga_sarclip_full_nanfix_vram14/` |
+| Results | mAP=0.0918（`work_dirs/exp_rsar_ut_cga_sarclip_full_nanfix_vram14/eval_20260127_231554.json`）；注：同 E0036（epoch 被截断为 `Epoch[1][*/202]` + `weight_l=0/use_bbox_reg=False`）；修复后重跑见 E0039 |
+
+
+### E0038: RSAR UnbiasedTeacher (CGA off) Train/Test (FULL dataset, FIX)
+| Field | Value |
+| --- | --- |
+| Objective | 修复 epoch 截断（`flag_len==len(dataset)`）+ 默认开启监督/回归（`weight_l=1/use_bbox_reg=True`）后，重新用 RSAR 全量数据训练 UT(no-CGA) 并在 full test 上评估 mAP（学生+EMA teacher） |
+| Baseline | E0035（supervised baseline mAP=0.6535） |
+| Model | UnbiasedTeacher + OrientedRCNN_CGA（CGA_SCORER=none） |
+| Weights | teacher-init: `work_dirs/exp_rsar_baseline_full_nanfix/latest.pth` |
+| Code path | `configs/unbiased_teacher/sfod/unbiased_teacher_oriented_rcnn_selftraining_cga_rsar.py`, `configs/baseline/ema_config/baseline_oriented_rcnn_ema_rsar_cga.py`, `train.py`, `test.py`, `sfod/semi_dota_dataset.py` |
+| Params | `--cga-scorer none`；`--teacher-ckpt <baseline>`；`--samples-per-gpu 20`；`--workers-per-gpu 4`；默认 `weight_l=1/use_bbox_reg=True` |
+| Metrics (must save) | `latest.pth`；`latest_ema.pth`；学生/EMA 各一个 `eval_*.json` |
+| Checks | 训练日志 epoch iters ≈ `78837/(20*3)=1314`（不再是 177）；监督 loss 非 0；mAP 非 NaN |
+| VRAM | 目标 ~45–48 GB/卡（RTX 4090D 48GB） |
+| Total time | 预估 ~10–12 h（3 卡） |
+| Smoke cmd | `bash -lc 'set -euo pipefail; unset NCCL_P2P_DISABLE NCCL_MIN_NCHANNELS NCCL_P2P_LEVEL NCCL_PROTO NCCL_MAX_NCHANNELS || true; DATA_ROOT=\"${RSAR_DATA_ROOT:-/mnt/SSD1_8TB/zechuan/IRAOD/dataset/RSAR}\"; BASELINE_CKPT=work_dirs/exp_rsar_baseline_full_nanfix/latest.pth; test -f \"${BASELINE_CKPT}\"; WORK_DIR=work_dirs/exp_rsar_ut_nocga_full_fix_vram20_smoke; CUDA_VISIBLE_DEVICES=4,5,6 conda run -n iraod torchrun --nproc_per_node=3 --master_port=29521 train.py configs/unbiased_teacher/sfod/unbiased_teacher_oriented_rcnn_selftraining_cga_rsar.py --work-dir \"${WORK_DIR}\" --no-validate --launcher pytorch --data-root \"${DATA_ROOT}\" --teacher-ckpt \"${BASELINE_CKPT}\" --cga-scorer none --samples-per-gpu 20 --workers-per-gpu 4 --max-epochs 1 && CUDA_VISIBLE_DEVICES=4 conda run -n iraod python test.py configs/unbiased_teacher/sfod/unbiased_teacher_oriented_rcnn_selftraining_cga_rsar.py \"${WORK_DIR}/latest.pth\" --eval mAP --work-dir \"${WORK_DIR}\" --data-root \"${DATA_ROOT}\" --cga-scorer none --cfg-options load_from=None model.ema_ckpt=None && CUDA_VISIBLE_DEVICES=4 conda run -n iraod python test.py configs/baseline/ema_config/baseline_oriented_rcnn_ema_rsar_cga.py \"${WORK_DIR}/latest_ema.pth\" --eval mAP --work-dir \"${WORK_DIR}\" --data-root \"${DATA_ROOT}\" --cga-scorer none && touch \"${WORK_DIR}/SMOKE_OK\"'` |
+| Full cmd | `bash -lc 'set -euo pipefail; unset NCCL_P2P_DISABLE NCCL_MIN_NCHANNELS NCCL_P2P_LEVEL NCCL_PROTO NCCL_MAX_NCHANNELS || true; DATA_ROOT=\"${RSAR_DATA_ROOT:-/mnt/SSD1_8TB/zechuan/IRAOD/dataset/RSAR}\"; BASELINE_CKPT=work_dirs/exp_rsar_baseline_full_nanfix/latest.pth; test -f \"${BASELINE_CKPT}\"; test -f work_dirs/exp_rsar_ut_nocga_full_fix_vram20_smoke/SMOKE_OK; WORK_DIR=work_dirs/exp_rsar_ut_nocga_full_fix_vram20; CUDA_VISIBLE_DEVICES=4,5,6 conda run -n iraod torchrun --nproc_per_node=3 --master_port=29522 train.py configs/unbiased_teacher/sfod/unbiased_teacher_oriented_rcnn_selftraining_cga_rsar.py --work-dir \"${WORK_DIR}\" --no-validate --launcher pytorch --data-root \"${DATA_ROOT}\" --teacher-ckpt \"${BASELINE_CKPT}\" --cga-scorer none --samples-per-gpu 20 --workers-per-gpu 4 && CUDA_VISIBLE_DEVICES=4 conda run -n iraod python test.py configs/unbiased_teacher/sfod/unbiased_teacher_oriented_rcnn_selftraining_cga_rsar.py \"${WORK_DIR}/latest.pth\" --eval mAP --work-dir \"${WORK_DIR}\" --data-root \"${DATA_ROOT}\" --cga-scorer none --cfg-options load_from=None model.ema_ckpt=None && CUDA_VISIBLE_DEVICES=4 conda run -n iraod python test.py configs/baseline/ema_config/baseline_oriented_rcnn_ema_rsar_cga.py \"${WORK_DIR}/latest_ema.pth\" --eval mAP --work-dir \"${WORK_DIR}\" --data-root \"${DATA_ROOT}\" --cga-scorer none'` |
+| Smoke | [ ] |
+| Full | [ ] |
+| Logs | running: `.rd_queue_ut_nocga/logs/J20260128-131634-f635__e0038-smoke-rerun2.log`；train: `work_dirs/exp_rsar_ut_nocga_full_fix_vram20_smoke/20260128_211645.log`；previous failures: `.rd_queue_ut_nocga/logs/J20260127-171316-356e__e0038-smoke.log` / `.rd_queue_ut_nocga/logs/J20260127-171657-9620__e0038-smoke-rerun.log`；full blocked: `.rd_queue_ut_nocga/logs/J20260127-171328-7855__e0038-full.log` / `.rd_queue_ut_nocga/logs/J20260127-171708-c273__e0038-full-rerun.log` |
+| Artifacts | `work_dirs/exp_rsar_ut_nocga_full_fix_vram20*/` |
+| Results | smoke previously failed: NCCL Error 3（见 logs）；fix: 在 Smoke/Full cmd 中 `unset NCCL_P2P_DISABLE NCCL_MIN_NCHANNELS NCCL_P2P_LEVEL NCCL_PROTO NCCL_MAX_NCHANNELS`；rerun2 进行中（见 running logs） |
+
+
+### E0039: RSAR UnbiasedTeacher + CGA(SARCLIP) Train/Test (FULL dataset, FIX)
+| Field | Value |
+| --- | --- |
+| Objective | 在 E0038 修复基础上，开启 CGA(SARCLIP) 以提升伪标签质量，并在 full test 上评估 mAP（学生+EMA teacher） |
+| Baseline | E0035（supervised baseline mAP=0.6535） |
+| Model | UnbiasedTeacher + OrientedRCNN_CGA (SARCLIP scorer) |
+| Weights | teacher-init: `work_dirs/exp_rsar_baseline_full_nanfix/latest.pth`；SARCLIP: `weights/sarclip/RN50/rn50_model.safetensors` |
+| Code path | `configs/unbiased_teacher/sfod/unbiased_teacher_oriented_rcnn_selftraining_cga_rsar.py`, `configs/baseline/ema_config/baseline_oriented_rcnn_ema_rsar_cga.py`, `train.py`, `test.py`, `sfod/cga.py` |
+| Params | `--cga-scorer sarclip`；`--sarclip-model RN50`；`--sarclip-pretrained weights/sarclip/RN50/rn50_model.safetensors`；`--teacher-ckpt <baseline>`；`--samples-per-gpu 18`；`--workers-per-gpu 4`；默认 `weight_l=1/use_bbox_reg=True` |
+| Metrics (must save) | `latest.pth`；`latest_ema.pth`；学生/EMA 各一个 `eval_*.json` |
+| Checks | 训练日志 epoch iters ≈ `78837/(18*3)=1460`（不再是 202）；监督 loss 非 0；mAP 非 NaN；SARCLIP 权重存在 |
+| VRAM | 目标 ~40–48 GB/卡（视 batch 上限而定） |
+| Total time | 预估 ~10–12 h（3 卡） |
+| Smoke cmd | `bash -lc 'set -euo pipefail; unset NCCL_P2P_DISABLE NCCL_MIN_NCHANNELS NCCL_P2P_LEVEL NCCL_PROTO NCCL_MAX_NCHANNELS || true; DATA_ROOT=\"${RSAR_DATA_ROOT:-/mnt/SSD1_8TB/zechuan/IRAOD/dataset/RSAR}\"; BASELINE_CKPT=work_dirs/exp_rsar_baseline_full_nanfix/latest.pth; test -f \"${BASELINE_CKPT}\"; test -f weights/sarclip/RN50/rn50_model.safetensors; WORK_DIR=work_dirs/exp_rsar_ut_cga_sarclip_full_fix_vram18_smoke; CUDA_VISIBLE_DEVICES=7,8,9 conda run -n iraod torchrun --nproc_per_node=3 --master_port=29523 train.py configs/unbiased_teacher/sfod/unbiased_teacher_oriented_rcnn_selftraining_cga_rsar.py --work-dir \"${WORK_DIR}\" --no-validate --launcher pytorch --data-root \"${DATA_ROOT}\" --teacher-ckpt \"${BASELINE_CKPT}\" --cga-scorer sarclip --sarclip-model RN50 --sarclip-pretrained weights/sarclip/RN50/rn50_model.safetensors --samples-per-gpu 18 --workers-per-gpu 4 --max-epochs 1 && CUDA_VISIBLE_DEVICES=7 conda run -n iraod python test.py configs/unbiased_teacher/sfod/unbiased_teacher_oriented_rcnn_selftraining_cga_rsar.py \"${WORK_DIR}/latest.pth\" --eval mAP --work-dir \"${WORK_DIR}\" --data-root \"${DATA_ROOT}\" --cga-scorer sarclip --sarclip-model RN50 --sarclip-pretrained weights/sarclip/RN50/rn50_model.safetensors --cfg-options load_from=None model.ema_ckpt=None && CUDA_VISIBLE_DEVICES=7 conda run -n iraod python test.py configs/baseline/ema_config/baseline_oriented_rcnn_ema_rsar_cga.py \"${WORK_DIR}/latest_ema.pth\" --eval mAP --work-dir \"${WORK_DIR}\" --data-root \"${DATA_ROOT}\" --cga-scorer sarclip --sarclip-model RN50 --sarclip-pretrained weights/sarclip/RN50/rn50_model.safetensors && touch \"${WORK_DIR}/SMOKE_OK\"'` |
+| Full cmd | `bash -lc 'set -euo pipefail; unset NCCL_P2P_DISABLE NCCL_MIN_NCHANNELS NCCL_P2P_LEVEL NCCL_PROTO NCCL_MAX_NCHANNELS || true; DATA_ROOT=\"${RSAR_DATA_ROOT:-/mnt/SSD1_8TB/zechuan/IRAOD/dataset/RSAR}\"; BASELINE_CKPT=work_dirs/exp_rsar_baseline_full_nanfix/latest.pth; test -f \"${BASELINE_CKPT}\"; test -f weights/sarclip/RN50/rn50_model.safetensors; test -f work_dirs/exp_rsar_ut_cga_sarclip_full_fix_vram18_smoke/SMOKE_OK; WORK_DIR=work_dirs/exp_rsar_ut_cga_sarclip_full_fix_vram18; CUDA_VISIBLE_DEVICES=7,8,9 conda run -n iraod torchrun --nproc_per_node=3 --master_port=29524 train.py configs/unbiased_teacher/sfod/unbiased_teacher_oriented_rcnn_selftraining_cga_rsar.py --work-dir \"${WORK_DIR}\" --no-validate --launcher pytorch --data-root \"${DATA_ROOT}\" --teacher-ckpt \"${BASELINE_CKPT}\" --cga-scorer sarclip --sarclip-model RN50 --sarclip-pretrained weights/sarclip/RN50/rn50_model.safetensors --samples-per-gpu 18 --workers-per-gpu 4 && CUDA_VISIBLE_DEVICES=7 conda run -n iraod python test.py configs/unbiased_teacher/sfod/unbiased_teacher_oriented_rcnn_selftraining_cga_rsar.py \"${WORK_DIR}/latest.pth\" --eval mAP --work-dir \"${WORK_DIR}\" --data-root \"${DATA_ROOT}\" --cga-scorer sarclip --sarclip-model RN50 --sarclip-pretrained weights/sarclip/RN50/rn50_model.safetensors --cfg-options load_from=None model.ema_ckpt=None && CUDA_VISIBLE_DEVICES=7 conda run -n iraod python test.py configs/baseline/ema_config/baseline_oriented_rcnn_ema_rsar_cga.py \"${WORK_DIR}/latest_ema.pth\" --eval mAP --work-dir \"${WORK_DIR}\" --data-root \"${DATA_ROOT}\" --cga-scorer sarclip --sarclip-model RN50 --sarclip-pretrained weights/sarclip/RN50/rn50_model.safetensors'` |
+| Smoke | [ ] |
+| Full | [ ] |
+| Logs | running: `.rd_queue_ut_cga/logs/J20260128-131644-a0a0__e0039-smoke-rerun2.log`；train: `work_dirs/exp_rsar_ut_cga_sarclip_full_fix_vram18_smoke/20260128_211654.log`；previous failures: `.rd_queue_ut_cga/logs/J20260127-171357-9a89__e0039-smoke.log` / `.rd_queue_ut_cga/logs/J20260127-171723-1c8e__e0039-smoke-rerun.log`；full blocked: `.rd_queue_ut_cga/logs/J20260127-171410-a071__e0039-full.log` / `.rd_queue_ut_cga/logs/J20260127-171737-6a00__e0039-full-rerun.log` |
+| Artifacts | `work_dirs/exp_rsar_ut_cga_sarclip_full_fix_vram18*/` |
+| Results | smoke previously failed: NCCL Error 3（见 logs）；fix: 在 Smoke/Full cmd 中 `unset NCCL_P2P_DISABLE NCCL_MIN_NCHANNELS NCCL_P2P_LEVEL NCCL_PROTO NCCL_MAX_NCHANNELS`；rerun2 进行中（见 running logs） |

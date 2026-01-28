@@ -19,7 +19,9 @@ set -euo pipefail
 
 ENV_NAME="${ENV_NAME:-iraod}"
 CONFIG="${CONFIG:-configs/unbiased_teacher/sfod/unbiased_teacher_oriented_rcnn_selftraining_cga_rsar.py}"
-DATA_ROOT="${DATA_ROOT:-dataset/RSAR}"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+DATA_ROOT="${DATA_ROOT:-${REPO_ROOT}/dataset/RSAR}"
 
 CKPT="${CKPT:-}"
 if [[ -z "${CKPT}" ]]; then

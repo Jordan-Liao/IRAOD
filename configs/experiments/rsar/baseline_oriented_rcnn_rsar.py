@@ -4,7 +4,15 @@ custom_imports = dict(imports=["sfod", "mmrotate.datasets.pipelines"], allow_fai
 classes = ("ship", "aircraft", "car", "tank", "bridge", "harbor")
 num_classes = len(classes)
 
-data_root = "dataset/RSAR/"
+import os.path as osp
+import os
+
+_repo_root = osp.abspath(osp.join("{{ fileDirname }}", "..", "..", ".."))
+_rsar_root = os.environ.get("RSAR_DATA_ROOT", "").strip()
+if _rsar_root:
+    data_root = osp.abspath(osp.expanduser(_rsar_root)) + "/"
+else:
+    data_root = osp.abspath(osp.join(_repo_root, "dataset", "RSAR")) + "/"
 train_img = data_root + "train/images/"
 train_ann = data_root + "train/annfiles/"
 val_img = data_root + "val/images/"
@@ -81,7 +89,15 @@ data = dict(
 evaluation = dict(interval=1, metric="mAP")
 
 optimizer = dict(type="SGD", lr=0.01, momentum=0.9, weight_decay=0.0001)
-optimizer_config = dict(grad_clip=None)
+optimizer_config = dict(
+    type="SkipNanOptimizerHook",
+    grad_clip=dict(max_norm=35, norm_type=2),
+    max_skips=5,
+)
+
+# Auto scale lr by total batch size (samples_per_gpu * world_size).
+# Baseline lr=0.01 is for total batch size 16 (e.g. 8 GPUs * 2 imgs/gpu).
+auto_scale_lr = dict(enable=True, base_batch_size=16)
 
 lr_config = dict(policy="step", warmup="linear", warmup_iters=100, warmup_ratio=0.001, step=[8, 11])
 runner = dict(type="EpochBasedRunner", max_epochs=12)
@@ -181,4 +197,3 @@ model = dict(
         rcnn=dict(nms_pre=2000, min_bbox_size=0, score_thr=0.05, nms=dict(iou_thr=0.1), max_per_img=2000),
     ),
 )
-

@@ -258,6 +258,19 @@
   - Dependencies: GPU0（避免被 `vram_fill` 占用）；磁盘（训练 ckpt + show-dir）
   - Evidence: `docs/experiment.md` E0028–E0033；eval json: `work_dirs/exp_rsar_baseline_interf_jamB_s3/eval_20260125_132251.json`, `work_dirs/exp_rsar_baseline_mix_interf_jamB_s3/eval_20260125_125952.json`, `work_dirs/exp_rsar_ut_nocga_interf_jamB_s3/eval_20260125_134639.json`, `work_dirs/exp_rsar_ut_nocga_mix_interf_jamB_s3/eval_20260125_141022.json`, `work_dirs/exp_rsar_ut_cga_sarclip_tinit_t2_interf_jamB_s3/eval_20260125_143501.json`, `work_dirs/exp_rsar_ut_cga_sarclip_tinit_t2_mix_interf_jamB_s3/eval_20260125_145932.json`；severity csv: `work_dirs/exp_rsar_severity/exp_rsar_baseline_interf_jamB_s3/interf_jamB/severity_summary.csv`, `work_dirs/exp_rsar_severity/exp_rsar_baseline_mix_interf_jamB_s3/interf_jamB/severity_summary.csv`, `work_dirs/exp_rsar_severity/exp_rsar_ut_nocga_interf_jamB_s3/interf_jamB/severity_summary.csv`, `work_dirs/exp_rsar_severity/exp_rsar_ut_nocga_mix_interf_jamB_s3/interf_jamB/severity_summary.csv`, `work_dirs/exp_rsar_severity/exp_rsar_ut_cga_sarclip_tinit_t2_interf_jamB_s3/interf_jamB/severity_summary.csv`, `work_dirs/exp_rsar_severity/exp_rsar_ut_cga_sarclip_tinit_t2_mix_interf_jamB_s3/interf_jamB/severity_summary.csv`
 
+- [x] P0029: RSAR 全量训练/测试默认 + 简洁命令行入口 + 绝对数据路径
+  - Summary: RSAR 的核心训练/评估默认使用全量数据（不再默认抽 50），并支持用更简洁的命令运行（`python train.py <config> ...`）——把 CGA/SARCLIP/数据根目录等参数统一放进 `train.py/test.py` 的 `parse_args()`（替代复杂 bash+环境变量）。
+  - Rationale: 当前脚本默认子集与环境变量链式调用过于复杂，容易误跑成 50-sample 结果；需要固化“smoke=子集、exp=全量”的默认行为，并提供可复现的短命令入口。
+  - Scope: `train.py`, `test.py`, `scripts/exp_rsar_ut.sh`, `scripts/exp_rsar_baseline.sh`, `configs/unbiased_teacher/sfod/unbiased_teacher_oriented_rcnn_selftraining_cga_rsar.py`, `configs/experiments/rsar/baseline_oriented_rcnn_rsar.py`, `README_experiments.md`
+  - Acceptance:
+    - `scripts/exp_rsar_baseline.sh` / `scripts/exp_rsar_ut.sh` 默认 `SMOKE=0` 时训练/评估使用全量 {train,val,test}；需要子集时显式 `SMOKE=1` 并设置 `N_TRAIN/N_VAL/N_TEST`。
+    - `train.py/test.py` 支持 `--data-root`（任意绝对路径）与 CGA/SARCLIP/CLIP 相关参数（无需额外环境变量），同时兼容旧的 env-var 方式。
+    - RSAR configs 默认 `data_root` 为绝对路径（基于 `{{ fileDirname }}`），且可被 `--data-root` 覆盖。
+  - Verification: `bash -lc 'conda run -n iraod python tools/verify_full_sample_mode.py --config configs/unbiased_teacher/sfod/unbiased_teacher_oriented_rcnn_selftraining_cga_rsar.py --data-root \"$(pwd)/dataset/RSAR\"'`
+  - Outputs: `work_dirs/sanity/full_sample_mode.json`
+  - Dependencies: conda env `iraod`, RSAR dataset
+  - Evidence: `work_dirs/sanity/full_sample_mode.json`
+
 ## Conclusions
 - [x] C0001: DIOR 与 RSAR 均能跑通 smoke 训练/测试闭环（含可视化与 mAP）
   - Evidence required: `work_dirs/exp_smoke_dior/` 与 `work_dirs/exp_smoke_rsar/` 中日志包含 mAP 且非 NaN；`work_dirs/vis_rsar/` 有输出图。
@@ -312,3 +325,9 @@
   - Experiments: E0016,E0019,E0020,E0021
   - Artifacts: `docs/experiment.md`（E0019–E0021），各 work_dir 的 `eval_*.json`
   - Evidence: `work_dirs/exp_rsar_ut_cga_clip_tinit/eval_20260121_071054.json`（CLIP, mAP=0.3094）, `work_dirs/exp_rsar_ut_cga_sarclip_tinit/eval_20260122_193952.json`（SARCLIP tmpl1, mAP=0.3088）, `work_dirs/exp_rsar_ut_cga_sarclip_tinit_t2/eval_20260122_194541.json`（SARCLIP tmpl2, mAP=0.3119）, `work_dirs/exp_rsar_ut_cga_sarclip_tinit/eval_20260122_194635.json`（no-cache eval, mAP=0.3088）, `.rd_queue/logs/J20260122-113351-bff0__e0021-full.log`（no-cache eval real=62.63s）
+
+- [x] C0010: RSAR 训练/评估入口支持全量数据 + 简洁命令行 + 绝对数据路径
+  - Evidence required: 验证脚本确认 RSAR 默认不再强制子集（len(train)>50），并可用 `--data-root` 与 `--cga-scorer/--sarclip-*` 等短命令运行。
+  - Experiments: E0034
+  - Artifacts: `work_dirs/sanity/full_sample_mode.json`
+  - Evidence: `work_dirs/sanity/full_sample_mode.json`, `.rd_queue/logs/J20260126-171458-539a__e0034-full.log`

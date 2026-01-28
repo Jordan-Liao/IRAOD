@@ -15,9 +15,14 @@ conda run -n iraod python tools/env_snapshot.py --out-dir docs
 
 ## 1. 数据
 
-数据目录固定为：
+默认数据目录为仓库内：
 - `dataset/DIOR`
 - `dataset/RSAR`
+
+如需使用其它位置的数据（绝对路径），推荐：
+- 训练/评估：`train.py/test.py --data-root /abs/path/to/RSAR`
+- bash 脚本：`DATA_ROOT=/abs/path/to/RSAR bash scripts/exp_rsar_ut.sh`
+- 或设置一次环境变量：`export RSAR_DATA_ROOT=/abs/path/to/RSAR`（此后可省略 `--data-root` / `DATA_ROOT`）
 
 校验命令：
 ```bash
@@ -39,10 +44,23 @@ DIOR：
 
 RSAR：
 - Baseline（监督）：`bash scripts/exp_rsar_baseline.sh`
-- UT（可通过 `CGA_SCORER=none|clip` 控制）：`bash scripts/exp_rsar_ut.sh`
+- UT：`bash scripts/exp_rsar_ut.sh`
+
+也可直接使用更简洁的 Python 命令（推荐）：
+```bash
+# 例：RSAR UT + CGA(SARCLIP)
+conda run -n iraod python train.py configs/unbiased_teacher/sfod/unbiased_teacher_oriented_rcnn_selftraining_cga_rsar.py \\
+  --work-dir work_dirs/exp_rsar_ut_cga_sarclip \\
+  --data-root /home/storageSDA1/aaa/dataset/RSAR \\
+  --cga-scorer sarclip \\
+  --sarclip-model RN50 \\
+  --sarclip-pretrained weights/sarclip/RN50/rn50_model.safetensors \\
+  --cfg-options corrupt="AFM"
+```
 
 说明：
-- 所有脚本默认 `SMOKE=1` 并使用子集；调大 `N/N_TRAIN/N_TEST/MAX_EPOCHS` 即可扩充规模。
+- `scripts/smoke_*.sh` 默认 `SMOKE=1`（子集）。
+- `scripts/exp_rsar_baseline.sh` / `scripts/exp_rsar_ut.sh` 默认 `SMOKE=0`（全量）；需要子集时显式 `SMOKE=1` 并设置 `N_TRAIN/N_VAL/N_TEST`。
 - `SAMPLES_PER_GPU` / `WORKERS_PER_GPU` 可通过环境变量覆盖（见各 `scripts/exp_*.sh`）。
 
 ## 3. 结果汇总与可视化

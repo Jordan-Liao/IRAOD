@@ -55,14 +55,17 @@ class SemiIterBasedRunner(IterBasedRunner):
         optimizer = self.optimizer if save_optimizer else None
         save_checkpoint(self.model, filepath, optimizer=optimizer, meta=meta)
         filepath_ema = filepath[:-4] + '_ema.pth'
+        ema_saved = False
         if is_module_wrapper(self.model):
             use_ema = hasattr(self.model.module, 'ema_model') and self.model.module.ema_model is not None
             if use_ema:
                 save_checkpoint(self.model.module.ema_model, filepath_ema, optimizer=optimizer, meta=meta)
+                ema_saved = True
         else:
             use_ema = hasattr(self.model, 'ema_model') and self.model.ema_model is not None
             if use_ema:
                 save_checkpoint(self.model.ema_model, filepath_ema, optimizer=optimizer, meta=meta)
+                ema_saved = True
         # in some environments, `os.symlink` is not supported, you may need to
         # set `create_symlink` to False
         if create_symlink:
@@ -71,6 +74,13 @@ class SemiIterBasedRunner(IterBasedRunner):
                 mmcv.symlink(filename, dst_file)
             else:
                 shutil.copy(filepath, dst_file)
+            if ema_saved:
+                dst_file_ema = osp.join(out_dir, 'latest_ema.pth')
+                filename_ema = osp.basename(filepath_ema)
+                if platform.system() != 'Windows':
+                    mmcv.symlink(filename_ema, dst_file_ema)
+                else:
+                    shutil.copy(filepath_ema, dst_file_ema)
 
 
 @RUNNERS.register_module()
@@ -96,14 +106,17 @@ class SemiEpochBasedRunner(EpochBasedRunner):
         optimizer = self.optimizer if save_optimizer else None
         save_checkpoint(self.model, filepath, optimizer=optimizer, meta=meta)
         filepath_ema = filepath[:-4] + '_ema.pth'
+        ema_saved = False
         if is_module_wrapper(self.model):
             use_ema = hasattr(self.model.module, 'ema_model') and self.model.module.ema_model is not None
             if use_ema:
                 save_checkpoint(self.model.module.ema_model, filepath_ema, optimizer=optimizer, meta=meta)
+                ema_saved = True
         else:
             use_ema = hasattr(self.model, 'ema_model') and self.model.ema_model is not None
             if use_ema:
                 save_checkpoint(self.model.ema_model, filepath_ema, optimizer=optimizer, meta=meta)
+                ema_saved = True
         # in some environments, `os.symlink` is not supported, you may need to
         # set `create_symlink` to False
         if create_symlink:
@@ -112,3 +125,10 @@ class SemiEpochBasedRunner(EpochBasedRunner):
                 mmcv.symlink(filename, dst_file)
             else:
                 shutil.copy(filepath, dst_file)
+            if ema_saved:
+                dst_file_ema = osp.join(out_dir, 'latest_ema.pth')
+                filename_ema = osp.basename(filepath_ema)
+                if platform.system() != 'Windows':
+                    mmcv.symlink(filename_ema, dst_file_ema)
+                else:
+                    shutil.copy(filepath_ema, dst_file_ema)

@@ -3,6 +3,8 @@
 ## 1) Not Implemented
 ## 2) Ambiguities
 ## Resolved (archive)
+- [x] M0031 (plan: P0029): RSAR 默认全量/短命令入口/绝对数据根目录尚未可验证（缺少 verify 脚本 + full-corrupt 兜底）
+  - Evidence: `conda run -n iraod python tools/verify_full_sample_mode.py --config configs/unbiased_teacher/sfod/unbiased_teacher_oriented_rcnn_selftraining_cga_rsar.py --data-root "$(pwd)/dataset/RSAR"` 通过；输出 `work_dirs/sanity/full_sample_mode.json`（len(train)=78837, len(test)=8538）。
 - [x] M0030 (plan: P0028): 跑完 jamB_s3 鲁棒训练矩阵（baseline / UT / UT+CGA；interf-only & mix）
   - Evidence: `docs/experiment.md` 中 E0028–E0033 已全部完成并回填（每个实验均包含 `eval_*.json` 与对应 `work_dirs/exp_rsar_severity/.../severity_summary.csv`）。
 

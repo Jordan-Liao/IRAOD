@@ -16,7 +16,9 @@ set -euo pipefail
 
 ENV_NAME="${ENV_NAME:-iraod}"
 CONFIG="${CONFIG:-configs/experiments/rsar/baseline_oriented_rcnn_rsar.py}"
-DATA_ROOT="${DATA_ROOT:-dataset/RSAR}"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+DATA_ROOT="${DATA_ROOT:-${REPO_ROOT}/dataset/RSAR}"
 
 CKPT="${CKPT:-}"
 if [[ -z "${CKPT}" ]]; then

@@ -29,6 +29,8 @@ CUDA_VARIANT="${CUDA_VARIANT:-cu118}" # cu118 | cpu
 TORCH_VERSION="${TORCH_VERSION:-2.0.1}"
 TORCHVISION_VERSION="${TORCHVISION_VERSION:-0.15.2}"
 MMCV_VERSION="${MMCV_VERSION:-1.7.2}"
+NUMPY_VERSION="${NUMPY_VERSION:-1.26.4}"
+OPENCV_HEADLESS_VERSION="${OPENCV_HEADLESS_VERSION:-4.11.0.86}"
 
 FORCE_RECREATE="${FORCE_RECREATE:-0}"
 
@@ -60,6 +62,9 @@ conda activate "${ENV_NAME}"
 
 python -m pip install --upgrade pip setuptools wheel
 
+# Keep numpy on 1.x: opencv/mmcv wheels are not yet compatible with numpy>=2.
+pip install "numpy==${NUMPY_VERSION}"
+
 if [[ "${CUDA_VARIANT}" == "cpu" ]]; then
   TORCH_INDEX_URL="https://download.pytorch.org/whl/cpu"
   MMCV_INDEX_URL="https://download.openmmlab.com/mmcv/dist/cpu/torch2.0/index.html"
@@ -77,6 +82,11 @@ mim install "mmcv-full==${MMCV_VERSION}" -f "${MMCV_INDEX_URL}"
 
 echo "[setup_env_iraod] installing repo requirements ..."
 pip install -r "${REPO_ROOT}/requirements.txt"
+
+# Some deps (e.g. albumentations) may pull an opencv-python-headless that
+# requires numpy>=2; pin back to a numpy1-compatible wheel.
+pip install "numpy==${NUMPY_VERSION}" "opencv-python-headless==${OPENCV_HEADLESS_VERSION}"
+pip uninstall -y opencv-python || true
 
 echo "[setup_env_iraod] verifying core versions ..."
 python -c "import sys, torch, mmcv, mmdet, mmrotate; print('python', sys.version); print('torch', torch.__version__, 'cuda', torch.version.cuda, 'avail', torch.cuda.is_available()); print('mmcv', mmcv.__version__); print('mmdet', mmdet.__version__); print('mmrotate', mmrotate.__version__)"

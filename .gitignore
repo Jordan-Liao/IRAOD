@@ -9,7 +9,7 @@ work_dirs/*
 work_dirs/results/*
 !work_dirs/results/metrics.csv
 !work_dirs/results/ablation_table.md
-.rd_queue/
+.rd_queue*/
 
 # === Weights (downloaded artifacts) ===
 baseline/

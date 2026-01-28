@@ -5,12 +5,15 @@ ENV_NAME="${ENV_NAME:-iraod}"
 CONFIG="${CONFIG:-configs/experiments/rsar/baseline_oriented_rcnn_rsar.py}"
 WORK_DIR="${WORK_DIR:-work_dirs/exp_rsar_baseline}"
 VIS_DIR="${VIS_DIR:-work_dirs/vis_rsar_baseline}"
-DATA_ROOT="${DATA_ROOT:-dataset/RSAR}"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+DATA_ROOT="${DATA_ROOT:-${RSAR_DATA_ROOT:-${REPO_ROOT}/dataset/RSAR}}"
 SPLIT_DIR="${SPLIT_DIR:-work_dirs/smoke_splits/rsar_baseline}"
 
-# Default to a quick smoke subset; set SMOKE=0 for full data.
-SMOKE="${SMOKE:-1}"
-MAX_EPOCHS="${MAX_EPOCHS:-1}"
+# Default to full data; set SMOKE=1 for subset runs.
+SMOKE="${SMOKE:-0}"
+# If set, override runner.max_epochs/lr_config.step; otherwise use config defaults.
+MAX_EPOCHS="${MAX_EPOCHS:-}"
 
 DO_TRAIN="${DO_TRAIN:-1}"
 DO_TEST="${DO_TEST:-1}"
@@ -38,6 +41,9 @@ TEST_ANN_DIR="${DATA_ROOT}/test/annfiles"
 TEST_IMG_DIR="${DATA_ROOT}/test/images"
 
 if [[ "${SMOKE}" == "1" ]]; then
+  if [[ -z "${MAX_EPOCHS}" ]]; then
+    MAX_EPOCHS="1"
+  fi
   mkdir -p "${SPLIT_DIR}"
   export DATA_ROOT SPLIT_DIR N_TRAIN N_VAL N_TEST
 
@@ -166,22 +172,31 @@ fi
 
 echo "[exp_rsar_baseline] train (ENV=${ENV_NAME}, corrupt=${CORRUPT}, mix_train=${MIX_TRAIN}) ..."
 if [[ "${DO_TRAIN}" == "1" ]]; then
+  CFG_OPTS=(
+    corrupt="${CORRUPT}"
+    mix_train="${MIX_TRAIN}"
+    mix_train_clean_times="${MIX_TRAIN_CLEAN_TIMES}"
+    mix_train_corrupt_times="${MIX_TRAIN_CORRUPT_TIMES}"
+    data.samples_per_gpu="${SAMPLES_PER_GPU}"
+    data.workers_per_gpu="${WORKERS_PER_GPU}"
+    data.train.ann_file="${TRAIN_ANN_DIR}"
+    data.train.img_prefix="${TRAIN_IMG_DIR}"
+    data.val.ann_file="${VAL_ANN_DIR}"
+    data.val.img_prefix="${VAL_IMG_DIR}"
+    data.test.ann_file="${TEST_ANN_DIR}"
+    data.test.img_prefix="${TEST_IMG_DIR}"
+  )
+
+  if [[ -n "${MAX_EPOCHS}" ]]; then
+    epoch_int="$((MAX_EPOCHS))"
+    CFG_OPTS+=(
+      runner.max_epochs="${epoch_int}"
+      lr_config.step="[${epoch_int}]"
+    )
+  fi
+
   conda run -n "${ENV_NAME}" python train.py "${CONFIG}" --work-dir "${WORK_DIR}" \
-    --cfg-options \
-      corrupt="${CORRUPT}" \
-      mix_train="${MIX_TRAIN}" \
-      mix_train_clean_times="${MIX_TRAIN_CLEAN_TIMES}" \
-      mix_train_corrupt_times="${MIX_TRAIN_CORRUPT_TIMES}" \
-      data.samples_per_gpu="${SAMPLES_PER_GPU}" \
-      data.workers_per_gpu="${WORKERS_PER_GPU}" \
-      runner.max_epochs="${MAX_EPOCHS}" \
-      lr_config.step="[$((${MAX_EPOCHS}))]" \
-      data.train.ann_file="${TRAIN_ANN_DIR}" \
-      data.train.img_prefix="${TRAIN_IMG_DIR}" \
-      data.val.ann_file="${VAL_ANN_DIR}" \
-      data.val.img_prefix="${VAL_IMG_DIR}" \
-      data.test.ann_file="${TEST_ANN_DIR}" \
-      data.test.img_prefix="${TEST_IMG_DIR}"
+    --cfg-options "${CFG_OPTS[@]}"
 else
   echo "[exp_rsar_baseline] skip train (DO_TRAIN=0)"
 fi

@@ -161,7 +161,10 @@ class SemiDOTADataset(Dataset):
         self.pipeline_u   = Compose(pipeline_u or [])
         self.pipeline_u_1 = Compose(pipeline_u_1) if pipeline_u_1 else None
 
-        self.flag = getattr(self.dota_unlabeled, 'flag', None)
+        # NOTE: mmcv/mmdet group samplers rely on `len(dataset.flag) == len(dataset)`.
+        # This dataset's `__len__` follows the labeled set, so we must mirror the
+        # labeled flag here; otherwise the sampler may silently truncate the epoch.
+        self.flag = getattr(self.dota_labeled, 'flag', None)
 
     def __len__(self):
         return len(self.dota_labeled)

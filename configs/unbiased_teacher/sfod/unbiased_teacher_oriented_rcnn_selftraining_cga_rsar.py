@@ -2,6 +2,8 @@
 custom_imports = dict(imports=['sfod','mmrotate.datasets.pipelines'], allow_failed_imports=False)#
 
 import torchvision.transforms as transforms
+import os
+import os.path as osp
 
 # ------------------ 基本训练超参 ------------------
 gpu = 1
@@ -18,9 +20,15 @@ classes = ('ship', 'aircraft', 'car', 'tank', 'bridge', 'harbor')
 # 默认使用仓库内的相对路径（推荐通过 `tools/verify_dataset_layout.py` 校验）：
 #   dataset/RSAR/{train,val,test}/{images,annfiles}
 #
-# 也可在运行时通过脚本覆盖（例如 `scripts/exp_rsar_ut.sh` 会用 `--cfg-options` 注入
-# ann/img 路径，从而无需修改 config）。
-data_root = 'dataset/RSAR/'
+# 也可在运行时覆盖：推荐用 `train.py/test.py --data-root /abs/path/to/RSAR`。
+# 注意：mmcv 会把 config 复制到临时目录执行，所以这里用 `{{ fileDirname }}`
+# 来拿到“原始 config 文件所在目录”的真实路径。
+_repo_root = osp.abspath(osp.join('{{ fileDirname }}', '..', '..', '..'))
+_rsar_root = os.environ.get("RSAR_DATA_ROOT", "").strip()
+if _rsar_root:
+    data_root = osp.abspath(osp.expanduser(_rsar_root)) + "/"
+else:
+    data_root = osp.abspath(osp.join(_repo_root, "dataset", "RSAR")) + "/"
 
 train_img = data_root + 'train/images/'
 train_ann = data_root + 'train/annfiles/'
@@ -152,9 +160,15 @@ data = dict(
 evaluation = dict(interval=test_interval, metric='mAP')
 
 # ------------------ 优化器 / 训练策略 ------------------
-learning_rate = 0.02 * samples_per_gpu * gpu / 32
-optimizer = dict(type='SGD', lr=learning_rate, momentum=0.9, weight_decay=0.0001)
-optimizer_config = dict(grad_clip=None)
+# Base lr=0.02 for total batch size 32 (e.g. 16 GPUs * 2 imgs/gpu).
+optimizer = dict(type='SGD', lr=0.02, momentum=0.9, weight_decay=0.0001)
+# Auto scale lr by total batch size (samples_per_gpu * world_size).
+auto_scale_lr = dict(enable=True, base_batch_size=32)
+optimizer_config = dict(
+    type='SkipNanOptimizerHook',
+    grad_clip=dict(max_norm=35, norm_type=2),
+    max_skips=20,
+)
 
 lr_config = dict(
     policy='step',
@@ -190,11 +204,13 @@ model = dict(
     ema_config=ema_config,
     ema_ckpt=load_from,
     cfg=dict(
-        weight_l=0,           # SFOD: 仅用无监督损失
+        # NOTE: RSAR 全量训练默认保留监督分支，避免纯伪标签训练导致性能塌陷。
+        weight_l=1.0,
         weight_u=1,
         debug=False,
         score_thr=score,
-        use_bbox_reg=False,
+        # 伪标签回归通常能显著提升定位质量（低 mAP 常见根因之一是 bbox 回归被关掉）。
+        use_bbox_reg=True,
     ),
     backbone=dict(
         type='ResNet', depth=50, num_stages=4, out_indices=(0, 1, 2, 3),

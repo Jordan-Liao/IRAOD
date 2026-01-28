@@ -2,6 +2,7 @@
 import argparse
 import os
 import os.path as osp
+from pathlib import Path
 import time
 import warnings
 
@@ -92,6 +93,63 @@ def parse_args():
         default='none',
         help='job launcher')
     parser.add_argument('--local_rank', type=int, default=0)
+    parser.add_argument(
+        '--data-root',
+        default=os.environ.get('RSAR_DATA_ROOT') or None,
+        help='Dataset root dir (RSAR layout: {train,val,test}/{images,annfiles}). '
+             'If set, rewrites data.* paths to absolute paths under this root.',
+    )
+    parser.add_argument(
+        '--samples-per-gpu',
+        type=int,
+        default=None,
+        help='Override test dataloader batch size (sets cfg.data.test.samples_per_gpu).',
+    )
+    parser.add_argument(
+        '--workers-per-gpu',
+        type=int,
+        default=None,
+        help='Override dataloader workers (sets cfg.data.workers_per_gpu).',
+    )
+
+    # CGA / CLIP / SARCLIP runtime knobs (mapped to env vars so existing code paths work)
+    parser.add_argument(
+        '--cga-scorer',
+        default=None,
+        help='Set CGA scorer backend (maps to $CGA_SCORER, e.g. none|clip|sarclip).',
+    )
+    parser.add_argument(
+        '--cga-templates',
+        default=None,
+        help='Prompt templates separated by "|" (maps to $CGA_TEMPLATES).',
+    )
+    parser.add_argument(
+        '--cga-tau',
+        type=float,
+        default=None,
+        help='Softmax temperature (maps to $CGA_TAU).',
+    )
+    parser.add_argument(
+        '--cga-expand-ratio',
+        type=float,
+        default=None,
+        help='Patch expand ratio (maps to $CGA_EXPAND_RATIO).',
+    )
+    parser.add_argument(
+        '--sarclip-model',
+        default=None,
+        help='SARCLIP model name (maps to $SARCLIP_MODEL, e.g. RN50).',
+    )
+    parser.add_argument(
+        '--sarclip-pretrained',
+        default=None,
+        help='Path to SARCLIP weights (maps to $SARCLIP_PRETRAINED).',
+    )
+    parser.add_argument(
+        '--clip-model',
+        default=None,
+        help='CLIP model name (maps to $CLIP_MODEL, e.g. RN50).',
+    )
     args = parser.parse_args()
     if 'LOCAL_RANK' not in os.environ:
         os.environ['LOCAL_RANK'] = str(args.local_rank)
@@ -108,6 +166,22 @@ def main():
          'results / save the results) with the argument "--out", "--eval"'
          ', "--format-only", "--show" or "--show-dir"')
 
+    def _set_env_if_provided(key: str, value) -> None:
+        if value is None:
+            return
+        v = str(value).strip()
+        if v == "":
+            return
+        os.environ[key] = v
+
+    _set_env_if_provided("CGA_SCORER", args.cga_scorer)
+    _set_env_if_provided("CGA_TEMPLATES", args.cga_templates)
+    _set_env_if_provided("CGA_TAU", args.cga_tau)
+    _set_env_if_provided("CGA_EXPAND_RATIO", args.cga_expand_ratio)
+    _set_env_if_provided("SARCLIP_MODEL", args.sarclip_model)
+    _set_env_if_provided("SARCLIP_PRETRAINED", args.sarclip_pretrained)
+    _set_env_if_provided("CLIP_MODEL", args.clip_model)
+
     if args.eval and args.format_only:
         raise ValueError('--eval and --format_only cannot be both specified')
 
@@ -117,6 +191,47 @@ def main():
     cfg = Config.fromfile(args.config)
     if args.cfg_options is not None:
         cfg.merge_from_dict(args.cfg_options)
+
+    def _infer_rsar_split(path_str: str):
+        p = str(path_str).replace("\\", "/")
+        for split in ("train", "val", "test"):
+            if f"/{split}/" in p:
+                return split
+        return None
+
+    def _apply_rsar_data_root(cfg: Config, data_root: str) -> None:
+        root = Path(data_root).expanduser().resolve()
+        if cfg.get("data", None) is None:
+            return
+        for split_key in ("train", "val", "test"):
+            if split_key not in cfg.data:
+                continue
+            ds = cfg.data[split_key]
+            if not isinstance(ds, dict):
+                continue
+            for field in ("ann_file", "ann_file_u", "img_prefix", "img_prefix_u"):
+                if field not in ds or not isinstance(ds[field], str):
+                    continue
+                split = _infer_rsar_split(ds[field])
+                if split is None:
+                    continue
+                subdir = "annfiles" if field.startswith("ann_") else "images"
+                ds[field] = str(root / split / subdir) + "/"
+
+    if args.data_root is not None:
+        _apply_rsar_data_root(cfg, args.data_root)
+
+    if args.workers_per_gpu is not None and cfg.get("data", None) is not None:
+        cfg.data.workers_per_gpu = int(args.workers_per_gpu)
+
+    if args.samples_per_gpu is not None and cfg.get("data", None) is not None and "test" in cfg.data:
+        spg = int(args.samples_per_gpu)
+        if isinstance(cfg.data.test, dict):
+            cfg.data.test.samples_per_gpu = spg
+        elif isinstance(cfg.data.test, (list, tuple)):
+            for ds_cfg in cfg.data.test:
+                if isinstance(ds_cfg, dict):
+                    ds_cfg["samples_per_gpu"] = spg
 
     cfg = compat_cfg(cfg)
 
