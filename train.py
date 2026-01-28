@@ -386,6 +386,17 @@ def main():
             CLASSES=datasets[0].CLASSES)
     # add an attribute for visualization convenience
     model.CLASSES = datasets[0].CLASSES
+    # Propagate classes into EMA/teacher model (needed by CGA scorers which use
+    # teacher.simple_test(with_cga=True) and rely on `self.CLASSES` for prompts).
+    if hasattr(model, "ema_model") and getattr(model, "ema_model") is not None:
+        try:
+            ema = getattr(model, "ema_model")
+            if hasattr(ema, "module"):
+                ema.module.CLASSES = datasets[0].CLASSES
+            else:
+                ema.CLASSES = datasets[0].CLASSES
+        except Exception:
+            pass
     train_detector(
         model,
         datasets,

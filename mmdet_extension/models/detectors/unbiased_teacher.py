@@ -50,8 +50,10 @@ class UnbiasedTeacher(SemiTwoStageDetector):
         # hyper-parameter
         self.score_thr = cfg.get('score_thr', 0.7)
         self.weight_u = cfg.get('weight_u', 2.0)
-        self.weight_l = cfg.get('weight_l', 0.0)
-        self.use_bbox_reg = cfg.get('use_bbox_reg', False)
+        # Safe defaults: keep supervised branch on and allow bbox regression on pseudo labels.
+        # (Both being off can easily collapse training to near-random mAP.)
+        self.weight_l = cfg.get('weight_l', 1.0)
+        self.use_bbox_reg = cfg.get('use_bbox_reg', True)
         self.momentum = cfg.get('momentum', 0.998)
 
         # analysis
