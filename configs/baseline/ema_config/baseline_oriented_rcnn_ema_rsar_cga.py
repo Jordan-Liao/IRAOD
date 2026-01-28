@@ -43,6 +43,13 @@ test_pipeline = [
 data = dict(
     samples_per_gpu=1,
     workers_per_gpu=2,
+    val=dict(
+        type="DOTADatasetAnySuffix",
+        ann_file=test_ann,
+        img_prefix=test_img,
+        classes=classes,
+        pipeline=test_pipeline,
+    ),
     test=dict(
         type="DOTADatasetAnySuffix",
         ann_file=test_ann,
@@ -51,6 +58,9 @@ data = dict(
         pipeline=test_pipeline,
     ),
 )
+
+# For mmrotate compat_cfg (test.py) compatibility.
+runner = dict(type="EpochBasedRunner", max_epochs=12)
 
 model = dict(
     type='OrientedRCNN_CGA',
