@@ -204,7 +204,7 @@ We thank the authors of the following works for their open-source contributions:
 
 - [MMRotate](https://github.com/open-mmlab/mmrotate) - Rotated object detection framework
 - [DOTA-C](https://github.com/hehaodong530/DOTA-C) - Corruption robustness benchmark
-- [Unbiased Teacher](https://arxiv.org/abs/2102.05622) - Semi-supervised learning method
+- [Unbiased Teacher](https://github.com/facebookresearch/unbiased-teacher) - Semi-supervised learning method
 
 
 ---
