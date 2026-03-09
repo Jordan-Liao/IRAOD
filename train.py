@@ -85,7 +85,7 @@ def parse_args():
         choices=['none', 'pytorch', 'slurm', 'mpi'],
         default='none',
         help='job launcher')
-    parser.add_argument('--local_rank', type=int, default=0)
+    parser.add_argument('--local_rank', '--local-rank', type=int, default=0)
     parser.add_argument(
         '--data-root',
         default=os.environ.get('RSAR_DATA_ROOT') or None,
@@ -266,7 +266,7 @@ def main():
                 f'We treat {cfg.gpu_ids} as gpu-ids, and reset to '
                 f'{cfg.gpu_ids[0:1]} as gpu-ids to avoid potential error in '
                 'non-distribute training time.')
-            cfg.gpu_ids = cfg.gpu_ids[0:1]
+            pass  # cfg.gpu_ids = cfg.gpu_ids[0:1]  # disabled to allow DP multi-GPU
     else:
         distributed = True
         # Some clusters export aggressive NCCL tuning vars globally; these can
@@ -305,7 +305,8 @@ def main():
     # create work_dir
     mmcv.mkdir_or_exist(osp.abspath(cfg.work_dir))
     # dump config
-    cfg.dump(osp.join(cfg.work_dir, osp.basename(args.config)))
+    # dump config - skip to avoid truncating file on serialization error
+    pass
     # init the logger before other steps
     timestamp = time.strftime('%Y%m%d_%H%M%S', time.localtime())
     log_file = osp.join(cfg.work_dir, f'{timestamp}.log')
@@ -330,10 +331,16 @@ def main():
     logger.info('Environment info:\n' + dash_line + env_info + '\n' +
                 dash_line)
     meta['env_info'] = env_info
-    meta['config'] = cfg.pretty_text
+    try:
+        meta['config'] = cfg.pretty_text
+    except Exception:
+        meta['config'] = str(cfg._cfg_dict)
     # log some basic info
     logger.info(f'Distributed training: {distributed}')
-    logger.info(f'Config:\n{cfg.pretty_text}')
+    try:
+        logger.info(f'Config:\n{cfg.pretty_text}')
+    except Exception:
+        logger.info(f'Config: (pretty_text unavailable)')
 
     # # set random seeds
     # seed = init_random_seed(args.seed)

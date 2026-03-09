@@ -271,6 +271,42 @@
   - Dependencies: conda env `iraod`, RSAR dataset
   - Evidence: `work_dirs/sanity/full_sample_mode.json`
 
+- [x] P0030: RSAR 干扰/扰动子集目录合规（dataset/RSAR/corruptions/7 types）
+  - Summary: 新增 `tools/prepare_rsar_corruption.py`，强制生成 `dataset/RSAR/corruptions/<type>/<split>/images`（7 种干扰），并默认创建 legacy 软链 `dataset/RSAR/<split>/images-<type>` 以兼容现有 corrupt 切换与脚本。
+  - Rationale: 统一 RSAR 干扰数据组织方式，避免 “interf_jam*” 的非标准结构导致的加载/评估混乱。
+  - Scope: `tools/prepare_rsar_corruption.py`, `tools/interference_generator.py`, `sfod/utils/patches.py`, `tools/verify_rsar_corrupt_switch.py`, `scripts/smoke_rsar_corruptions.sh`, `README.md`
+  - Acceptance: smoke 生成的 7 种干扰目录存在；`tools/verify_rsar_corrupt_switch.py` 对 clean 与 `corrupt=chaff` 均为 missing=0/conflict=0。
+  - Verification: `bash scripts/smoke_rsar_corruptions.sh`
+  - Outputs: `dataset/RSAR/corruptions/`, `dataset/RSAR/<split>/images-<type>`（软链），`work_dirs/sanity/rsar_corruption_smoke/`
+  - Dependencies: `opencv-python`, `Pillow`
+
+- [x] P0031: OrthoNet backbone 集成 + 新 config（CGA-O）
+  - Summary: 将 OrthoNet（ResNet-like + 正交滤波注意力）作为 mmdet backbone 注册，并新增 DIOR/RSAR 两个 OrthoNet 配置文件用于对比测试。
+  - Rationale: 验证正交滤波网络在遥感/ SAR 场景的特征提取增益。
+  - Scope: `mmdet_extension/models/backbones/orthonet.py`, `mmdet_extension/models/backbones/__init__.py`, `tools/orthonet_smoke.py`, `configs/unbiased_teacher/sfod/unbiased_teacher_oriented_rcnn_selftraining_cga_o.py`, `configs/unbiased_teacher/sfod/unbiased_teacher_oriented_rcnn_selftraining_cga_o_rsar.py`, `sfod/rsar_dataset.py`, `sfod/__init__.py`
+  - Acceptance: `tools/orthonet_smoke.py` 可 build 并前向输出 4 个 stage feature maps；新 config 可被 mmcv Config 加载并正确注册 backbone。
+  - Verification: `conda run -n iraod python tools/orthonet_smoke.py --device cpu --h 256 --w 256 --depth 50`
+  - Outputs: 新配置文件；OrthoNet backbone 可被训练/测试脚本引用
+  - Dependencies: conda env `iraod`（mmcv/mmdet/mmrotate/mmrotate ops 正常）
+
+- [x] P0032: SARCLIP LoRA 微调流水线 + CGA 接入（SARCLIP_LORA）
+  - Summary: 新增 `lora_finetune/`（裁剪/构造 pairs 与 LoRA 训练脚本），并在 CGA 与 SarclipScorer 中支持通过 `SARCLIP_LORA` 加载 LoRA adapter。
+  - Rationale: 提升 RSAR 6 类 + 7 种干扰下的 zero-shot 语义打分鲁棒性，从而改善 CGA 的伪标签质量。
+  - Scope: `lora_finetune/crop_sardet100k.py`, `lora_finetune/lora_sarclip_train.py`, `tools/lora_utils.py`, `sfod/cga.py`, `sfod/scorers/sarclip_scorer.py`, `scripts/smoke_sarclip_lora.sh`, `weights/README.md`
+  - Acceptance: smoke 脚本可训练并落盘 LoRA checkpoint；checkpoint 可被加载并跑通一次 `encode_image`；设置 `SARCLIP_LORA` 时 CGA 能正确加载并打印 LoRA 信息（在目标训练环境验证）。
+  - Verification: `bash scripts/smoke_sarclip_lora.sh`
+  - Outputs: LoRA ckpt（如 `work_dirs/sanity/sarclip_lora_smoke/SARCLIP_LoRA_Interference.pt`）
+  - Dependencies: `third_party/SARCLIP`（或 `$SARCLIP_DIR`），`torch`, `torchvision`
+
+- [x] P0033: L_ent 信息熵最小化（仅低置信度样本）注入到 LoRA 训练
+  - Summary: 在 `lora_finetune/lora_sarclip_train.py` 中加入可选的 entropy minimization（`--ent-weight`/`--ent-score-thr`），仅对 `score < thr` 的样本应用，增强低置信度候选的判别确定性。
+  - Rationale: 让模型在强干扰/不确定样本上输出更“确定”的类别分布，提升语义打分鲁棒性。
+  - Scope: `lora_finetune/lora_sarclip_train.py`, `scripts/smoke_sarclip_lora.sh`
+  - Acceptance: 开启 `--ent-weight>0` 且存在低 score 样本时训练可运行并输出 checkpoint；关闭时行为不变。
+  - Verification: `bash scripts/smoke_sarclip_lora.sh`
+  - Outputs: LoRA ckpt（包含 ent 配置的 meta）
+  - Dependencies: N/A
+
 ## Conclusions
 - [x] C0001: DIOR 与 RSAR 均能跑通 smoke 训练/测试闭环（含可视化与 mAP）
   - Evidence required: `work_dirs/exp_smoke_dior/` 与 `work_dirs/exp_smoke_rsar/` 中日志包含 mAP 且非 NaN；`work_dirs/vis_rsar/` 有输出图。

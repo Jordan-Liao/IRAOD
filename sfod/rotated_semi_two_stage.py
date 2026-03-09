@@ -30,7 +30,8 @@ class SemiTwoStageDetector(SemiBaseDetector, RotatedTwoStageDetector):
 
     @torch.no_grad()
     def inference_unlabeled(self, img, img_metas, rescale=True, return_feat=False):
-        ema_model = self.ema_model.module
+        # Support both DDP-wrapped (.module) and plain EMA model
+        ema_model = getattr(self.ema_model, 'module', self.ema_model)
         try:
             bbox_results = ema_model.simple_test(img, img_metas, with_cga = True, rescale = rescale)
         except:

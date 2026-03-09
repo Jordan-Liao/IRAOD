@@ -180,7 +180,18 @@ CGA_SCORER=sarclip SARCLIP_MODEL=RN50 SARCLIP_PRETRAINED=weights/sarclip/RN50/rn
 
 ### 6) RSAR Interference / Robustness
 
-Generate interference directories (disk-heavy; see `docs/plan.md` for design rationale):
+Generate interference/corruption directories (disk-heavy; see `docs/plan.md` for design rationale):
+
+**(Recommended / compliant)** RSAR 7-type corruption subsets under `dataset/RSAR/corruptions/`:
+```bash
+# Generates:
+#   dataset/RSAR/corruptions/{chaff,gaussian_white_noise,point_target,noise_suppression,am_noise_horizontal,smart_suppression,am_noise_vertical}/{train,val,test}/images
+# And creates legacy symlinks:
+#   dataset/RSAR/<split>/images-<corrupt> -> dataset/RSAR/corruptions/<corrupt>/<split>/images
+python tools/prepare_rsar_corruption.py --data-root dataset/RSAR --workers 8
+```
+
+**(Legacy)** `interf_jam*` severity suites:
 ```bash
 # test-only severity suites (interf_jamA_s1..s5 / interf_jamB_s1..s5)
 bash scripts/prepare_rsar_interf_severity_test.sh

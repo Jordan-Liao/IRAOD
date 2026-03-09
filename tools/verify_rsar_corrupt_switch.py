@@ -35,7 +35,21 @@ def _images_dir_for(split_dir: Path, corrupt: str) -> Path:
     corrupt = (corrupt or "").strip()
     if corrupt in ("", "clean", "none"):
         return split_dir / "images"
-    return split_dir / f"images-{corrupt}"
+    # Prefer legacy layout (or symlink) for backward compatibility:
+    #   dataset/RSAR/<split>/images-<corrupt>/
+    legacy = split_dir / f"images-{corrupt}"
+    if legacy.exists():
+        return legacy
+
+    # New compliant layout:
+    #   dataset/RSAR/corruptions/<corrupt>/<split>/images/
+    rsar_root = split_dir.parent
+    compliant = rsar_root / "corruptions" / corrupt / split_dir.name / "images"
+    if compliant.exists():
+        return compliant
+
+    # Fallback to legacy path (will trigger a clear FileNotFoundError).
+    return legacy
 
 
 def _check_split(

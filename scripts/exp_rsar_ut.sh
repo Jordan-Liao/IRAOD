@@ -28,7 +28,7 @@ WORKERS_PER_GPU="${WORKERS_PER_GPU:-0}"
 CORRUPT="${CORRUPT:-clean}"
 export CGA_SCORER="${CGA_SCORER:-none}"
 if [[ -z "${CGA_TEMPLATES:-}" ]]; then
-  export CGA_TEMPLATES='an SAR image of a {}|this SAR patch shows a {}'
+  export CGA_TEMPLATES='a SAR image of a {}'
 fi
 TEACHER_CKPT="${TEACHER_CKPT:-}"
 SUP_CLEAN="${SUP_CLEAN:-0}"

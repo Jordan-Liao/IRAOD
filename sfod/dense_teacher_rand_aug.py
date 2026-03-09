@@ -79,6 +79,31 @@ class DTRandCrop(DTSingleOperation):
         ])
 
 
+# --- Round 3: global epoch tracker for conditional augmentation (Exp N) ---
+_GLOBAL_EPOCH = [0]
+
+def set_global_epoch(epoch):
+    _GLOBAL_EPOCH[0] = epoch
+
+@ROTATED_PIPELINES.register_module()
+class ConditionalDTRandCrop(DTSingleOperation):
+    def __init__(self, start_epoch=5):
+        super(ConditionalDTRandCrop, self).__init__()
+        self.start_epoch = start_epoch
+        self.transform = transforms.Compose([
+            transforms.ToTensor(),
+            transforms.RandomErasing(p=0.7, scale=(0.05, 0.2), ratio=(0.3, 3.3), value="random"),
+            transforms.RandomErasing(p=0.5, scale=(0.02, 0.2), ratio=(0.1, 6), value="random"),
+            transforms.RandomErasing(p=0.3, scale=(0.02, 0.2), ratio=(0.05, 8), value="random"),
+            transforms.ToPILImage(),
+        ])
+
+    def __call__(self, results):
+        if _GLOBAL_EPOCH[0] >= self.start_epoch:
+            return super().__call__(results)
+        return results
+
+
 @ROTATED_PIPELINES.register_module()
 class DTToNumpy:
     def __call__(self, results):

@@ -4,6 +4,7 @@ patch_mmrotate_multiclass_nms_rotated()
 
 from .semi_dior_dataset import SemiDIORDataset
 from .semi_dota_dataset import DOTADatasetAnySuffix,SemiDOTADataset
+from .rsar_dataset import RSARDataset
 
 from .dior import DIORDataset
 from .dense_teacher_rand_aug import *

@@ -79,8 +79,13 @@ class SemiBaseDetector(nn.Module):
         model_dict = self.state_dict()
         new_dict = OrderedDict()
         for key, value in self.ema_model.state_dict().items():
-            # print(model_dict.keys())
-            if key[7:] in model_dict.keys():
+            # Support both direct key match (same architecture) and
+            # prefix-stripped match (DDP module. prefix, 7 chars)
+            if key in model_dict:
+                new_dict[key] = (
+                        model_dict[key] * (1 - momentum) + value * momentum
+                )
+            elif key[7:] in model_dict.keys():
                 new_dict[key] = (
                         model_dict[key[7:]] * (1 - momentum) + value * momentum
                 )

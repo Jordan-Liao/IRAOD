@@ -4,9 +4,9 @@
 Re-implementation: Unbiased teacher for semi-supervised object detection
 
 There are several differences with official implementation:
-1. we only use the strong-augmentation version of labeled data rather than \
-the strong-augmentation and weak-augmentation version of labeled data.
+1. we only use the strong-augmentation version of labeled data rather than the strong-augmentation and weak-augmentation version of labeled data.
 """
+import math
 import numpy as np
 import torch
 import os
@@ -55,6 +55,40 @@ class UnbiasedTeacher(SemiTwoStageDetector):
         self.use_bbox_reg = cfg.get('use_bbox_reg', True)
         self.momentum = cfg.get('momentum', 0.998)
 
+        # --- burn-in: disable unsupervised loss for the first N epochs ---
+        self.burn_in_epochs = cfg.get('burn_in_epochs', 0)
+
+        # --- threshold annealing (Exp B) ---
+        self.thr_schedule = cfg.get('thr_schedule', 'fixed')  # 'fixed' or 'linear'
+        self.score_thr_start = cfg.get('score_thr_start', self.score_thr)
+        self.score_thr_end = cfg.get('score_thr_end', self.score_thr)
+
+        # --- per-class threshold (Exp E): score_thr can be list/tuple ---
+        if isinstance(self.score_thr, (list, tuple)):
+            self.class_score_thr = list(self.score_thr)
+            self.score_thr = max(self.class_score_thr)  # scalar fallback for logging
+        else:
+            self.class_score_thr = None
+
+        # --- Round 3: save initial per-class thresholds for annealing ---
+        self.class_score_thr_start = list(self.class_score_thr) if self.class_score_thr is not None else None
+        # Per-class annealing end thresholds (Exp L)
+        self.class_score_thr_end = cfg.get('class_score_thr_end', None)
+        if self.class_score_thr_end is not None:
+            self.class_score_thr_end = list(self.class_score_thr_end)
+
+        # --- Round 3: wu epoch-based schedule (Exp M) ---
+        # dict like {4: 0, 6: 0.25, 8: 0.5, 12: 0.25}
+        self.weight_u_schedule = cfg.get('weight_u_schedule', None)
+
+        # --- Round 3: separate bbox weight for unsup (Exp O) ---
+        self.weight_u_bbox = cfg.get('weight_u_bbox', None)
+
+        # --- EMA cosine schedule: momentum ramps from ema_momentum_start to ema_momentum_end ---
+        self.ema_schedule = cfg.get('ema_schedule', 'fixed')  # 'fixed' or 'cosine'
+        self.ema_momentum_end = cfg.get('ema_momentum_end', self.momentum)
+        self.max_iters = cfg.get('max_iters', 47304)  # total training iters for cosine schedule
+
         # analysis
         self.image_num = 0
         self.pseudo_num = np.zeros(self.num_classes)
@@ -65,6 +99,12 @@ class UnbiasedTeacher(SemiTwoStageDetector):
         self.roi_head.cur_epoch = epoch 
         self.roi_head.bbox_head.cur_epoch = epoch
         self.cur_epoch = epoch
+        # Round 3: update global epoch for ConditionalDTRandCrop (Exp N)
+        try:
+            from sfod.dense_teacher_rand_aug import set_global_epoch
+            set_global_epoch(epoch)
+        except ImportError:
+            pass
         
     def forward_train_semi(
             self, img, img_metas, gt_bboxes, gt_labels,
@@ -73,9 +113,49 @@ class UnbiasedTeacher(SemiTwoStageDetector):
     ):
         device = img.device
         self.image_num += len(img_metas_unlabeled)
-        self.update_ema_model(self.momentum)
         self.cur_iter += 1
+
+        # --- Compute dynamic EMA momentum ---
+        if self.ema_schedule == 'cosine':
+            progress = min(self.cur_iter / max(self.max_iters, 1), 1.0)
+            cur_momentum = self.momentum + (self.ema_momentum_end - self.momentum) * (1.0 - math.cos(math.pi * progress)) / 2.0
+        else:
+            cur_momentum = self.momentum
+
+        self.update_ema_model(cur_momentum)
+
+        # --- threshold annealing: update score_thr based on training progress ---
+        if self.thr_schedule == 'linear':
+            progress = min(self.cur_iter / max(self.max_iters, 1), 1.0)
+            if self.class_score_thr is not None and self.class_score_thr_end is not None:
+                # Per-class independent annealing (Exp L)
+                self.class_score_thr = [
+                    s + (e - s) * progress
+                    for s, e in zip(self.class_score_thr_start, self.class_score_thr_end)
+                ]
+                self.score_thr = max(self.class_score_thr)
+            else:
+                new_thr = self.score_thr_start + (self.score_thr_end - self.score_thr_start) * progress
+                if self.class_score_thr is not None and self.class_score_thr_start is not None:
+                    ratio = new_thr / max(self.score_thr_start, 1e-6)
+                    self.class_score_thr = [t * ratio for t in self.class_score_thr_start]
+                self.score_thr = new_thr
+
         self.analysis()
+
+        # --- Burn-in + scheduling: determine effective unsupervised weight ---
+        cur_epoch = getattr(self, 'cur_epoch', 0)
+        if cur_epoch < self.burn_in_epochs:
+            effective_weight_u = 0.0
+        elif self.weight_u_schedule is not None:
+            # Epoch-based wu schedule (Exp M): find last matching epoch
+            effective_weight_u = self.weight_u
+            for ep_thr in sorted(self.weight_u_schedule.keys()):
+                if cur_epoch >= ep_thr:
+                    effective_weight_u = self.weight_u_schedule[ep_thr]
+        else:
+            effective_weight_u = self.weight_u
+
         # # ---------------------label data---------------------
         losses = self.forward_train(img, img_metas, gt_bboxes, gt_labels)
         losses = self.parse_loss(losses)
@@ -97,17 +177,32 @@ class UnbiasedTeacher(SemiTwoStageDetector):
         losses_unlabeled = self.forward_train(img_unlabeled_1, img_metas_unlabeled_1,
                                               gt_bboxes_pred, gt_labels_pred)
         losses_unlabeled = self.parse_loss(losses_unlabeled)
+
+        # --- Check if all pseudo labels are empty (pseudo_num == 0) ---
+        total_pseudo = sum(len(b) for b in gt_bboxes_pred)
+
+        # Compute effective bbox weight (Exp O: cls/reg split)
+        if self.weight_u_bbox is not None:
+            effective_weight_u_bbox = 0.0 if cur_epoch < self.burn_in_epochs else self.weight_u_bbox
+        else:
+            effective_weight_u_bbox = effective_weight_u
+
         for key, val in losses_unlabeled.items():
             if key.find('loss') == -1:
                 continue
-            if key.find('bbox') != -1:
-                losses_unlabeled[key] = self.weight_u * val if self.use_bbox_reg else 0 * val
+            if total_pseudo == 0:
+                # No pseudo labels at all: zero out unsupervised loss to avoid noise
+                losses_unlabeled[key] = 0.0 * val
+            elif key.find('bbox') != -1:
+                losses_unlabeled[key] = effective_weight_u_bbox * val if self.use_bbox_reg else 0 * val
             else:
-                losses_unlabeled[key] = self.weight_u * val
+                losses_unlabeled[key] = effective_weight_u * val
         losses.update({f'{key}_unlabeled': val for key, val in losses_unlabeled.items()})
+
+        pseudo_sum = self.pseudo_num.sum()
         extra_info = {
-            'pseudo_num': torch.Tensor([self.pseudo_num.sum() / self.image_num]).to(device),
-            'pseudo_num(acc)': torch.Tensor([self.pseudo_num_tp.sum() / self.pseudo_num.sum()]).to(device)
+            'pseudo_num': torch.Tensor([pseudo_sum / max(self.image_num, 1)]).to(device),
+            'pseudo_num(acc)': torch.Tensor([self.pseudo_num_tp.sum() / max(pseudo_sum, 1e-10)]).to(device)
         }
         losses.update(extra_info)
         return losses
@@ -127,7 +222,12 @@ class UnbiasedTeacher(SemiTwoStageDetector):
                 gt_bbox_scale[:,:4] = gt_bbox[:,:4] / scale_factor
             for cls, r in enumerate(result):
                 label = cls * np.ones_like(r[:, 0], dtype=np.uint8)
-                flag = r[:, -1] >= self.score_thr
+                # per-class threshold support (Exp E)
+                if self.class_score_thr is not None:
+                    thr = self.class_score_thr[cls]
+                else:
+                    thr = self.score_thr
+                flag = r[:, -1] >= thr
                 # print(flag)
                 bboxes.append(r[flag][:, :-1])
                 labels.append(label[flag])

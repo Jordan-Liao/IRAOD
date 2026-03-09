@@ -16,6 +16,7 @@ class SarclipScorerConfig:
     model: str = "RN50"
     pretrained: str | None = None
     precision: str = "amp"
+    lora: str | None = None
 
 
 def _repo_root() -> Path:
@@ -125,11 +126,49 @@ class SarclipScorer:
             ]
         )
 
+        lora_path = self.config.lora
+        if lora_path is None:
+            lora_path = os.environ.get("SARCLIP_LORA", "").strip() or None
+        if lora_path:
+            lora_path = str(Path(lora_path).expanduser().resolve())
+            if not Path(lora_path).is_file():
+                raise FileNotFoundError(f"SARCLIP_LORA not found: {lora_path}")
+
+            from tools.lora_utils import LoraConfig, inject_lora, load_lora_state_dict
+
+            ckpt = torch.load(lora_path, map_location="cpu")
+            if isinstance(ckpt, dict) and "state_dict" in ckpt:
+                meta = ckpt.get("meta", {}) if isinstance(ckpt.get("meta", {}), dict) else {}
+                state = ckpt["state_dict"]
+            else:
+                meta = {}
+                state = ckpt
+
+            r = int(meta.get("r", 8))
+            alpha = float(meta.get("alpha", 16.0))
+            dropout = float(meta.get("dropout", 0.0))
+            target = str(meta.get("target", "vision")).strip().lower()
+
+            def _filter(full_name: str, _m: torch.nn.Linear) -> bool:
+                if target in ("vision", "visual"):
+                    return full_name.startswith("visual.")
+                if target in ("vision+text", "both", "all", "visual+text"):
+                    return full_name.startswith("visual.") or full_name.startswith("transformer.") or full_name.startswith("text.")
+                # fallback: allow all
+                return True
+
+            replaced = inject_lora(self.model, config=LoraConfig(r=r, alpha=alpha, dropout=dropout), module_filter=_filter)
+            load_lora_state_dict(self.model, state)
+            # keep eval mode
+            self.model.eval()
+            print(f"[SarclipScorer] loaded LoRA: path={lora_path} target={target} replaced_linears={replaced}")
+
     def signature(self) -> dict[str, Any]:
         return {
             "scorer": "sarclip",
             "model": self.config.model,
             "pretrained": self.pretrained,
+            "lora": (self.config.lora or os.environ.get("SARCLIP_LORA", "").strip() or None),
         }
 
     @torch.no_grad()

@@ -84,8 +84,9 @@ def patch_config(cfg):
         s = str(v).strip().lower()
         return s in ("1", "true", "yes", "y", "on")
 
-    # RSAR corruption switch: allow `--cfg-options corrupt=interf_xxx` to map
-    # img_prefix/img_prefix_u from `.../images/` -> `.../images-interf_xxx/`.
+    # RSAR corruption switch:
+    # - legacy layout: `.../<split>/images/` -> `.../<split>/images-<corrupt>/`
+    # - compliant layout: `.../<split>/images/` -> `.../corruptions/<corrupt>/<split>/images/`
     corrupt = str(cfg.get("corrupt", "")).strip()
 
     # Optional: mix clean + corrupt on supervised train split (for non-semi datasets).
@@ -116,8 +117,23 @@ def patch_config(cfg):
         norm = p.rstrip("/")
         if osp.basename(norm) != "images":
             return p
-        parent = osp.dirname(norm)
-        return osp.join(parent, f"images-{corrupt}") + trailing
+        split_dir = osp.dirname(norm)
+
+        # 1) Prefer legacy `images-<corrupt>` (or symlink), so existing scripts
+        #    and smoke subsets keep working.
+        legacy = osp.join(split_dir, f"images-{corrupt}")
+        if osp.exists(legacy):
+            return legacy + trailing
+
+        # 2) If legacy doesn't exist, try compliant `corruptions/<corrupt>/<split>/images`.
+        rsar_root = osp.dirname(split_dir)
+        split_name = osp.basename(split_dir)
+        compliant = osp.join(rsar_root, "corruptions", corrupt, split_name, "images")
+        if osp.exists(compliant):
+            return compliant + trailing
+
+        # 3) Fallback to legacy path (will error later with a clear missing dir).
+        return legacy + trailing
 
     if mix_train and corrupt and corrupt not in ("clean", "none") and cfg.get("data", None) is not None:
         train_ds = cfg.data.get("train")

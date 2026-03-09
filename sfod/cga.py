@@ -277,6 +277,45 @@ class CGA:
         )
         self.clip.eval()
 
+        # Optional: load LoRA adapter on top of SARCLIP (for interference-robust scoring).
+        lora_path = os.environ.get("SARCLIP_LORA", "").strip() or None
+        if lora_path:
+            p = Path(lora_path).expanduser()
+            if not p.is_absolute():
+                p = (repo_root / p).resolve()
+            if not p.is_file():
+                print(f"[CGA/SARCLIP] WARNING: SARCLIP_LORA not found: {p} (ignored)")
+            else:
+                try:
+                    from tools.lora_utils import LoraConfig, inject_lora, load_lora_state_dict
+
+                    ckpt = torch.load(str(p), map_location="cpu")
+                    if isinstance(ckpt, dict) and "state_dict" in ckpt:
+                        meta = ckpt.get("meta", {}) if isinstance(ckpt.get("meta", {}), dict) else {}
+                        state = ckpt["state_dict"]
+                    else:
+                        meta = {}
+                        state = ckpt
+
+                    r = int(meta.get("r", 8))
+                    alpha = float(meta.get("alpha", 16.0))
+                    dropout = float(meta.get("dropout", 0.0))
+                    target = str(meta.get("target", "vision")).strip().lower()
+
+                    def _filter(full_name: str, _m: torch.nn.Linear) -> bool:
+                        if target in ("vision", "visual"):
+                            return full_name.startswith("visual.")
+                        if target in ("vision+text", "both", "all", "visual+text"):
+                            return full_name.startswith("visual.") or full_name.startswith("transformer.") or full_name.startswith("text.")
+                        return True
+
+                    replaced = inject_lora(self.clip, config=LoraConfig(r=r, alpha=alpha, dropout=dropout), module_filter=_filter)
+                    load_lora_state_dict(self.clip, state)
+                    self.clip.eval()
+                    print(f"[CGA/SARCLIP] LoRA loaded: {p} target={target} replaced_linears={replaced}")
+                except Exception as e:
+                    print(f"[CGA/SARCLIP] WARNING: failed to load LoRA ({p}): {e}")
+
         # 2) tokenizer & zero-shot 文本分类器（把多个模板的文本特征做平均&归一化）
         self.tokenizer = sar_clip.get_tokenizer(model, cache_dir=None)
 
@@ -395,7 +434,7 @@ class TestMixins:
             "classes": tuple(class_names),
             "templates": _templates_from_env(
                 default=(
-                    ("an SAR image of a {}", "this SAR patch shows a {}")
+                    ("a SAR image of a {}",)
                     if scorer == "sarclip"
                     else ("an aerial image of a {}",)
                 )
@@ -404,6 +443,7 @@ class TestMixins:
             "expand_ratio": expand_ratio,
             "sarclip_model": _str_env("SARCLIP_MODEL", "RN50"),
             "sarclip_pretrained": os.environ.get("SARCLIP_PRETRAINED", "").strip() or None,
+            "sarclip_lora": os.environ.get("SARCLIP_LORA", "").strip() or None,
             "clip_model": _str_env("CLIP_MODEL", "RN50"),
         }
 
