@@ -31,3 +31,19 @@ __pycache__/
 # Environment snapshots are machine-specific; keep local by default.
 docs/env_lock.txt
 docs/system_info.md
+
+# Open Researcher runtime artifacts
+.research_backup_*/
+.research-headless-*.pid
+_auto_eval.sh
+_codex_prompt.txt
+_full_train_prompt.txt
+_full_train_v2.txt
+*.bak
+*.bak2
+lora_finetune/
+tools/lora_utils.py
+tools/orthonet_smoke.py
+scripts/smoke_sarclip_lora.sh
+configs/exp_rsar_ut_nocga_thr06_full.py
+mmdet_extension/models/backbones/orthonet.py
