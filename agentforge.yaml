@@ -1,0 +1,73 @@
+challenge:
+  name: iraod-rsar-mAP
+  description: |
+    Improve rotated object detection mAP on RSAR SAR imagery dataset.
+
+    ## Project Structure
+    - Framework: MMRotate/MMDetection with custom sfod modules
+    - Training: python train.py <config> [--work-dir <dir>] [--cfg-options key=val]
+    - Evaluation: python test.py <config> <checkpoint> --eval mAP
+    - Main config: configs/exp_rsar_ut_nocga_thr06_full.py
+    - Model code: sfod/ (custom detector, losses, augmentations)
+    - Extension code: mmdet_extension/ (custom training APIs)
+    - Dataset: RSAR (6 classes: ship, aircraft, car, tank, bridge, harbor), 800x800 images
+
+    ## Environment
+    - IMPORTANT: ALL python commands MUST use: conda run -n iraod --no-capture-output python ...
+    - Example train: conda run -n iraod --no-capture-output python train.py configs/exp_rsar_ut_nocga_thr06_full.py --work-dir work_dirs/my_exp --cfg-options runner.max_epochs=1
+    - Example eval: conda run -n iraod --no-capture-output python test.py configs/exp_rsar_ut_nocga_thr06_full.py work_dirs/my_exp/latest.pth --eval mAP
+    - Set PYTHONPATH=. before running
+
+    ## Model Architecture
+    - Backbone: ResNet-50 with FPN neck
+    - RPN: OrientedRPNHead (rotated proposals)
+    - ROI Head: OrientedStandardRoIHead with RotatedShared2FCBBoxHead
+    - Semi-supervised: UnbiasedTeacher (teacher-student with EMA)
+    - Loss: CrossEntropy (cls) + SmoothL1 (bbox)
+    - Score threshold for pseudo labels: 0.6
+
+    ## Baseline
+    - Current mAP: 0.6670 (Unbiased Teacher with Oriented R-CNN, no CGA, 12 epochs)
+    - Config: configs/exp_rsar_ut_nocga_thr06_full.py
+    - Pretrained: work_dirs/exp_rsar_baseline_full_nanfix/latest.pth
+    - Optimizer: SGD lr=0.045, momentum=0.9, wd=1e-4
+    - Scheduler: step at epoch 12, warmup 100 iters
+    - Batch size: 16 (samples_per_gpu=2, 8 workers)
+
+    ## Optimization Areas
+    - Model architecture improvements in sfod/ (detector head, loss functions, feature fusion)
+    - Data augmentation strategies (Mosaic, MixUp, multi-scale training)
+    - Training hyperparameters (learning rate, EMA momentum, score threshold)
+    - Semi-supervised learning improvements (pseudo-label quality, teacher-student dynamics)
+    - Loss function modifications (Focal Loss, GIoU, etc.)
+    - Feature enhancement (attention modules, deformable convolutions)
+
+    ## Important Notes
+    - For quick iteration, use --cfg-options runner.max_epochs=1 (full is 12)
+    - train_command MUST start with: conda run -n iraod --no-capture-output
+    - The benchmark script (benchmark.py) auto-finds latest.pth and evaluates
+    - CUDA available: 10x RTX 4090 (49GB each)
+    - Training uses single GPU per experiment (CUDA_VISIBLE_DEVICES set by AgentForge)
+
+target:
+  metric: mAP
+  value: 0.72
+  direction: maximize
+
+tests:
+  smoke: true
+  full: true
+  benchmark: conda run -n iraod --no-capture-output python benchmark.py
+
+constraints:
+  writable:
+    - configs/
+    - sfod/
+    - mmdet_extension/
+    - train.py
+    - test.py
+    - benchmark.py
+  read_only:
+    - dataset/
+    - weights/
+    - third_party/
