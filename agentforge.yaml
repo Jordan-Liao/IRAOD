@@ -46,8 +46,9 @@ challenge:
     - For quick iteration, use --cfg-options runner.max_epochs=1 (full is 12)
     - train_command MUST start with: conda run -n iraod --no-capture-output
     - The benchmark script (benchmark.py) auto-finds latest.pth and evaluates
-    - CUDA available: 10x RTX 4090 (49GB each)
+    - CUDA available: 4x RTX 4090 (49GB each)
     - Training uses single GPU per experiment (CUDA_VISIBLE_DEVICES set by AgentForge)
+    - DO NOT modify dataset/, weights/, or third_party/ directories
 
 target:
   metric: mAP
@@ -55,19 +56,16 @@ target:
   direction: maximize
 
 tests:
-  smoke: true
-  full: true
-  benchmark: conda run -n iraod --no-capture-output python benchmark.py
+  smoke: "true"
+  full: "true"
+  benchmark: "conda run -n iraod --no-capture-output python benchmark.py"
 
 constraints:
   writable:
-    - configs/
-    - sfod/
-    - mmdet_extension/
-    - train.py
-    - test.py
-    - benchmark.py
-  read_only:
-    - dataset/
-    - weights/
-    - third_party/
+    - "configs/"
+    - "sfod/"
+    - "mmdet_extension/"
+    - "train.py"
+    - "test.py"
+    - "benchmark.py"
+  read_only: []
