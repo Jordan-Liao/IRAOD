@@ -297,6 +297,7 @@
   - Verification: `bash scripts/smoke_sarclip_lora.sh`
   - Outputs: LoRA ckpt（如 `work_dirs/sanity/sarclip_lora_smoke/SARCLIP_LoRA_Interference.pt`）
   - Dependencies: `third_party/SARCLIP`（或 `$SARCLIP_DIR`），`torch`, `torchvision`
+  - Evidence: `work_dirs/lora_experiments.log`, `work_dirs/p0032_sarclip_lora/lora_final.pth`, `work_dirs/lora_cga_eval.log`, `work_dirs/lora_cga_eval_results.json`（P0032 mAP=0.65303，略低于 no-LoRA 的 0.65350）
 
 - [x] P0033: L_ent 信息熵最小化（仅低置信度样本）注入到 LoRA 训练
   - Summary: 在 `lora_finetune/lora_sarclip_train.py` 中加入可选的 entropy minimization（`--ent-weight`/`--ent-score-thr`），仅对 `score < thr` 的样本应用，增强低置信度候选的判别确定性。
@@ -306,6 +307,7 @@
   - Verification: `bash scripts/smoke_sarclip_lora.sh`
   - Outputs: LoRA ckpt（包含 ent 配置的 meta）
   - Dependencies: N/A
+  - Evidence: `work_dirs/lora_experiments.log`, `work_dirs/p0033_sarclip_lora_ent/lora_final.pth`, `work_dirs/lora_cga_eval.log`, `work_dirs/lora_cga_eval_results.json`（P0033 mAP=0.65349，优于 P0032 但仍略低于 no-LoRA 的 0.65350）
 
 ## Conclusions
 - [x] C0001: DIOR 与 RSAR 均能跑通 smoke 训练/测试闭环（含可视化与 mAP）

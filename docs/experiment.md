@@ -955,3 +955,51 @@
 | Logs | smoke: `.rd_queue_ut_nocga/logs/J20260128-135450-0433__e0039-smoke-fix-vram14.log`；full: `.rd_queue_ut_nocga/logs/J20260128-135620-fa74__e0039-full-fix-vram14.log`；train: `work_dirs/exp_rsar_ut_cga_sarclip_full_fix_vram14_smoke/20260128_224819.log` / `work_dirs/exp_rsar_ut_cga_sarclip_full_fix_vram14/20260129_000132.log`；previous (terminated): `.rd_queue_ut_cga/logs/J20260128-131644-a0a0__e0039-smoke-rerun2.log`（exit=-15）; previous failures: `.rd_queue_ut_cga/logs/J20260127-171357-9a89__e0039-smoke.log` / `.rd_queue_ut_cga/logs/J20260127-171723-1c8e__e0039-smoke-rerun.log`（NCCL Error 3） |
 | Artifacts | `work_dirs/exp_rsar_ut_cga_sarclip_full_fix_vram14_smoke/`, `work_dirs/exp_rsar_ut_cga_sarclip_full_fix_vram14/` |
 | Results | smoke: student mAP=0.6042（`work_dirs/exp_rsar_ut_cga_sarclip_full_fix_vram14_smoke/eval_20260128_235129.json`）；EMA mAP=0.6292（`work_dirs/exp_rsar_ut_cga_sarclip_full_fix_vram14_smoke/eval_20260128_235635.json`）；full: student mAP=0.6356（`work_dirs/exp_rsar_ut_cga_sarclip_full_fix_vram14/eval_20260129_133159.json`）；EMA mAP=0.6622（`work_dirs/exp_rsar_ut_cga_sarclip_full_fix_vram14/eval_20260129_133556.json`） |
+
+
+### E0040: SARCLIP LoRA Fine-Tuning + CGA Load Verification (P0032)
+| Field | Value |
+| --- | --- |
+| Objective | 在 RSAR 6 类数据上进行 5-GPU SARCLIP LoRA 微调（无 `L_ent`），并验证生成的 LoRA checkpoint 可被 `SARCLIP_LORA` 注入到 CGA/SarclipScorer 中进行 test-time 语义重打分 |
+| Baseline | no-LoRA CGA test-time rescoring（`eval_lora_cga.py` 中的 `no_lora`） |
+| Model | SARCLIP `RN50` + LoRA（`target=vision`）；CGA(SARCLIP) eval 使用 detector `work_dirs/ut_rsar_corrected/latest_ema.pth` |
+| Weights | 训练输入：`third_party/SARCLIP`；输出：`work_dirs/p0032_sarclip_lora/lora_final.pth`；评估 detector：`work_dirs/ut_rsar_corrected/latest_ema.pth` |
+| Code path | `lora_finetune/lora_sarclip_train.py`, `tools/lora_utils.py`, `scripts/run_lora_experiments.sh`, `scripts/smoke_sarclip_lora.sh`, `sfod/cga.py`, `sfod/scorers/sarclip_scorer.py`, `eval_lora_cga.py` |
+| Params | `torchrun --nproc_per_node=5`；`epochs=10`；`batch-size=32`；`lr=1e-4`；`lora-r=8`；`lora-alpha=16`；`ent-weight=0.0` |
+| Metrics (must save) | `work_dirs/p0032_sarclip_lora/lora_final.pth`（含 meta）；`work_dirs/p0032_sarclip_lora/train.log`（loss/ce/ent 曲线）；`work_dirs/lora_cga_eval_results.json`（mAP） |
+| Checks | 训练完成；checkpoint 可加载；`encode_image` 跑通；设置 `SARCLIP_LORA` 后日志出现 `[CGA/SARCLIP] LoRA loaded ...`；mAP 写入结果 JSON |
+| VRAM | 未单独记录（5-GPU 分布式 LoRA 训练） |
+| Total time | ~13m23s（`work_dirs/lora_experiments.log` 时间戳 20:33:28 → 20:46:51） |
+| Single-GPU script | `N/A`（当前记录为 5-GPU `torchrun`） |
+| Multi-GPU script | `bash scripts/run_lora_experiments.sh` |
+| Smoke cmd | `bash scripts/smoke_sarclip_lora.sh` |
+| Full cmd | `bash -lc 'bash scripts/run_lora_experiments.sh && python eval_lora_cga.py'` |
+| Smoke | [x] |
+| Full | [x] |
+| Logs | smoke(shared): `work_dirs/smoke_lora.log`；full: `work_dirs/lora_experiments.log`, `work_dirs/p0032_sarclip_lora/train.log`, `work_dirs/lora_cga_eval.log` |
+| Artifacts | `work_dirs/p0032_sarclip_lora/`, `work_dirs/sanity/sarclip_lora_smoke/`, `work_dirs/lora_cga_eval_results.json` |
+| Results | 训练 loss: `0.7028 → 0.2683(best@epoch9) → 0.2764(final)`；checkpoint meta: `ent_weight=0.0`, `ent_score_thr=0.5`；CGA eval mAP=`0.65303`（`work_dirs/lora_cga_eval_results.json`），较 no-LoRA=`0.65350` 下降 `0.00047`；`work_dirs/lora_cga_eval.log` 已验证 `SARCLIP_LORA=work_dirs/p0032_sarclip_lora/lora_final.pth` 并成功 `LoRA loaded` |
+
+
+### E0041: SARCLIP LoRA + Low-Confidence Entropy Minimization (P0033)
+| Field | Value |
+| --- | --- |
+| Objective | 在 P0032 的基础上加入仅作用于低置信度样本的 `L_ent`（`--ent-weight 0.1 --ent-score-thr 0.5`），验证其是否提升 LoRA 语义打分与 CGA test-time rescoring 效果 |
+| Baseline | E0040（同样的 LoRA 训练但 `ent-weight=0.0`）以及 no-LoRA CGA rescoring |
+| Model | SARCLIP `RN50` + LoRA（`target=vision`）；CGA(SARCLIP) eval 使用 detector `work_dirs/ut_rsar_corrected/latest_ema.pth` |
+| Weights | 训练输入：`third_party/SARCLIP`；输出：`work_dirs/p0033_sarclip_lora_ent/lora_final.pth`；评估 detector：`work_dirs/ut_rsar_corrected/latest_ema.pth` |
+| Code path | `lora_finetune/lora_sarclip_train.py`, `tools/lora_utils.py`, `scripts/run_lora_experiments.sh`, `scripts/smoke_sarclip_lora.sh`, `sfod/cga.py`, `sfod/scorers/sarclip_scorer.py`, `eval_lora_cga.py` |
+| Params | `torchrun --nproc_per_node=5`；`epochs=10`；`batch-size=32`；`lr=1e-4`；`lora-r=8`；`lora-alpha=16`；`ent-weight=0.1`；`ent-score-thr=0.5` |
+| Metrics (must save) | `work_dirs/p0033_sarclip_lora_ent/lora_final.pth`（含 meta）；`work_dirs/p0033_sarclip_lora_ent/train.log`（loss/ce/ent 曲线）；`work_dirs/lora_cga_eval_results.json`（mAP） |
+| Checks | 训练完成；checkpoint 可加载；`encode_image` 跑通；设置 `SARCLIP_LORA` 后日志出现 `[CGA/SARCLIP] LoRA loaded ...`；mAP 写入结果 JSON；checkpoint meta 含 `ent_weight` / `ent_score_thr` |
+| VRAM | 未单独记录（5-GPU 分布式 LoRA 训练） |
+| Total time | ~13m47s（`work_dirs/lora_experiments.log` 时间戳 20:46:51 → 21:00:38） |
+| Single-GPU script | `N/A`（当前记录为 5-GPU `torchrun`） |
+| Multi-GPU script | `bash scripts/run_lora_experiments.sh` |
+| Smoke cmd | `bash scripts/smoke_sarclip_lora.sh` |
+| Full cmd | `bash -lc 'bash scripts/run_lora_experiments.sh && python eval_lora_cga.py'` |
+| Smoke | [x] |
+| Full | [x] |
+| Logs | smoke(shared): `work_dirs/smoke_lora.log`；full: `work_dirs/lora_experiments.log`, `work_dirs/p0033_sarclip_lora_ent/train.log`, `work_dirs/lora_cga_eval.log` |
+| Artifacts | `work_dirs/p0033_sarclip_lora_ent/`, `work_dirs/sanity/sarclip_lora_smoke/`, `work_dirs/lora_cga_eval_results.json` |
+| Results | 训练 loss: `0.6784 → 0.2606(best@epoch9) → 0.2729(final)`；checkpoint meta: `ent_weight=0.1`, `ent_score_thr=0.5`；CGA eval mAP=`0.65349`（`work_dirs/lora_cga_eval_results.json`），较 P0032=`0.65303` 提升 `0.00046`，但仍略低于 no-LoRA=`0.65350`；训练日志中 `ent=0.0000` 贯穿 10 个 epoch，说明当前设置下 entropy 项未形成可观测贡献 |
