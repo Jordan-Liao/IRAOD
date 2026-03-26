@@ -209,6 +209,54 @@ After you run new experiments under `work_dirs/`, regenerate summary tables:
 bash scripts/refresh_results.sh
 ```
 
+
+## 🔬 Innovations (新加创新点)
+
+### Innovation 1: OrthoNet + OCA-FPN
+
+将正交滤波网络（[OrthoNets](https://github.com/hady1011/OrthoNets)）融入本项目，测试正交通道注意力对旋转目标检测的效果。
+
+- **OrthoNet backbone**: 正交通道注意力网络，注册为 `OrthoNet`（`mmdet_extension/models/backbones/orthonet.py`）
+- **OCA-FPN neck**: FPN + OrthoChannelAttention on each output level（`mmdet_extension/models/necks/oca_fpn.py`）
+- **Config 文件**:
+  - `configs/unbiased_teacher/sfod/unbiased_teacher_oriented_rcnn_selftraining_cga_o_rsar.py`（RSAR）
+  - `configs/unbiased_teacher/sfod/unbiased_teacher_oriented_rcnn_selftraining_cga_o.py`（DIOR）
+- **实验**: frontier-026 (OCA-FPN, 24ep schedule)，训练中（Epoch 13/24）
+- **Val mAP**: 0.6511（Epoch 11）
+
+### Innovation 2: SAR-CLIP LoRA 微调（干扰鲁棒 CGA 打分）
+
+性能提升 SAR-CLIP（来自 [SAR-TEXT](https://github.com/YiguoHe/SAR-TEXT) 的 SAR-RS-CLIP.pt，基于 OpenCLIP ViT-L-14）在 RSAR 6 类 + 7 种干扰下的零样本分类准确率，从而让 IRAOD 的 CGA（语义打分纠正）模块对 SAR 更准、更鲁棒。
+
+**核心逻辑**:
+- 用 SARDet100k 的训练集标注精确裁剪目标 patch（水平框）+ 叠加干扰 → 构造高质量"干扰鲁棒"图像-文本对
+- 用 LoRA（仅微调 vision encoder，参数量 <1%）在这些对上继续对比学习（contrastive loss）
+- 得到 SARCLIP-Interference-LoRA 后，直接替换 SFOD-RS scorer，打分更准 → 伪标签质量更高 → 最终检测 mAP 再提升
+
+**图像-文本对构造**: 裁剪的检测图像位于相应的类别文件夹，文本为 `[f"a SAR image of a {cls}" for cls in class_names]`
+
+**代码**: `lora_finetune/lora_sarclip_train.py`, `lora_finetune/crop_sardet100k.py`
+
+**LoRA 训练参数**: 4 linear layers, 122,880 trainable params (0.12%), 147,796 patches from RSAR train
+
+**结果**:
+
+| 指标 | 无 LoRA | 有 LoRA | 提升 |
+|------|---------|---------|------|
+| CGA 零样本分类精度 (RSAR 6类) | 0.6021 | **0.6513** | **+4.9%** |
+| 端到端检测 mAP (最佳 SFOD 迭代 exp_ax) | 0.6842 | **0.6943** | **+1.0%** |
+
+**SFOD 迭代链 LoRA 对比**:
+
+| 迭代 | 无 LoRA mAP | 有 LoRA mAP | Delta |
+|------|-------------|-------------|-------|
+| exp_x | 0.6694 | 0.6797 | +0.0103 |
+| exp_ab | 0.6706 | 0.6794 | +0.0088 |
+| exp_an | 0.6800 | 0.6909 | +0.0109 |
+| exp_ar | 0.6828 | 0.6935 | +0.0107 |
+| exp_au | 0.6834 | 0.6938 | +0.0104 |
+| **exp_ax** | **0.6842** | **0.6943** | **+0.0101** |
+
 ## 💡 Acknowledgement
 
 We thank the authors of the following works for their open-source contributions:

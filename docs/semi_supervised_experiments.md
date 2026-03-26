@@ -322,3 +322,36 @@
 4. **burn-in 期至关重要**：4 epoch burn-in 让模型在引入伪标签前充分稳定
 5. **伪标签后期退化是核心瓶颈**：所有实验在一定 epoch 后 mAP 下降，weight_u 衰减是最好的缓解手段
 6. **少样本类（aircraft）最易受损**：伪标签训练系统性损害少样本类，需要专门保护策略
+
+
+---
+
+## Phase 2: 方法创新实验
+
+### 创新点 1: OrthoNet + OCA-FPN
+
+将正交通道注意力网络 ([OrthoNets](https://github.com/hady1011/OrthoNets)) 融入检测框架:
+
+- **OrthoNet backbone**: 替换 ResNet50，注册为 `OrthoNet`
+- **OCA-FPN neck**: FPN 每一层输出叠加 OrthoChannelAttention
+- **Config**: `unbiased_teacher_oriented_rcnn_selftraining_cga_o_rsar.py`（RSAR）, `unbiased_teacher_oriented_rcnn_selftraining_cga_o.py`（DIOR）
+- **frontier-026**: OCA-FPN + 24ep schedule，Val mAP=0.6511 (Epoch 11)，训练中断于 Epoch 13/24
+
+### 创新点 2: SAR-CLIP LoRA 微调
+
+用 SARDet100k 裁剪目标 patch + 干扰增强 → LoRA 微调 SAR-CLIP (ViT-L-14) → 提升 CGA 打分精度:
+
+**核心逻辑**:
+1. SARDet100k 训练集标注精确裁剪目标 patch（水平框）+ 叠加 7 种干扰
+2. 构造图像-文本对: 图像 = 裁剪 patch，文本 = `"a SAR image of a {cls}"`
+3. LoRA 微调 vision encoder（4 linear layers, 122,880 params, 0.12%）
+4. 替换 SFOD-RS CGA scorer → 打分更准 → 伪标签质量更高
+
+**代码**: `lora_finetune/lora_sarclip_train.py`, `lora_finetune/crop_sardet100k.py`
+
+**结果**:
+- CGA 零样本精度: 0.6021 → **0.6513** (+4.9%)
+- 端到端检测 mAP: 0.6842 → **0.6943** (+1.0%)
+- 全 SFOD 迭代链稳定 +1% 增益
+
+详细实验记录见 `docs/experiment.md` E0042-E0096 和 `docs/plan.md` §6.4-6.5。
