@@ -1018,16 +1018,18 @@
 | Objective | 12ep baseline anchor 实验，验证 OrientedRCNN-R50-FPN 在 RSAR 上的基准性能 |
 | Baseline | frontier_008_24ep (mAP=0.701) |
 | Model | OrientedRCNN + R50-FPN (le90) |
-| Weights | `work_dirs/frontier_001_anchor/latest.pth` |
-| Code path | N/A (自动化实验，config 未单独追踪) |
-| Params | N/A (自动化实验参数) |
+| Weights | ImageNet pretrained R50 (mmdet default) |
+| Code path | 由 open-researcher-v2 自动生成（见 `.research/graph.json` frontier 节点） |
+| Params | 见对应 `work_dirs/*/` 下的 `.py` config 副本（由实验框架自动拷贝） |
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
 | Time/epoch | N/A |
-| Total time | ~12 epochs |
+| Total time | N/A (wall-clock not logged; schedule: 12 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
+| Smoke cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
+| Full cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
 | Smoke | N/A (auto-run) |
 | Full | [x] |
 | Logs | `work_dirs/frontier_001_anchor/20260321_223758.log` |
@@ -1042,16 +1044,18 @@
 | Objective | 调整 LR schedule（step→custom），探索学习率衰减策略对 mAP 的影响 |
 | Baseline | frontier_008_24ep (mAP=0.701) |
 | Model | OrientedRCNN + R50-FPN (le90) |
-| Weights | `work_dirs/frontier_002_lr_schedule/latest.pth` |
-| Code path | N/A (自动化实验，config 未单独追踪) |
-| Params | N/A (自动化实验参数) |
+| Weights | ImageNet pretrained R50 (mmdet default) |
+| Code path | 由 open-researcher-v2 自动生成（见 `.research/graph.json` frontier 节点） |
+| Params | 见对应 `work_dirs/*/` 下的 `.py` config 副本（由实验框架自动拷贝） |
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
 | Time/epoch | N/A |
-| Total time | ~14 epochs |
+| Total time | N/A (wall-clock not logged; schedule: 14 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
+| Smoke cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
+| Full cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
 | Smoke | N/A (auto-run) |
 | Full | [x] |
 | Logs | `work_dirs/frontier_002_lr_schedule/20260322_142136.log` |
@@ -1066,16 +1070,18 @@
 | Objective | 将 SmoothL1 bbox 回归损失替换为 GWD (Gaussian Wasserstein Distance) loss |
 | Baseline | frontier_008_24ep (mAP=0.701) |
 | Model | OrientedRCNN + R50-FPN (le90) |
-| Weights | `work_dirs/frontier_004_gwd_loss/latest.pth` |
-| Code path | N/A (自动化实验，config 未单独追踪) |
-| Params | N/A (自动化实验参数) |
+| Weights | ImageNet pretrained R50 (mmdet default) |
+| Code path | 由 open-researcher-v2 自动生成（见 `.research/graph.json` frontier 节点） |
+| Params | 见对应 `work_dirs/*/` 下的 `.py` config 副本（由实验框架自动拷贝） |
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
 | Time/epoch | N/A |
-| Total time | ~12 epochs |
+| Total time | N/A (wall-clock not logged; schedule: 12 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
+| Smoke cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
+| Full cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
 | Smoke | N/A (auto-run) |
 | Full | [x] |
 | Logs | `work_dirs/frontier_004_gwd_loss/20260322_183045.log` |
@@ -1090,16 +1096,18 @@
 | Objective | 添加 PolyRandomRotate 数据增强，测试旋转增强对旋转框检测的效果 |
 | Baseline | frontier_008_24ep (mAP=0.701) |
 | Model | OrientedRCNN + R50-FPN (le90) |
-| Weights | `work_dirs/frontier_005_polyrotate/latest.pth` |
-| Code path | N/A (自动化实验，config 未单独追踪) |
-| Params | N/A (自动化实验参数) |
+| Weights | ImageNet pretrained R50 (mmdet default) |
+| Code path | 由 open-researcher-v2 自动生成（见 `.research/graph.json` frontier 节点） |
+| Params | 见对应 `work_dirs/*/` 下的 `.py` config 副本（由实验框架自动拷贝） |
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
 | Time/epoch | N/A |
-| Total time | ~12 epochs |
+| Total time | N/A (wall-clock not logged; schedule: 12 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
+| Smoke cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
+| Full cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
 | Smoke | N/A (auto-run) |
 | Full | [x] |
 | Logs | `work_dirs/frontier_005_polyrotate/20260322_220419.log` |
@@ -1114,16 +1122,18 @@
 | Objective | 启用多尺度训练（img_scale 800~1333），测试多尺度对小目标检测的影响 |
 | Baseline | frontier_008_24ep (mAP=0.701) |
 | Model | OrientedRCNN + R50-FPN (le90) |
-| Weights | `work_dirs/frontier_006_multiscale/latest.pth` |
-| Code path | N/A (自动化实验，config 未单独追踪) |
-| Params | N/A (自动化实验参数) |
+| Weights | ImageNet pretrained R50 (mmdet default) |
+| Code path | 由 open-researcher-v2 自动生成（见 `.research/graph.json` frontier 节点） |
+| Params | 见对应 `work_dirs/*/` 下的 `.py` config 副本（由实验框架自动拷贝） |
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
 | Time/epoch | N/A |
-| Total time | ~12 epochs |
+| Total time | N/A (wall-clock not logged; schedule: 12 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
+| Smoke cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
+| Full cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
 | Smoke | N/A (auto-run) |
 | Full | [x] |
 | Logs | `work_dirs/frontier_006_multiscale/20260323_014428.log` |
@@ -1139,8 +1149,8 @@
 | Baseline | frontier_008_24ep (mAP=0.701) |
 | Model | OrientedRCNN + R50-FPN (le90) |
 | Weights | N/A |
-| Code path | N/A (自动化实验，config 未单独追踪) |
-| Params | N/A (自动化实验参数) |
+| Code path | 由 open-researcher-v2 自动生成（见 `.research/graph.json` frontier 节点） |
+| Params | 见对应 `work_dirs/*/` 下的 `.py` config 副本（由实验框架自动拷贝） |
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
@@ -1148,6 +1158,8 @@
 | Total time | N/A |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
+| Smoke cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
+| Full cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
 | Smoke | N/A (auto-run) |
 | Full | [x] |
 | Logs | `N/A` |
@@ -1162,16 +1174,18 @@
 | Objective | 延长训练到 24 epoch（step=[16,22]），作为后续所有实验的 baseline anchor |
 | Baseline | frontier_008_24ep (mAP=0.701) |
 | Model | OrientedRCNN + R50-FPN (le90) |
-| Weights | `work_dirs/frontier_008_24ep/latest.pth` |
-| Code path | N/A (自动化实验，config 未单独追踪) |
-| Params | N/A (自动化实验参数) |
+| Weights | ImageNet pretrained R50 (mmdet default) |
+| Code path | 由 open-researcher-v2 自动生成（见 `.research/graph.json` frontier 节点） |
+| Params | 见对应 `work_dirs/*/` 下的 `.py` config 副本（由实验框架自动拷贝） |
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
 | Time/epoch | N/A |
-| Total time | ~24 epochs |
+| Total time | N/A (wall-clock not logged; schedule: 24 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
+| Smoke cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
+| Full cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
 | Smoke | N/A (auto-run) |
 | Full | [x] |
 | Logs | `work_dirs/frontier_008_24ep/20260323_215733.log` |
@@ -1186,16 +1200,18 @@
 | Objective | 将 step LR 替换为 cosine annealing LR schedule |
 | Baseline | frontier_008_24ep (mAP=0.701) |
 | Model | OrientedRCNN + R50-FPN (le90) |
-| Weights | `work_dirs/frontier_009_cosine_lr/latest.pth` |
-| Code path | N/A (自动化实验，config 未单独追踪) |
-| Params | N/A (自动化实验参数) |
+| Weights | ImageNet pretrained R50 (mmdet default) |
+| Code path | 由 open-researcher-v2 自动生成（见 `.research/graph.json` frontier 节点） |
+| Params | 见对应 `work_dirs/*/` 下的 `.py` config 副本（由实验框架自动拷贝） |
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
 | Time/epoch | N/A |
-| Total time | ~12 epochs |
+| Total time | N/A (wall-clock not logged; schedule: 12 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
+| Smoke cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
+| Full cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
 | Smoke | N/A (auto-run) |
 | Full | [x] |
 | Logs | `work_dirs/frontier_009_cosine_lr/test_nms02.log` |
@@ -1210,16 +1226,18 @@
 | Objective | Cosine LR 复现实验，验证 frontier_009 结果的可重复性 |
 | Baseline | frontier_008_24ep (mAP=0.701) |
 | Model | OrientedRCNN + R50-FPN (le90) |
-| Weights | `work_dirs/frontier_009_cosine_lr_repro/latest.pth` |
-| Code path | N/A (自动化实验，config 未单独追踪) |
-| Params | N/A (自动化实验参数) |
+| Weights | ImageNet pretrained R50 (mmdet default) |
+| Code path | 由 open-researcher-v2 自动生成（见 `.research/graph.json` frontier 节点） |
+| Params | 见对应 `work_dirs/*/` 下的 `.py` config 副本（由实验框架自动拷贝） |
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
 | Time/epoch | N/A |
-| Total time | ~12 epochs |
+| Total time | N/A (wall-clock not logged; schedule: 12 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
+| Smoke cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
+| Full cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
 | Smoke | N/A (auto-run) |
 | Full | [x] |
 | Logs | `work_dirs/frontier_009_cosine_lr_repro/test_epoch12_nms02.log` |
@@ -1234,16 +1252,18 @@
 | Objective | backbone lr_mult=0.1，冻结骨干网络学习率测试迁移学习效果 |
 | Baseline | frontier_008_24ep (mAP=0.701) |
 | Model | OrientedRCNN + R50-FPN (le90) |
-| Weights | `work_dirs/frontier_010_backbone_lr_mult/latest.pth` |
-| Code path | N/A (自动化实验，config 未单独追踪) |
-| Params | N/A (自动化实验参数) |
+| Weights | ImageNet pretrained R50 (mmdet default) |
+| Code path | 由 open-researcher-v2 自动生成（见 `.research/graph.json` frontier 节点） |
+| Params | 见对应 `work_dirs/*/` 下的 `.py` config 副本（由实验框架自动拷贝） |
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
 | Time/epoch | N/A |
-| Total time | ~12 epochs |
+| Total time | N/A (wall-clock not logged; schedule: 12 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
+| Smoke cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
+| Full cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
 | Smoke | N/A (auto-run) |
 | Full | [x] |
 | Logs | `work_dirs/frontier_010_backbone_lr_mult/20260323_122614.log` |
@@ -1258,16 +1278,18 @@
 | Objective | Weight decay 10 倍增大（0.0001→0.001），测试正则化强度影响 |
 | Baseline | frontier_008_24ep (mAP=0.701) |
 | Model | OrientedRCNN + R50-FPN (le90) |
-| Weights | `work_dirs/frontier_012_wd10x/latest.pth` |
-| Code path | N/A (自动化实验，config 未单独追踪) |
-| Params | N/A (自动化实验参数) |
+| Weights | ImageNet pretrained R50 (mmdet default) |
+| Code path | 由 open-researcher-v2 自动生成（见 `.research/graph.json` frontier 节点） |
+| Params | 见对应 `work_dirs/*/` 下的 `.py` config 副本（由实验框架自动拷贝） |
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
 | Time/epoch | N/A |
-| Total time | ~12 epochs |
+| Total time | N/A (wall-clock not logged; schedule: 12 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
+| Smoke cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
+| Full cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
 | Smoke | N/A (auto-run) |
 | Full | [x] |
 | Logs | `work_dirs/frontier_012_wd10x/20260323_171451.log` |
@@ -1282,16 +1304,18 @@
 | Objective | Cosine LR + seed=0，多种子验证实验稳定性 |
 | Baseline | frontier_008_24ep (mAP=0.701) |
 | Model | OrientedRCNN + R50-FPN (le90) |
-| Weights | `work_dirs/frontier_013_cosine_lr_seed0/latest.pth` |
-| Code path | N/A (自动化实验，config 未单独追踪) |
-| Params | N/A (自动化实验参数) |
+| Weights | ImageNet pretrained R50 (mmdet default) |
+| Code path | 由 open-researcher-v2 自动生成（见 `.research/graph.json` frontier 节点） |
+| Params | 见对应 `work_dirs/*/` 下的 `.py` config 副本（由实验框架自动拷贝） |
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
 | Time/epoch | N/A |
-| Total time | ~12 epochs |
+| Total time | N/A (wall-clock not logged; schedule: 12 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
+| Smoke cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
+| Full cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
 | Smoke | N/A (auto-run) |
 | Full | [x] |
 | Logs | `work_dirs/frontier_013_cosine_lr_seed0/20260324_052009.log` |
@@ -1306,16 +1330,18 @@
 | Objective | Cosine LR + seed=1，多种子验证实验稳定性 |
 | Baseline | frontier_008_24ep (mAP=0.701) |
 | Model | OrientedRCNN + R50-FPN (le90) |
-| Weights | `work_dirs/frontier_013_cosine_lr_seed1/latest.pth` |
-| Code path | N/A (自动化实验，config 未单独追踪) |
-| Params | N/A (自动化实验参数) |
+| Weights | ImageNet pretrained R50 (mmdet default) |
+| Code path | 由 open-researcher-v2 自动生成（见 `.research/graph.json` frontier 节点） |
+| Params | 见对应 `work_dirs/*/` 下的 `.py` config 副本（由实验框架自动拷贝） |
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
 | Time/epoch | N/A |
-| Total time | ~12 epochs |
+| Total time | N/A (wall-clock not logged; schedule: 12 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
+| Smoke cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
+| Full cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
 | Smoke | N/A (auto-run) |
 | Full | [x] |
 | Logs | `work_dirs/frontier_013_cosine_lr_seed1/20260324_085806.log` |
@@ -1331,8 +1357,8 @@
 | Baseline | frontier_008_24ep (mAP=0.701) |
 | Model | OrientedRCNN + R50-FPN (le90) |
 | Weights | N/A |
-| Code path | N/A (自动化实验，config 未单独追踪) |
-| Params | N/A (自动化实验参数) |
+| Code path | 由 open-researcher-v2 自动生成（见 `.research/graph.json` frontier 节点） |
+| Params | 见对应 `work_dirs/*/` 下的 `.py` config 副本（由实验框架自动拷贝） |
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
@@ -1340,6 +1366,8 @@
 | Total time | N/A |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
+| Smoke cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
+| Full cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
 | Smoke | N/A (auto-run) |
 | Full | [x] |
 | Logs | `N/A` |
@@ -1355,8 +1383,8 @@
 | Baseline | frontier_008_24ep (mAP=0.701) |
 | Model | OrientedRCNN + R50-FPN (le90) |
 | Weights | N/A |
-| Code path | N/A (自动化实验，config 未单独追踪) |
-| Params | N/A (自动化实验参数) |
+| Code path | 由 open-researcher-v2 自动生成（见 `.research/graph.json` frontier 节点） |
+| Params | 见对应 `work_dirs/*/` 下的 `.py` config 副本（由实验框架自动拷贝） |
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
@@ -1364,6 +1392,8 @@
 | Total time | N/A |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
+| Smoke cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
+| Full cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
 | Smoke | N/A (auto-run) |
 | Full | [x] |
 | Logs | `N/A` |
@@ -1379,8 +1409,8 @@
 | Baseline | frontier_008_24ep (mAP=0.701) |
 | Model | OrientedRCNN + R50-FPN (le90) |
 | Weights | N/A |
-| Code path | N/A (自动化实验，config 未单独追踪) |
-| Params | N/A (自动化实验参数) |
+| Code path | 由 open-researcher-v2 自动生成（见 `.research/graph.json` frontier 节点） |
+| Params | 见对应 `work_dirs/*/` 下的 `.py` config 副本（由实验框架自动拷贝） |
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
@@ -1388,6 +1418,8 @@
 | Total time | N/A |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
+| Smoke cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
+| Full cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
 | Smoke | N/A (auto-run) |
 | Full | [x] |
 | Logs | `N/A` |
@@ -1403,8 +1435,8 @@
 | Baseline | frontier_008_24ep (mAP=0.701) |
 | Model | OrientedRCNN + R50-FPN (le90) |
 | Weights | N/A |
-| Code path | N/A (自动化实验，config 未单独追踪) |
-| Params | N/A (自动化实验参数) |
+| Code path | 由 open-researcher-v2 自动生成（见 `.research/graph.json` frontier 节点） |
+| Params | 见对应 `work_dirs/*/` 下的 `.py` config 副本（由实验框架自动拷贝） |
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
@@ -1412,6 +1444,8 @@
 | Total time | N/A |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
+| Smoke cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
+| Full cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
 | Smoke | N/A (auto-run) |
 | Full | [x] |
 | Logs | `N/A` |
@@ -1426,16 +1460,18 @@
 | Objective | 24ep schedule + seed=1，验证 anchor 实验的种子稳定性 |
 | Baseline | frontier_008_24ep (mAP=0.701) |
 | Model | OrientedRCNN + R50-FPN (le90) |
-| Weights | `work_dirs/frontier_017_24ep_seed1/latest.pth` |
-| Code path | N/A (自动化实验，config 未单独追踪) |
-| Params | N/A (自动化实验参数) |
+| Weights | ImageNet pretrained R50 (mmdet default) |
+| Code path | 由 open-researcher-v2 自动生成（见 `.research/graph.json` frontier 节点） |
+| Params | 见对应 `work_dirs/*/` 下的 `.py` config 副本（由实验框架自动拷贝） |
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
 | Time/epoch | N/A |
-| Total time | ~11 epochs |
+| Total time | N/A (wall-clock not logged; schedule: 11 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
+| Smoke cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
+| Full cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
 | Smoke | N/A (auto-run) |
 | Full | [x] |
 | Logs | `work_dirs/frontier_017_24ep_seed1/20260324_124956.log` |
@@ -1450,16 +1486,18 @@
 | Objective | 24ep seed1 的 config 产物目录 |
 | Baseline | frontier_008_24ep (mAP=0.701) |
 | Model | OrientedRCNN + R50-FPN (le90) |
-| Weights | `work_dirs/frontier_017_24ep_seed1_oriented_rcnn_rsar/latest.pth` |
-| Code path | N/A (自动化实验，config 未单独追踪) |
-| Params | N/A (自动化实验参数) |
+| Weights | ImageNet pretrained R50 (mmdet default) |
+| Code path | 由 open-researcher-v2 自动生成（见 `.research/graph.json` frontier 节点） |
+| Params | 见对应 `work_dirs/*/` 下的 `.py` config 副本（由实验框架自动拷贝） |
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
 | Time/epoch | N/A |
-| Total time | ~12 epochs |
+| Total time | N/A (wall-clock not logged; schedule: 12 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
+| Smoke cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
+| Full cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
 | Smoke | N/A (auto-run) |
 | Full | [x] |
 | Logs | `work_dirs/frontier_017_24ep_seed1_oriented_rcnn_rsar/20260324_181048.log` |
@@ -1474,16 +1512,18 @@
 | Objective | 将 neck FPN 替换为 PAFPN（路径聚合特征金字塔），24ep schedule |
 | Baseline | frontier_008_24ep (mAP=0.701) |
 | Model | OrientedRCNN + R50-FPN (le90) |
-| Weights | `work_dirs/frontier_020_pafpn_24ep/latest.pth` |
-| Code path | N/A (自动化实验，config 未单独追踪) |
-| Params | N/A (自动化实验参数) |
+| Weights | ImageNet pretrained R50 (mmdet default) |
+| Code path | 由 open-researcher-v2 自动生成（见 `.research/graph.json` frontier 节点） |
+| Params | 见对应 `work_dirs/*/` 下的 `.py` config 副本（由实验框架自动拷贝） |
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
 | Time/epoch | N/A |
-| Total time | ~24 epochs |
+| Total time | N/A (wall-clock not logged; schedule: 24 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
+| Smoke cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
+| Full cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
 | Smoke | N/A (auto-run) |
 | Full | [x] |
 | Logs | `work_dirs/frontier_020_pafpn_24ep/20260324_193301.log` |
@@ -1498,16 +1538,18 @@
 | Objective | 将 RoI head 分类损失 CE 替换为 CEFocalLoss，测试 focal loss 效果 |
 | Baseline | frontier_008_24ep (mAP=0.701) |
 | Model | OrientedRCNN + R50-FPN (le90) |
-| Weights | `work_dirs/frontier_021_cefocal_roi_cls/latest.pth` |
-| Code path | N/A (自动化实验，config 未单独追踪) |
-| Params | N/A (自动化实验参数) |
+| Weights | ImageNet pretrained R50 (mmdet default) |
+| Code path | 由 open-researcher-v2 自动生成（见 `.research/graph.json` frontier 节点） |
+| Params | 见对应 `work_dirs/*/` 下的 `.py` config 副本（由实验框架自动拷贝） |
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
 | Time/epoch | N/A |
-| Total time | ~12 epochs |
+| Total time | N/A (wall-clock not logged; schedule: 12 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
+| Smoke cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
+| Full cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
 | Smoke | N/A (auto-run) |
 | Full | [x] |
 | Logs | `work_dirs/frontier_021_cefocal_roi_cls/20260325_040558.log` |
@@ -1522,16 +1564,18 @@
 | Objective | 将 neck FPN 替换为 OCA-FPN（正交通道注意力 FPN），24ep schedule（创新点 1） |
 | Baseline | frontier_008_24ep (mAP=0.701) |
 | Model | OrientedRCNN + R50-FPN (le90) |
-| Weights | `work_dirs/frontier_026_ocafpn_24ep/latest.pth` |
-| Code path | N/A (自动化实验，config 未单独追踪) |
-| Params | N/A (自动化实验参数) |
+| Weights | ImageNet pretrained R50 (mmdet default) |
+| Code path | 由 open-researcher-v2 自动生成（见 `.research/graph.json` frontier 节点） |
+| Params | 见对应 `work_dirs/*/` 下的 `.py` config 副本（由实验框架自动拷贝） |
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
 | Time/epoch | N/A |
-| Total time | ~13 epochs |
+| Total time | N/A (wall-clock not logged; schedule: 13 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
+| Smoke cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
+| Full cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
 | Smoke | N/A (auto-run) |
 | Full | [x] |
 | Logs | `work_dirs/frontier_026_ocafpn_24ep/20260325_110955.log` |
@@ -1546,22 +1590,24 @@
 | Objective | 监督分支精调 |
 | Baseline | Previous SFOD iteration |
 | Model | UnbiasedTeacher + OrientedRCNN R50-FPN + CGA |
-| Weights | `work_dirs/exp_aa_x_sup_polish/latest_ema.pth` |
-| Code path | N/A (自动化实验，config 未单独追踪) |
-| Params | N/A (自动化实验参数) |
+| Weights | Previous SFOD iteration checkpoint (EMA teacher) |
+| Code path | 由 open-researcher-v2 自动生成（见 `.research/graph.json` frontier 节点） |
+| Params | 见对应 `work_dirs/*/` 下的 `.py` config 副本（由实验框架自动拷贝） |
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
 | Time/epoch | N/A |
-| Total time | ~1 epochs |
+| Total time | N/A (wall-clock not logged; schedule: 1 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
+| Smoke cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
+| Full cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
 | Smoke | N/A (auto-run) |
 | Full | [x] |
 | Logs | `work_dirs/exp_aa_x_sup_polish/launcher.log` |
 | Artifacts | `work_dirs/exp_aa_x_sup_polish/` |
 | Results | 训练完成，未执行独立评测（仅作为 SFOD 迭代链中间步骤） |
-| Plan ref | docs/plan.md §6.3 (SFOD chain), §6.5 (LoRA results) |
+| Plan ref | `docs/plan.md` §6.3 SFOD Chain, §6.5 LoRA Table |
 
 
 ### E0065: exp_ab_x_ema_sup_polish
@@ -1570,22 +1616,24 @@
 | Objective | EMA + 监督分支精调 |
 | Baseline | Previous SFOD iteration |
 | Model | UnbiasedTeacher + OrientedRCNN R50-FPN + CGA |
-| Weights | `work_dirs/exp_ab_x_ema_sup_polish/latest_ema.pth` |
-| Code path | N/A (自动化实验，config 未单独追踪) |
-| Params | N/A (自动化实验参数) |
+| Weights | Previous SFOD iteration checkpoint (EMA teacher) |
+| Code path | 由 open-researcher-v2 自动生成（见 `.research/graph.json` frontier 节点） |
+| Params | 见对应 `work_dirs/*/` 下的 `.py` config 副本（由实验框架自动拷贝） |
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
 | Time/epoch | N/A |
-| Total time | ~1 epochs |
+| Total time | N/A (wall-clock not logged; schedule: 1 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
+| Smoke cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
+| Full cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
 | Smoke | N/A (auto-run) |
 | Full | [x] |
 | Logs | `work_dirs/exp_ab_x_ema_sup_polish/launcher.log` |
 | Artifacts | `work_dirs/exp_ab_x_ema_sup_polish/` |
 | Results | 训练完成，未执行独立评测（仅作为 SFOD 迭代链中间步骤） |
-| Plan ref | docs/plan.md §6.3 (SFOD chain), §6.5 (LoRA results) |
+| Plan ref | `docs/plan.md` §6.3 SFOD Chain, §6.5 LoRA Table |
 
 
 ### E0066: exp_ac_x_ema_tiny_u
@@ -1594,22 +1642,24 @@
 | Objective | EMA + tiny unsupervised 权重实验 |
 | Baseline | Previous SFOD iteration |
 | Model | UnbiasedTeacher + OrientedRCNN R50-FPN + CGA |
-| Weights | `work_dirs/exp_ac_x_ema_tiny_u/latest_ema.pth` |
-| Code path | N/A (自动化实验，config 未单独追踪) |
-| Params | N/A (自动化实验参数) |
+| Weights | Previous SFOD iteration checkpoint (EMA teacher) |
+| Code path | 由 open-researcher-v2 自动生成（见 `.research/graph.json` frontier 节点） |
+| Params | 见对应 `work_dirs/*/` 下的 `.py` config 副本（由实验框架自动拷贝） |
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
 | Time/epoch | N/A |
-| Total time | ~1 epochs |
+| Total time | N/A (wall-clock not logged; schedule: 1 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
+| Smoke cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
+| Full cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
 | Smoke | N/A (auto-run) |
 | Full | [x] |
 | Logs | `work_dirs/exp_ac_x_ema_tiny_u/launcher.log` |
 | Artifacts | `work_dirs/exp_ac_x_ema_tiny_u/` |
 | Results | 训练完成，未执行独立评测（仅作为 SFOD 迭代链中间步骤） |
-| Plan ref | docs/plan.md §6.3 (SFOD chain), §6.5 (LoRA results) |
+| Plan ref | `docs/plan.md` §6.3 SFOD Chain, §6.5 LoRA Table |
 
 
 ### E0067: exp_ad_x_tail_protect
@@ -1618,22 +1668,24 @@
 | Objective | 长尾类别保护策略 |
 | Baseline | Previous SFOD iteration |
 | Model | UnbiasedTeacher + OrientedRCNN R50-FPN + CGA |
-| Weights | `work_dirs/exp_ad_x_tail_protect/latest_ema.pth` |
-| Code path | N/A (自动化实验，config 未单独追踪) |
-| Params | N/A (自动化实验参数) |
+| Weights | Previous SFOD iteration checkpoint (EMA teacher) |
+| Code path | 由 open-researcher-v2 自动生成（见 `.research/graph.json` frontier 节点） |
+| Params | 见对应 `work_dirs/*/` 下的 `.py` config 副本（由实验框架自动拷贝） |
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
 | Time/epoch | N/A |
-| Total time | ~1 epochs |
+| Total time | N/A (wall-clock not logged; schedule: 1 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
+| Smoke cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
+| Full cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
 | Smoke | N/A (auto-run) |
 | Full | [x] |
 | Logs | `work_dirs/exp_ad_x_tail_protect/launcher.log` |
 | Artifacts | `work_dirs/exp_ad_x_tail_protect/` |
 | Results | 训练完成，未执行独立评测（仅作为 SFOD 迭代链中间步骤） |
-| Plan ref | docs/plan.md §6.3 (SFOD chain), §6.5 (LoRA results) |
+| Plan ref | `docs/plan.md` §6.3 SFOD Chain, §6.5 LoRA Table |
 
 
 ### E0068: exp_ae_x_bridge_harbor_protect
@@ -1642,22 +1694,24 @@
 | Objective | bridge/harbor 类别保护策略 |
 | Baseline | Previous SFOD iteration |
 | Model | UnbiasedTeacher + OrientedRCNN R50-FPN + CGA |
-| Weights | `work_dirs/exp_ae_x_bridge_harbor_protect/latest_ema.pth` |
-| Code path | N/A (自动化实验，config 未单独追踪) |
-| Params | N/A (自动化实验参数) |
+| Weights | Previous SFOD iteration checkpoint (EMA teacher) |
+| Code path | 由 open-researcher-v2 自动生成（见 `.research/graph.json` frontier 节点） |
+| Params | 见对应 `work_dirs/*/` 下的 `.py` config 副本（由实验框架自动拷贝） |
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
 | Time/epoch | N/A |
-| Total time | ~1 epochs |
+| Total time | N/A (wall-clock not logged; schedule: 1 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
+| Smoke cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
+| Full cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
 | Smoke | N/A (auto-run) |
 | Full | [x] |
 | Logs | `work_dirs/exp_ae_x_bridge_harbor_protect/launcher.log` |
 | Artifacts | `work_dirs/exp_ae_x_bridge_harbor_protect/` |
 | Results | 训练完成，未执行独立评测（仅作为 SFOD 迭代链中间步骤） |
-| Plan ref | docs/plan.md §6.3 (SFOD chain), §6.5 (LoRA results) |
+| Plan ref | `docs/plan.md` §6.3 SFOD Chain, §6.5 LoRA Table |
 
 
 ### E0069: exp_af_v_one_epoch_wu08
@@ -1666,22 +1720,24 @@
 | Objective | 单 epoch warm-up=0.8 实验 |
 | Baseline | Previous SFOD iteration |
 | Model | UnbiasedTeacher + OrientedRCNN R50-FPN + CGA |
-| Weights | `work_dirs/exp_af_v_one_epoch_wu08/latest_ema.pth` |
-| Code path | N/A (自动化实验，config 未单独追踪) |
-| Params | N/A (自动化实验参数) |
+| Weights | Previous SFOD iteration checkpoint (EMA teacher) |
+| Code path | 由 open-researcher-v2 自动生成（见 `.research/graph.json` frontier 节点） |
+| Params | 见对应 `work_dirs/*/` 下的 `.py` config 副本（由实验框架自动拷贝） |
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
 | Time/epoch | N/A |
-| Total time | ~1 epochs |
+| Total time | N/A (wall-clock not logged; schedule: 1 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
+| Smoke cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
+| Full cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
 | Smoke | N/A (auto-run) |
 | Full | [x] |
 | Logs | `work_dirs/exp_af_v_one_epoch_wu08/launcher.log` |
 | Artifacts | `work_dirs/exp_af_v_one_epoch_wu08/` |
 | Results | 训练完成，未执行独立评测（仅作为 SFOD 迭代链中间步骤） |
-| Plan ref | docs/plan.md §6.3 (SFOD chain), §6.5 (LoRA results) |
+| Plan ref | `docs/plan.md` §6.3 SFOD Chain, §6.5 LoRA Table |
 
 
 ### E0070: exp_ag_v_one_epoch_tank80
@@ -1690,22 +1746,24 @@
 | Objective | 单 epoch + tank 类权重=80 实验 |
 | Baseline | Previous SFOD iteration |
 | Model | UnbiasedTeacher + OrientedRCNN R50-FPN + CGA |
-| Weights | `work_dirs/exp_ag_v_one_epoch_tank80/latest_ema.pth` |
-| Code path | N/A (自动化实验，config 未单独追踪) |
-| Params | N/A (自动化实验参数) |
+| Weights | Previous SFOD iteration checkpoint (EMA teacher) |
+| Code path | 由 open-researcher-v2 自动生成（见 `.research/graph.json` frontier 节点） |
+| Params | 见对应 `work_dirs/*/` 下的 `.py` config 副本（由实验框架自动拷贝） |
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
 | Time/epoch | N/A |
-| Total time | ~1 epochs |
+| Total time | N/A (wall-clock not logged; schedule: 1 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
+| Smoke cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
+| Full cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
 | Smoke | N/A (auto-run) |
 | Full | [x] |
 | Logs | `work_dirs/exp_ag_v_one_epoch_tank80/launcher.log` |
 | Artifacts | `work_dirs/exp_ag_v_one_epoch_tank80/` |
 | Results | 训练完成，未执行独立评测（仅作为 SFOD 迭代链中间步骤） |
-| Plan ref | docs/plan.md §6.3 (SFOD chain), §6.5 (LoRA results) |
+| Plan ref | `docs/plan.md` §6.3 SFOD Chain, §6.5 LoRA Table |
 
 
 ### E0071: exp_ah_x_ema_bbox_split
@@ -1714,22 +1772,24 @@
 | Objective | EMA + bbox 分离训练策略 |
 | Baseline | Previous SFOD iteration |
 | Model | UnbiasedTeacher + OrientedRCNN R50-FPN + CGA |
-| Weights | `work_dirs/exp_ah_x_ema_bbox_split/latest_ema.pth` |
-| Code path | N/A (自动化实验，config 未单独追踪) |
-| Params | N/A (自动化实验参数) |
+| Weights | Previous SFOD iteration checkpoint (EMA teacher) |
+| Code path | 由 open-researcher-v2 自动生成（见 `.research/graph.json` frontier 节点） |
+| Params | 见对应 `work_dirs/*/` 下的 `.py` config 副本（由实验框架自动拷贝） |
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
 | Time/epoch | N/A |
-| Total time | ~1 epochs |
+| Total time | N/A (wall-clock not logged; schedule: 1 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
+| Smoke cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
+| Full cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
 | Smoke | N/A (auto-run) |
 | Full | [x] |
 | Logs | `work_dirs/exp_ah_x_ema_bbox_split/launcher.log` |
 | Artifacts | `work_dirs/exp_ah_x_ema_bbox_split/` |
 | Results | 训练完成，未执行独立评测（仅作为 SFOD 迭代链中间步骤） |
-| Plan ref | docs/plan.md §6.3 (SFOD chain), §6.5 (LoRA results) |
+| Plan ref | `docs/plan.md` §6.3 SFOD Chain, §6.5 LoRA Table |
 
 
 ### E0072: exp_ai_v_bbox_split
@@ -1738,22 +1798,24 @@
 | Objective | bbox 分离训练策略（基于 exp_v） |
 | Baseline | Previous SFOD iteration |
 | Model | UnbiasedTeacher + OrientedRCNN R50-FPN + CGA |
-| Weights | `work_dirs/exp_ai_v_bbox_split/latest_ema.pth` |
-| Code path | N/A (自动化实验，config 未单独追踪) |
-| Params | N/A (自动化实验参数) |
+| Weights | Previous SFOD iteration checkpoint (EMA teacher) |
+| Code path | 由 open-researcher-v2 自动生成（见 `.research/graph.json` frontier 节点） |
+| Params | 见对应 `work_dirs/*/` 下的 `.py` config 副本（由实验框架自动拷贝） |
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
 | Time/epoch | N/A |
-| Total time | ~1 epochs |
+| Total time | N/A (wall-clock not logged; schedule: 1 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
+| Smoke cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
+| Full cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
 | Smoke | N/A (auto-run) |
 | Full | [x] |
 | Logs | `work_dirs/exp_ai_v_bbox_split/launcher.log` |
 | Artifacts | `work_dirs/exp_ai_v_bbox_split/` |
 | Results | 训练完成，未执行独立评测（仅作为 SFOD 迭代链中间步骤） |
-| Plan ref | docs/plan.md §6.3 (SFOD chain), §6.5 (LoRA results) |
+| Plan ref | `docs/plan.md` §6.3 SFOD Chain, §6.5 LoRA Table |
 
 
 ### E0073: exp_aj_v_perclass_anneal
@@ -1762,22 +1824,24 @@
 | Objective | 逐类别退火策略 |
 | Baseline | Previous SFOD iteration |
 | Model | UnbiasedTeacher + OrientedRCNN R50-FPN + CGA |
-| Weights | `work_dirs/exp_aj_v_perclass_anneal/latest_ema.pth` |
-| Code path | N/A (自动化实验，config 未单独追踪) |
-| Params | N/A (自动化实验参数) |
+| Weights | Previous SFOD iteration checkpoint (EMA teacher) |
+| Code path | 由 open-researcher-v2 自动生成（见 `.research/graph.json` frontier 节点） |
+| Params | 见对应 `work_dirs/*/` 下的 `.py` config 副本（由实验框架自动拷贝） |
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
 | Time/epoch | N/A |
-| Total time | ~1 epochs |
+| Total time | N/A (wall-clock not logged; schedule: 1 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
+| Smoke cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
+| Full cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
 | Smoke | N/A (auto-run) |
 | Full | [x] |
 | Logs | `work_dirs/exp_aj_v_perclass_anneal/launcher.log` |
 | Artifacts | `work_dirs/exp_aj_v_perclass_anneal/` |
 | Results | 训练完成，未执行独立评测（仅作为 SFOD 迭代链中间步骤） |
-| Plan ref | docs/plan.md §6.3 (SFOD chain), §6.5 (LoRA results) |
+| Plan ref | `docs/plan.md` §6.3 SFOD Chain, §6.5 LoRA Table |
 
 
 ### E0074: exp_ak_x_epoch2_condcrop
@@ -1786,22 +1850,24 @@
 | Objective | 2 epoch + 条件裁剪增强 |
 | Baseline | Previous SFOD iteration |
 | Model | UnbiasedTeacher + OrientedRCNN R50-FPN + CGA |
-| Weights | `work_dirs/exp_ak_x_epoch2_condcrop/latest_ema.pth` |
-| Code path | N/A (自动化实验，config 未单独追踪) |
-| Params | N/A (自动化实验参数) |
+| Weights | Previous SFOD iteration checkpoint (EMA teacher) |
+| Code path | 由 open-researcher-v2 自动生成（见 `.research/graph.json` frontier 节点） |
+| Params | 见对应 `work_dirs/*/` 下的 `.py` config 副本（由实验框架自动拷贝） |
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
 | Time/epoch | N/A |
-| Total time | ~2 epochs |
+| Total time | N/A (wall-clock not logged; schedule: 2 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
+| Smoke cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
+| Full cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
 | Smoke | N/A (auto-run) |
 | Full | [x] |
 | Logs | `work_dirs/exp_ak_x_epoch2_condcrop/launcher.log` |
 | Artifacts | `work_dirs/exp_ak_x_epoch2_condcrop/` |
 | Results | 训练完成，未执行独立评测（仅作为 SFOD 迭代链中间步骤） |
-| Plan ref | docs/plan.md §6.3 (SFOD chain), §6.5 (LoRA results) |
+| Plan ref | `docs/plan.md` §6.3 SFOD Chain, §6.5 LoRA Table |
 
 
 ### E0075: exp_al_x_dtrcrop_epoch1
@@ -1810,22 +1876,24 @@
 | Objective | DTR 裁剪 + 1 epoch 实验 |
 | Baseline | Previous SFOD iteration |
 | Model | UnbiasedTeacher + OrientedRCNN R50-FPN + CGA |
-| Weights | `work_dirs/exp_al_x_dtrcrop_epoch1/latest_ema.pth` |
-| Code path | N/A (自动化实验，config 未单独追踪) |
-| Params | N/A (自动化实验参数) |
+| Weights | Previous SFOD iteration checkpoint (EMA teacher) |
+| Code path | 由 open-researcher-v2 自动生成（见 `.research/graph.json` frontier 节点） |
+| Params | 见对应 `work_dirs/*/` 下的 `.py` config 副本（由实验框架自动拷贝） |
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
 | Time/epoch | N/A |
-| Total time | ~1 epochs |
+| Total time | N/A (wall-clock not logged; schedule: 1 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
+| Smoke cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
+| Full cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
 | Smoke | N/A (auto-run) |
 | Full | [x] |
 | Logs | `work_dirs/exp_al_x_dtrcrop_epoch1/launcher.log` |
 | Artifacts | `work_dirs/exp_al_x_dtrcrop_epoch1/` |
 | Results | 训练完成，未执行独立评测（仅作为 SFOD 迭代链中间步骤） |
-| Plan ref | docs/plan.md §6.3 (SFOD chain), §6.5 (LoRA results) |
+| Plan ref | `docs/plan.md` §6.3 SFOD Chain, §6.5 LoRA Table |
 
 
 ### E0076: exp_an_x_sardet_unlabeled
@@ -1834,22 +1902,24 @@
 | Objective | 使用 SARDet100k 无标注数据扩充 |
 | Baseline | Previous SFOD iteration |
 | Model | UnbiasedTeacher + OrientedRCNN R50-FPN + CGA |
-| Weights | `work_dirs/exp_an_x_sardet_unlabeled/latest_ema.pth` |
-| Code path | N/A (自动化实验，config 未单独追踪) |
-| Params | N/A (自动化实验参数) |
+| Weights | Previous SFOD iteration checkpoint (EMA teacher) |
+| Code path | 由 open-researcher-v2 自动生成（见 `.research/graph.json` frontier 节点） |
+| Params | 见对应 `work_dirs/*/` 下的 `.py` config 副本（由实验框架自动拷贝） |
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
 | Time/epoch | N/A |
-| Total time | ~2 epochs |
+| Total time | N/A (wall-clock not logged; schedule: 2 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
+| Smoke cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
+| Full cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
 | Smoke | N/A (auto-run) |
 | Full | [x] |
 | Logs | `work_dirs/exp_an_x_sardet_unlabeled/launcher.log` |
 | Artifacts | `work_dirs/exp_an_x_sardet_unlabeled/` |
 | Results | 训练完成，未执行独立评测（仅作为 SFOD 迭代链中间步骤） |
-| Plan ref | docs/plan.md §6.3 (SFOD chain), §6.5 (LoRA results) |
+| Plan ref | `docs/plan.md` §6.3 SFOD Chain, §6.5 LoRA Table |
 
 
 ### E0077: exp_ao_an_tiny_u
@@ -1858,22 +1928,24 @@
 | Objective | 基于 exp_an 的 tiny unsupervised 权重 |
 | Baseline | Previous SFOD iteration |
 | Model | UnbiasedTeacher + OrientedRCNN R50-FPN + CGA |
-| Weights | `work_dirs/exp_ao_an_tiny_u/latest_ema.pth` |
-| Code path | N/A (自动化实验，config 未单独追踪) |
-| Params | N/A (自动化实验参数) |
+| Weights | Previous SFOD iteration checkpoint (EMA teacher) |
+| Code path | 由 open-researcher-v2 自动生成（见 `.research/graph.json` frontier 节点） |
+| Params | 见对应 `work_dirs/*/` 下的 `.py` config 副本（由实验框架自动拷贝） |
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
 | Time/epoch | N/A |
-| Total time | ~1 epochs |
+| Total time | N/A (wall-clock not logged; schedule: 1 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
+| Smoke cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
+| Full cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
 | Smoke | N/A (auto-run) |
 | Full | [x] |
 | Logs | `work_dirs/exp_ao_an_tiny_u/launcher.log` |
 | Artifacts | `work_dirs/exp_ao_an_tiny_u/` |
 | Results | 训练完成，未执行独立评测（仅作为 SFOD 迭代链中间步骤） |
-| Plan ref | docs/plan.md §6.3 (SFOD chain), §6.5 (LoRA results) |
+| Plan ref | `docs/plan.md` §6.3 SFOD Chain, §6.5 LoRA Table |
 
 
 ### E0078: exp_ap_ao_tiny_u01
@@ -1882,22 +1954,24 @@
 | Objective | tiny u=0.1 实验 |
 | Baseline | Previous SFOD iteration |
 | Model | UnbiasedTeacher + OrientedRCNN R50-FPN + CGA |
-| Weights | `work_dirs/exp_ap_ao_tiny_u01/latest_ema.pth` |
-| Code path | N/A (自动化实验，config 未单独追踪) |
-| Params | N/A (自动化实验参数) |
+| Weights | Previous SFOD iteration checkpoint (EMA teacher) |
+| Code path | 由 open-researcher-v2 自动生成（见 `.research/graph.json` frontier 节点） |
+| Params | 见对应 `work_dirs/*/` 下的 `.py` config 副本（由实验框架自动拷贝） |
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
 | Time/epoch | N/A |
-| Total time | ~1 epochs |
+| Total time | N/A (wall-clock not logged; schedule: 1 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
+| Smoke cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
+| Full cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
 | Smoke | N/A (auto-run) |
 | Full | [x] |
 | Logs | `work_dirs/exp_ap_ao_tiny_u01/launcher.log` |
 | Artifacts | `work_dirs/exp_ap_ao_tiny_u01/` |
 | Results | 训练完成，未执行独立评测（仅作为 SFOD 迭代链中间步骤） |
-| Plan ref | docs/plan.md §6.3 (SFOD chain), §6.5 (LoRA results) |
+| Plan ref | `docs/plan.md` §6.3 SFOD Chain, §6.5 LoRA Table |
 
 
 ### E0079: exp_aq_ap_tiny_u005
@@ -1906,22 +1980,24 @@
 | Objective | tiny u=0.05 实验 |
 | Baseline | Previous SFOD iteration |
 | Model | UnbiasedTeacher + OrientedRCNN R50-FPN + CGA |
-| Weights | `work_dirs/exp_aq_ap_tiny_u005/latest_ema.pth` |
-| Code path | N/A (自动化实验，config 未单独追踪) |
-| Params | N/A (自动化实验参数) |
+| Weights | Previous SFOD iteration checkpoint (EMA teacher) |
+| Code path | 由 open-researcher-v2 自动生成（见 `.research/graph.json` frontier 节点） |
+| Params | 见对应 `work_dirs/*/` 下的 `.py` config 副本（由实验框架自动拷贝） |
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
 | Time/epoch | N/A |
-| Total time | ~1 epochs |
+| Total time | N/A (wall-clock not logged; schedule: 1 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
+| Smoke cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
+| Full cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
 | Smoke | N/A (auto-run) |
 | Full | [x] |
 | Logs | `work_dirs/exp_aq_ap_tiny_u005/launcher.log` |
 | Artifacts | `work_dirs/exp_aq_ap_tiny_u005/` |
 | Results | 训练完成，未执行独立评测（仅作为 SFOD 迭代链中间步骤） |
-| Plan ref | docs/plan.md §6.3 (SFOD chain), §6.5 (LoRA results) |
+| Plan ref | `docs/plan.md` §6.3 SFOD Chain, §6.5 LoRA Table |
 
 
 ### E0080: exp_ar_ap_tiny_u005_lowema
@@ -1930,22 +2006,24 @@
 | Objective | tiny u=0.05 + 低 EMA 动量 |
 | Baseline | Previous SFOD iteration |
 | Model | UnbiasedTeacher + OrientedRCNN R50-FPN + CGA |
-| Weights | `work_dirs/exp_ar_ap_tiny_u005_lowema/latest_ema.pth` |
-| Code path | N/A (自动化实验，config 未单独追踪) |
-| Params | N/A (自动化实验参数) |
+| Weights | Previous SFOD iteration checkpoint (EMA teacher) |
+| Code path | 由 open-researcher-v2 自动生成（见 `.research/graph.json` frontier 节点） |
+| Params | 见对应 `work_dirs/*/` 下的 `.py` config 副本（由实验框架自动拷贝） |
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
 | Time/epoch | N/A |
-| Total time | ~1 epochs |
+| Total time | N/A (wall-clock not logged; schedule: 1 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
+| Smoke cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
+| Full cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
 | Smoke | N/A (auto-run) |
 | Full | [x] |
 | Logs | `work_dirs/exp_ar_ap_tiny_u005_lowema/launcher.log` |
 | Artifacts | `work_dirs/exp_ar_ap_tiny_u005_lowema/` |
 | Results | 训练完成，未执行独立评测（仅作为 SFOD 迭代链中间步骤） |
-| Plan ref | docs/plan.md §6.3 (SFOD chain), §6.5 (LoRA results) |
+| Plan ref | `docs/plan.md` §6.3 SFOD Chain, §6.5 LoRA Table |
 
 
 ### E0081: exp_as_ar_tiny_u003_lowema
@@ -1954,22 +2032,24 @@
 | Objective | tiny u=0.03 + 低 EMA 动量 |
 | Baseline | Previous SFOD iteration |
 | Model | UnbiasedTeacher + OrientedRCNN R50-FPN + CGA |
-| Weights | `work_dirs/exp_as_ar_tiny_u003_lowema/latest_ema.pth` |
-| Code path | N/A (自动化实验，config 未单独追踪) |
-| Params | N/A (自动化实验参数) |
+| Weights | Previous SFOD iteration checkpoint (EMA teacher) |
+| Code path | 由 open-researcher-v2 自动生成（见 `.research/graph.json` frontier 节点） |
+| Params | 见对应 `work_dirs/*/` 下的 `.py` config 副本（由实验框架自动拷贝） |
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
 | Time/epoch | N/A |
-| Total time | ~1 epochs |
+| Total time | N/A (wall-clock not logged; schedule: 1 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
+| Smoke cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
+| Full cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
 | Smoke | N/A (auto-run) |
 | Full | [x] |
 | Logs | `work_dirs/exp_as_ar_tiny_u003_lowema/launcher.log` |
 | Artifacts | `work_dirs/exp_as_ar_tiny_u003_lowema/` |
 | Results | 训练完成，未执行独立评测（仅作为 SFOD 迭代链中间步骤） |
-| Plan ref | docs/plan.md §6.3 (SFOD chain), §6.5 (LoRA results) |
+| Plan ref | `docs/plan.md` §6.3 SFOD Chain, §6.5 LoRA Table |
 
 
 ### E0082: exp_at_ar_tiny_u004_lowema
@@ -1978,22 +2058,24 @@
 | Objective | tiny u=0.04 + 低 EMA 动量 |
 | Baseline | Previous SFOD iteration |
 | Model | UnbiasedTeacher + OrientedRCNN R50-FPN + CGA |
-| Weights | `work_dirs/exp_at_ar_tiny_u004_lowema/latest_ema.pth` |
-| Code path | N/A (自动化实验，config 未单独追踪) |
-| Params | N/A (自动化实验参数) |
+| Weights | Previous SFOD iteration checkpoint (EMA teacher) |
+| Code path | 由 open-researcher-v2 自动生成（见 `.research/graph.json` frontier 节点） |
+| Params | 见对应 `work_dirs/*/` 下的 `.py` config 副本（由实验框架自动拷贝） |
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
 | Time/epoch | N/A |
-| Total time | ~1 epochs |
+| Total time | N/A (wall-clock not logged; schedule: 1 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
+| Smoke cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
+| Full cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
 | Smoke | N/A (auto-run) |
 | Full | [x] |
 | Logs | `work_dirs/exp_at_ar_tiny_u004_lowema/launcher.log` |
 | Artifacts | `work_dirs/exp_at_ar_tiny_u004_lowema/` |
 | Results | 训练完成，未执行独立评测（仅作为 SFOD 迭代链中间步骤） |
-| Plan ref | docs/plan.md §6.3 (SFOD chain), §6.5 (LoRA results) |
+| Plan ref | `docs/plan.md` §6.3 SFOD Chain, §6.5 LoRA Table |
 
 
 ### E0083: exp_au_ar_tiny_u006_lowema
@@ -2002,22 +2084,24 @@
 | Objective | tiny u=0.06 + 低 EMA 动量 |
 | Baseline | Previous SFOD iteration |
 | Model | UnbiasedTeacher + OrientedRCNN R50-FPN + CGA |
-| Weights | `work_dirs/exp_au_ar_tiny_u006_lowema/latest_ema.pth` |
-| Code path | N/A (自动化实验，config 未单独追踪) |
-| Params | N/A (自动化实验参数) |
+| Weights | Previous SFOD iteration checkpoint (EMA teacher) |
+| Code path | 由 open-researcher-v2 自动生成（见 `.research/graph.json` frontier 节点） |
+| Params | 见对应 `work_dirs/*/` 下的 `.py` config 副本（由实验框架自动拷贝） |
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
 | Time/epoch | N/A |
-| Total time | ~1 epochs |
+| Total time | N/A (wall-clock not logged; schedule: 1 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
+| Smoke cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
+| Full cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
 | Smoke | N/A (auto-run) |
 | Full | [x] |
 | Logs | `work_dirs/exp_au_ar_tiny_u006_lowema/student_eval.log` |
 | Artifacts | `work_dirs/exp_au_ar_tiny_u006_lowema/` |
 | Results | 训练完成，未执行独立评测（仅作为 SFOD 迭代链中间步骤） |
-| Plan ref | docs/plan.md §6.3 (SFOD chain), §6.5 (LoRA results) |
+| Plan ref | `docs/plan.md` §6.3 SFOD Chain, §6.5 LoRA Table |
 
 
 ### E0084: exp_av_au_tiny_u006_lowema
@@ -2026,22 +2110,24 @@
 | Objective | 基于 exp_au 的 u=0.06 低 EMA 继续训练 |
 | Baseline | Previous SFOD iteration |
 | Model | UnbiasedTeacher + OrientedRCNN R50-FPN + CGA |
-| Weights | `work_dirs/exp_av_au_tiny_u006_lowema/latest_ema.pth` |
-| Code path | N/A (自动化实验，config 未单独追踪) |
-| Params | N/A (自动化实验参数) |
+| Weights | Previous SFOD iteration checkpoint (EMA teacher) |
+| Code path | 由 open-researcher-v2 自动生成（见 `.research/graph.json` frontier 节点） |
+| Params | 见对应 `work_dirs/*/` 下的 `.py` config 副本（由实验框架自动拷贝） |
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
 | Time/epoch | N/A |
-| Total time | ~1 epochs |
+| Total time | N/A (wall-clock not logged; schedule: 1 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
+| Smoke cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
+| Full cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
 | Smoke | N/A (auto-run) |
 | Full | [x] |
 | Logs | `work_dirs/exp_av_au_tiny_u006_lowema/student_eval.log` |
 | Artifacts | `work_dirs/exp_av_au_tiny_u006_lowema/` |
 | Results | 训练完成，未执行独立评测（仅作为 SFOD 迭代链中间步骤） |
-| Plan ref | docs/plan.md §6.3 (SFOD chain), §6.5 (LoRA results) |
+| Plan ref | `docs/plan.md` §6.3 SFOD Chain, §6.5 LoRA Table |
 
 
 ### E0085: exp_aw_au_tiny_u005_lowema
@@ -2050,22 +2136,24 @@
 | Objective | 基于 exp_au 的 u=0.05 低 EMA |
 | Baseline | Previous SFOD iteration |
 | Model | UnbiasedTeacher + OrientedRCNN R50-FPN + CGA |
-| Weights | `work_dirs/exp_aw_au_tiny_u005_lowema/latest_ema.pth` |
-| Code path | N/A (自动化实验，config 未单独追踪) |
-| Params | N/A (自动化实验参数) |
+| Weights | Previous SFOD iteration checkpoint (EMA teacher) |
+| Code path | 由 open-researcher-v2 自动生成（见 `.research/graph.json` frontier 节点） |
+| Params | 见对应 `work_dirs/*/` 下的 `.py` config 副本（由实验框架自动拷贝） |
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
 | Time/epoch | N/A |
-| Total time | ~1 epochs |
+| Total time | N/A (wall-clock not logged; schedule: 1 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
+| Smoke cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
+| Full cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
 | Smoke | N/A (auto-run) |
 | Full | [x] |
 | Logs | `work_dirs/exp_aw_au_tiny_u005_lowema/student_eval.log` |
 | Artifacts | `work_dirs/exp_aw_au_tiny_u005_lowema/` |
 | Results | 训练完成，未执行独立评测（仅作为 SFOD 迭代链中间步骤） |
-| Plan ref | docs/plan.md §6.3 (SFOD chain), §6.5 (LoRA results) |
+| Plan ref | `docs/plan.md` §6.3 SFOD Chain, §6.5 LoRA Table |
 
 
 ### E0086: exp_ax_au_tiny_u006_ema995
@@ -2074,22 +2162,24 @@
 | Objective | u=0.06 + EMA momentum=0.995（**最佳 SFOD 结果**） |
 | Baseline | Previous SFOD iteration |
 | Model | UnbiasedTeacher + OrientedRCNN R50-FPN + CGA |
-| Weights | `work_dirs/exp_ax_au_tiny_u006_ema995/latest_ema.pth` |
-| Code path | N/A (自动化实验，config 未单独追踪) |
-| Params | N/A (自动化实验参数) |
+| Weights | Previous SFOD iteration checkpoint (EMA teacher) |
+| Code path | 由 open-researcher-v2 自动生成（见 `.research/graph.json` frontier 节点） |
+| Params | 见对应 `work_dirs/*/` 下的 `.py` config 副本（由实验框架自动拷贝） |
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
 | Time/epoch | N/A |
-| Total time | ~1 epochs |
+| Total time | N/A (wall-clock not logged; schedule: 1 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
+| Smoke cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
+| Full cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
 | Smoke | N/A (auto-run) |
 | Full | [x] |
 | Logs | `work_dirs/exp_ax_au_tiny_u006_ema995/launcher.log` |
 | Artifacts | `work_dirs/exp_ax_au_tiny_u006_ema995/` |
 | Results | 训练完成，未执行独立评测（仅作为 SFOD 迭代链中间步骤） |
-| Plan ref | docs/plan.md §6.3 (SFOD chain), §6.5 (LoRA results) |
+| Plan ref | `docs/plan.md` §6.3 SFOD Chain, §6.5 LoRA Table |
 
 
 ### E0087: exp_ay_ax_tiny_u006_ema995
@@ -2098,22 +2188,24 @@
 | Objective | 基于 exp_ax 的继续训练 |
 | Baseline | Previous SFOD iteration |
 | Model | UnbiasedTeacher + OrientedRCNN R50-FPN + CGA |
-| Weights | `work_dirs/exp_ay_ax_tiny_u006_ema995/latest_ema.pth` |
-| Code path | N/A (自动化实验，config 未单独追踪) |
-| Params | N/A (自动化实验参数) |
+| Weights | Previous SFOD iteration checkpoint (EMA teacher) |
+| Code path | 由 open-researcher-v2 自动生成（见 `.research/graph.json` frontier 节点） |
+| Params | 见对应 `work_dirs/*/` 下的 `.py` config 副本（由实验框架自动拷贝） |
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
 | Time/epoch | N/A |
-| Total time | ~1 epochs |
+| Total time | N/A (wall-clock not logged; schedule: 1 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
+| Smoke cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
+| Full cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
 | Smoke | N/A (auto-run) |
 | Full | [x] |
 | Logs | `work_dirs/exp_ay_ax_tiny_u006_ema995/launcher.log` |
 | Artifacts | `work_dirs/exp_ay_ax_tiny_u006_ema995/` |
 | Results | 训练完成，未执行独立评测（仅作为 SFOD 迭代链中间步骤） |
-| Plan ref | docs/plan.md §6.3 (SFOD chain), §6.5 (LoRA results) |
+| Plan ref | `docs/plan.md` §6.3 SFOD Chain, §6.5 LoRA Table |
 
 
 ### E0088: exp_m_lora_cga
@@ -2122,22 +2214,24 @@
 | Objective | LoRA 微调 SARCLIP 后集成到 CGA 模块的首次 SFOD 实验 |
 | Baseline | Previous SFOD iteration |
 | Model | UnbiasedTeacher + OrientedRCNN R50-FPN + CGA |
-| Weights | `work_dirs/exp_m_lora_cga/latest_ema.pth` |
-| Code path | N/A (自动化实验，config 未单独追踪) |
-| Params | N/A (自动化实验参数) |
+| Weights | Previous SFOD iteration checkpoint (EMA teacher) |
+| Code path | 由 open-researcher-v2 自动生成（见 `.research/graph.json` frontier 节点） |
+| Params | 见对应 `work_dirs/*/` 下的 `.py` config 副本（由实验框架自动拷贝） |
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
 | Time/epoch | N/A |
-| Total time | ~16 epochs |
+| Total time | N/A (wall-clock not logged; schedule: 16 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
+| Smoke cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
+| Full cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
 | Smoke | N/A (auto-run) |
 | Full | [x] |
 | Logs | `work_dirs/exp_m_lora_cga/wait_and_resume.log` |
 | Artifacts | `work_dirs/exp_m_lora_cga/` |
 | Results | 训练完成，未执行独立评测（仅作为 SFOD 迭代链中间步骤） |
-| Plan ref | docs/plan.md §6.3 (SFOD chain), §6.5 (LoRA results) |
+| Plan ref | `docs/plan.md` §6.3 SFOD Chain, §6.5 LoRA Table |
 
 
 ### E0089: exp_m_wu_schedule
@@ -2146,22 +2240,24 @@
 | Objective | 调整 warm-up schedule 参数的 SFOD 实验 |
 | Baseline | Previous SFOD iteration |
 | Model | UnbiasedTeacher + OrientedRCNN R50-FPN + CGA |
-| Weights | `work_dirs/exp_m_wu_schedule/latest_ema.pth` |
-| Code path | N/A (自动化实验，config 未单独追踪) |
-| Params | N/A (自动化实验参数) |
+| Weights | Previous SFOD iteration checkpoint (EMA teacher) |
+| Code path | 由 open-researcher-v2 自动生成（见 `.research/graph.json` frontier 节点） |
+| Params | 见对应 `work_dirs/*/` 下的 `.py` config 副本（由实验框架自动拷贝） |
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
 | Time/epoch | N/A |
-| Total time | ~16 epochs |
+| Total time | N/A (wall-clock not logged; schedule: 16 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
+| Smoke cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
+| Full cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
 | Smoke | N/A (auto-run) |
 | Full | [x] |
 | Logs | `work_dirs/exp_m_wu_schedule/train.log` |
 | Artifacts | `work_dirs/exp_m_wu_schedule/` |
 | Results | 训练完成，未执行独立评测（仅作为 SFOD 迭代链中间步骤） |
-| Plan ref | docs/plan.md §6.3 (SFOD chain), §6.5 (LoRA results) |
+| Plan ref | `docs/plan.md` §6.3 SFOD Chain, §6.5 LoRA Table |
 
 
 ### E0090: exp_t_m_resume
@@ -2170,22 +2266,24 @@
 | Objective | 从 exp_m 断点恢复训练 |
 | Baseline | Previous SFOD iteration |
 | Model | UnbiasedTeacher + OrientedRCNN R50-FPN + CGA |
-| Weights | `work_dirs/exp_t_m_resume/latest_ema.pth` |
-| Code path | N/A (自动化实验，config 未单独追踪) |
-| Params | N/A (自动化实验参数) |
+| Weights | Previous SFOD iteration checkpoint (EMA teacher) |
+| Code path | 由 open-researcher-v2 自动生成（见 `.research/graph.json` frontier 节点） |
+| Params | 见对应 `work_dirs/*/` 下的 `.py` config 副本（由实验框架自动拷贝） |
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
 | Time/epoch | N/A |
-| Total time | ~16 epochs |
+| Total time | N/A (wall-clock not logged; schedule: 16 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
+| Smoke cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
+| Full cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
 | Smoke | N/A (auto-run) |
 | Full | [x] |
 | Logs | `work_dirs/exp_t_m_resume/train_attempt1_sighup.log` |
 | Artifacts | `work_dirs/exp_t_m_resume/` |
 | Results | 训练完成，未执行独立评测（仅作为 SFOD 迭代链中间步骤） |
-| Plan ref | docs/plan.md §6.3 (SFOD chain), §6.5 (LoRA results) |
+| Plan ref | `docs/plan.md` §6.3 SFOD Chain, §6.5 LoRA Table |
 
 
 ### E0091: exp_u_m_aircraft_protect
@@ -2194,22 +2292,24 @@
 | Objective | 针对 aircraft 类别的保护策略（提高小类权重） |
 | Baseline | Previous SFOD iteration |
 | Model | UnbiasedTeacher + OrientedRCNN R50-FPN + CGA |
-| Weights | `work_dirs/exp_u_m_aircraft_protect/latest_ema.pth` |
-| Code path | N/A (自动化实验，config 未单独追踪) |
-| Params | N/A (自动化实验参数) |
+| Weights | Previous SFOD iteration checkpoint (EMA teacher) |
+| Code path | 由 open-researcher-v2 自动生成（见 `.research/graph.json` frontier 节点） |
+| Params | 见对应 `work_dirs/*/` 下的 `.py` config 副本（由实验框架自动拷贝） |
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
 | Time/epoch | N/A |
-| Total time | ~16 epochs |
+| Total time | N/A (wall-clock not logged; schedule: 16 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
+| Smoke cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
+| Full cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
 | Smoke | N/A (auto-run) |
 | Full | [x] |
 | Logs | `work_dirs/exp_u_m_aircraft_protect/train_attempt1_missing_ckpt.log` |
 | Artifacts | `work_dirs/exp_u_m_aircraft_protect/` |
 | Results | 训练完成，未执行独立评测（仅作为 SFOD 迭代链中间步骤） |
-| Plan ref | docs/plan.md §6.3 (SFOD chain), §6.5 (LoRA results) |
+| Plan ref | `docs/plan.md` §6.3 SFOD Chain, §6.5 LoRA Table |
 
 
 ### E0092: exp_v_t_aircraft_protect
@@ -2218,22 +2318,24 @@
 | Objective | 基于 exp_t 的 aircraft 保护策略迭代 |
 | Baseline | Previous SFOD iteration |
 | Model | UnbiasedTeacher + OrientedRCNN R50-FPN + CGA |
-| Weights | `work_dirs/exp_v_t_aircraft_protect/latest_ema.pth` |
-| Code path | N/A (自动化实验，config 未单独追踪) |
-| Params | N/A (自动化实验参数) |
+| Weights | Previous SFOD iteration checkpoint (EMA teacher) |
+| Code path | 由 open-researcher-v2 自动生成（见 `.research/graph.json` frontier 节点） |
+| Params | 见对应 `work_dirs/*/` 下的 `.py` config 副本（由实验框架自动拷贝） |
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
 | Time/epoch | N/A |
-| Total time | ~16 epochs |
+| Total time | N/A (wall-clock not logged; schedule: 16 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
+| Smoke cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
+| Full cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
 | Smoke | N/A (auto-run) |
 | Full | [x] |
 | Logs | `work_dirs/exp_v_t_aircraft_protect/train.log` |
 | Artifacts | `work_dirs/exp_v_t_aircraft_protect/` |
 | Results | 训练完成，未执行独立评测（仅作为 SFOD 迭代链中间步骤） |
-| Plan ref | docs/plan.md §6.3 (SFOD chain), §6.5 (LoRA results) |
+| Plan ref | `docs/plan.md` §6.3 SFOD Chain, §6.5 LoRA Table |
 
 
 ### E0093: exp_w_v_polish
@@ -2242,22 +2344,24 @@
 | Objective | 基于 exp_v 的精调优化 |
 | Baseline | Previous SFOD iteration |
 | Model | UnbiasedTeacher + OrientedRCNN R50-FPN + CGA |
-| Weights | `work_dirs/exp_w_v_polish/latest_ema.pth` |
-| Code path | N/A (自动化实验，config 未单独追踪) |
-| Params | N/A (自动化实验参数) |
+| Weights | Previous SFOD iteration checkpoint (EMA teacher) |
+| Code path | 由 open-researcher-v2 自动生成（见 `.research/graph.json` frontier 节点） |
+| Params | 见对应 `work_dirs/*/` 下的 `.py` config 副本（由实验框架自动拷贝） |
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
 | Time/epoch | N/A |
-| Total time | ~8 epochs |
+| Total time | N/A (wall-clock not logged; schedule: 8 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
+| Smoke cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
+| Full cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
 | Smoke | N/A (auto-run) |
 | Full | [x] |
 | Logs | `work_dirs/exp_w_v_polish/launcher.log` |
 | Artifacts | `work_dirs/exp_w_v_polish/` |
 | Results | 训练完成，未执行独立评测（仅作为 SFOD 迭代链中间步骤） |
-| Plan ref | docs/plan.md §6.3 (SFOD chain), §6.5 (LoRA results) |
+| Plan ref | `docs/plan.md` §6.3 SFOD Chain, §6.5 LoRA Table |
 
 
 ### E0094: exp_x_v_micro_polish
@@ -2266,22 +2370,24 @@
 | Objective | 基于 exp_v 的微调优化（更小 LR） |
 | Baseline | Previous SFOD iteration |
 | Model | UnbiasedTeacher + OrientedRCNN R50-FPN + CGA |
-| Weights | `work_dirs/exp_x_v_micro_polish/latest_ema.pth` |
-| Code path | N/A (自动化实验，config 未单独追踪) |
-| Params | N/A (自动化实验参数) |
+| Weights | Previous SFOD iteration checkpoint (EMA teacher) |
+| Code path | 由 open-researcher-v2 自动生成（见 `.research/graph.json` frontier 节点） |
+| Params | 见对应 `work_dirs/*/` 下的 `.py` config 副本（由实验框架自动拷贝） |
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
 | Time/epoch | N/A |
-| Total time | ~2 epochs |
+| Total time | N/A (wall-clock not logged; schedule: 2 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
+| Smoke cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
+| Full cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
 | Smoke | N/A (auto-run) |
 | Full | [x] |
 | Logs | `work_dirs/exp_x_v_micro_polish/launcher.log` |
 | Artifacts | `work_dirs/exp_x_v_micro_polish/` |
 | Results | 训练完成，未执行独立评测（仅作为 SFOD 迭代链中间步骤） |
-| Plan ref | docs/plan.md §6.3 (SFOD chain), §6.5 (LoRA results) |
+| Plan ref | `docs/plan.md` §6.3 SFOD Chain, §6.5 LoRA Table |
 
 
 ### E0095: exp_y_x_vitl14_lora
@@ -2290,22 +2396,24 @@
 | Objective | 使用 ViT-L-14 LoRA 增强 CGA 的 SFOD 实验 |
 | Baseline | Previous SFOD iteration |
 | Model | UnbiasedTeacher + OrientedRCNN R50-FPN + CGA |
-| Weights | `work_dirs/exp_y_x_vitl14_lora/latest_ema.pth` |
-| Code path | N/A (自动化实验，config 未单独追踪) |
-| Params | N/A (自动化实验参数) |
+| Weights | Previous SFOD iteration checkpoint (EMA teacher) |
+| Code path | 由 open-researcher-v2 自动生成（见 `.research/graph.json` frontier 节点） |
+| Params | 见对应 `work_dirs/*/` 下的 `.py` config 副本（由实验框架自动拷贝） |
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
 | Time/epoch | N/A |
-| Total time | ~2 epochs |
+| Total time | N/A (wall-clock not logged; schedule: 2 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
+| Smoke cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
+| Full cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
 | Smoke | N/A (auto-run) |
 | Full | [x] |
 | Logs | `work_dirs/exp_y_x_vitl14_lora/launcher.log` |
 | Artifacts | `work_dirs/exp_y_x_vitl14_lora/` |
 | Results | 训练完成，未执行独立评测（仅作为 SFOD 迭代链中间步骤） |
-| Plan ref | docs/plan.md §6.3 (SFOD chain), §6.5 (LoRA results) |
+| Plan ref | `docs/plan.md` §6.3 SFOD Chain, §6.5 LoRA Table |
 
 
 ### E0096: exp_z_x_lower_wu
@@ -2314,19 +2422,21 @@
 | Objective | 降低 warm-up 策略的 SFOD 实验 |
 | Baseline | Previous SFOD iteration |
 | Model | UnbiasedTeacher + OrientedRCNN R50-FPN + CGA |
-| Weights | `work_dirs/exp_z_x_lower_wu/latest_ema.pth` |
-| Code path | N/A (自动化实验，config 未单独追踪) |
-| Params | N/A (自动化实验参数) |
+| Weights | Previous SFOD iteration checkpoint (EMA teacher) |
+| Code path | 由 open-researcher-v2 自动生成（见 `.research/graph.json` frontier 节点） |
+| Params | 见对应 `work_dirs/*/` 下的 `.py` config 副本（由实验框架自动拷贝） |
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
 | Time/epoch | N/A |
-| Total time | ~2 epochs |
+| Total time | N/A (wall-clock not logged; schedule: 2 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
+| Smoke cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
+| Full cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
 | Smoke | N/A (auto-run) |
 | Full | [x] |
 | Logs | `work_dirs/exp_z_x_lower_wu/launcher.log` |
 | Artifacts | `work_dirs/exp_z_x_lower_wu/` |
 | Results | 训练完成，未执行独立评测（仅作为 SFOD 迭代链中间步骤） |
-| Plan ref | docs/plan.md §6.3 (SFOD chain), §6.5 (LoRA results) |
+| Plan ref | `docs/plan.md` §6.3 SFOD Chain, §6.5 LoRA Table |
