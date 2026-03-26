@@ -1003,3 +1003,668 @@
 | Logs | smoke(shared): `work_dirs/smoke_lora.log`；full: `work_dirs/lora_experiments.log`, `work_dirs/p0033_sarclip_lora_ent/train.log`, `work_dirs/lora_cga_eval.log` |
 | Artifacts | `work_dirs/p0033_sarclip_lora_ent/`, `work_dirs/sanity/sarclip_lora_smoke/`, `work_dirs/lora_cga_eval_results.json` |
 | Results | 训练 loss: `0.6784 → 0.2606(best@epoch9) → 0.2729(final)`；checkpoint meta: `ent_weight=0.1`, `ent_score_thr=0.5`；CGA eval mAP=`0.65349`（`work_dirs/lora_cga_eval_results.json`），较 P0032=`0.65303` 提升 `0.00046`，但仍略低于 no-LoRA=`0.65350`；训练日志中 `ent=0.0000` 贯穿 10 个 epoch，说明当前设置下 entropy 项未形成可观测贡献 |
+
+
+---
+
+## New Experiments (Auto-collected 2026-03-26)
+
+### E0042: frontier_001_anchor
+| Field | Value |
+| --- | --- |
+| Objective | 001_anchor |
+| Dataset | RSAR |
+| Method | frontier tuning |
+| Config | `N/A` |
+| Best mAP | **0.6544** |
+| Checkpoint | `work_dirs/frontier_001_anchor/latest.pth` |
+| Log | `work_dirs/frontier_001_anchor/20260321_223758.log` |
+| Eval Details | test_eval_epoch11: mAP=0.6544 |
+
+### E0043: frontier_002_lr_schedule
+| Field | Value |
+| --- | --- |
+| Objective | 002_lr_schedule |
+| Dataset | RSAR |
+| Method | frontier tuning |
+| Config | `N/A` |
+| Best mAP | **0.6609** |
+| Checkpoint | `work_dirs/frontier_002_lr_schedule/latest.pth` |
+| Log | `work_dirs/frontier_002_lr_schedule/20260322_142136.log` |
+| Eval Details | test_epoch11_nms02: mAP=0.6609; test_epoch13_nms02: mAP=0.6569; test_epoch14_nms02: mAP=0.6576 |
+
+### E0044: frontier_004_gwd_loss
+| Field | Value |
+| --- | --- |
+| Objective | 004_gwd_loss |
+| Dataset | RSAR |
+| Method | frontier tuning |
+| Config | `N/A` |
+| Best mAP | **0.6040** |
+| Checkpoint | `work_dirs/frontier_004_gwd_loss/latest.pth` |
+| Log | `work_dirs/frontier_004_gwd_loss/20260322_183045.log` |
+| Eval Details | test_eval_ep12: mAP=0.6040 |
+
+### E0045: frontier_005_polyrotate
+| Field | Value |
+| --- | --- |
+| Objective | 005_polyrotate |
+| Dataset | RSAR |
+| Method | frontier tuning |
+| Config | `N/A` |
+| Best mAP | **0.6226** |
+| Checkpoint | `work_dirs/frontier_005_polyrotate/latest.pth` |
+| Log | `work_dirs/frontier_005_polyrotate/20260322_220419.log` |
+| Eval Details | test_eval_ep12: mAP=0.6226 |
+
+### E0046: frontier_006_multiscale
+| Field | Value |
+| --- | --- |
+| Objective | 006_multiscale |
+| Dataset | RSAR |
+| Method | frontier tuning |
+| Config | `N/A` |
+| Best mAP | **0.6366** |
+| Checkpoint | `work_dirs/frontier_006_multiscale/latest.pth` |
+| Log | `work_dirs/frontier_006_multiscale/20260323_014428.log` |
+| Eval Details | test_default_nms: mAP=0.6366 |
+
+### E0047: frontier_007_score_thr
+| Field | Value |
+| --- | --- |
+| Objective | 007_score_thr |
+| Dataset | RSAR |
+| Method | frontier tuning |
+| Config | `N/A` |
+| Best mAP | **0.6623** |
+| Checkpoint | `N/A` |
+| Log | `N/A` |
+| Eval Details | test_eval: mAP=0.6623 |
+
+### E0048: frontier_008_24ep
+| Field | Value |
+| --- | --- |
+| Objective | 008_24ep |
+| Dataset | RSAR |
+| Method | frontier tuning |
+| Config | `N/A` |
+| Best mAP | **0.7005** |
+| Checkpoint | `work_dirs/frontier_008_24ep/latest.pth` |
+| Log | `work_dirs/frontier_008_24ep/20260323_215733.log` |
+| Eval Details | test_nms03_epoch21: mAP=0.7005 |
+
+### E0049: frontier_009_cosine_lr
+| Field | Value |
+| --- | --- |
+| Objective | 009_cosine_lr |
+| Dataset | RSAR |
+| Method | frontier tuning |
+| Config | `N/A` |
+| Best mAP | **0.6659** |
+| Checkpoint | `work_dirs/frontier_009_cosine_lr/latest.pth` |
+| Log | `work_dirs/frontier_009_cosine_lr/test_nms02.log` |
+| Eval Details | test_default_nms: mAP=0.6570; test_ep12_nms02: mAP=0.6653; test_nms02: mAP=0.6659 |
+
+### E0050: frontier_009_cosine_lr_repro
+| Field | Value |
+| --- | --- |
+| Objective | 009_cosine_lr_repro |
+| Dataset | RSAR |
+| Method | frontier tuning |
+| Config | `N/A` |
+| Best mAP | **0.6621** |
+| Checkpoint | `work_dirs/frontier_009_cosine_lr_repro/latest.pth` |
+| Log | `work_dirs/frontier_009_cosine_lr_repro/test_epoch12_nms02.log` |
+| Eval Details | test_epoch11_nms02: mAP=0.6621; test_epoch12_default: mAP=0.6547; test_epoch12_nms02: mAP=0.6543 |
+
+### E0051: frontier_010_backbone_lr_mult
+| Field | Value |
+| --- | --- |
+| Objective | 010_backbone_lr_mult |
+| Dataset | RSAR |
+| Method | frontier tuning |
+| Config | `N/A` |
+| Best mAP | **N/A** |
+| Checkpoint | `work_dirs/frontier_010_backbone_lr_mult/latest.pth` |
+| Log | `work_dirs/frontier_010_backbone_lr_mult/20260323_122614.log` |
+| Eval Details | No eval results |
+
+### E0052: frontier_012_wd10x
+| Field | Value |
+| --- | --- |
+| Objective | 012_wd10x |
+| Dataset | RSAR |
+| Method | frontier tuning |
+| Config | `N/A` |
+| Best mAP | **0.5184** |
+| Checkpoint | `work_dirs/frontier_012_wd10x/latest.pth` |
+| Log | `work_dirs/frontier_012_wd10x/20260323_171451.log` |
+| Eval Details | test_nms02_epoch12: mAP=0.5184 |
+
+### E0053: frontier_013_cosine_lr_seed0
+| Field | Value |
+| --- | --- |
+| Objective | 013_cosine_lr_seed0 |
+| Dataset | RSAR |
+| Method | frontier tuning |
+| Config | `N/A` |
+| Best mAP | **0.6645** |
+| Checkpoint | `work_dirs/frontier_013_cosine_lr_seed0/latest.pth` |
+| Log | `work_dirs/frontier_013_cosine_lr_seed0/20260324_052009.log` |
+| Eval Details | test_nms03_ep11: mAP=0.6645 |
+
+### E0054: frontier_013_cosine_lr_seed1
+| Field | Value |
+| --- | --- |
+| Objective | 013_cosine_lr_seed1 |
+| Dataset | RSAR |
+| Method | frontier tuning |
+| Config | `N/A` |
+| Best mAP | **0.6731** |
+| Checkpoint | `work_dirs/frontier_013_cosine_lr_seed1/latest.pth` |
+| Log | `work_dirs/frontier_013_cosine_lr_seed1/20260324_085806.log` |
+| Eval Details | test_nms03_ep11: mAP=0.6731 |
+
+### E0055: frontier_014_nms_sweep_run
+| Field | Value |
+| --- | --- |
+| Objective | 014_nms_sweep_run |
+| Dataset | RSAR |
+| Method | frontier tuning |
+| Config | `N/A` |
+| Best mAP | **0.6553** |
+| Checkpoint | `N/A` |
+| Log | `N/A` |
+| Eval Details | thr_015: mAP=0.6553 |
+
+### E0056: frontier_014_nms_sweep_run2
+| Field | Value |
+| --- | --- |
+| Objective | 014_nms_sweep_run2 |
+| Dataset | RSAR |
+| Method | frontier tuning |
+| Config | `N/A` |
+| Best mAP | **0.6734** |
+| Checkpoint | `N/A` |
+| Log | `N/A` |
+| Eval Details | thr_015: mAP=0.6553; thr_020: mAP=0.6632; thr_025: mAP=0.6659; thr_030: mAP=0.6734 |
+
+### E0057: frontier_015_epoch12_nms02
+| Field | Value |
+| --- | --- |
+| Objective | 015_epoch12_nms02 |
+| Dataset | RSAR |
+| Method | frontier tuning |
+| Config | `N/A` |
+| Best mAP | **0.6627** |
+| Checkpoint | `N/A` |
+| Log | `N/A` |
+| Eval Details | .: mAP=0.6627 |
+
+### E0058: frontier_015_epoch12_nms03
+| Field | Value |
+| --- | --- |
+| Objective | 015_epoch12_nms03 |
+| Dataset | RSAR |
+| Method | frontier tuning |
+| Config | `N/A` |
+| Best mAP | **0.6686** |
+| Checkpoint | `N/A` |
+| Log | `N/A` |
+| Eval Details | .: mAP=0.6686 |
+
+### E0059: frontier_017_24ep_seed1
+| Field | Value |
+| --- | --- |
+| Objective | 017_24ep_seed1 |
+| Dataset | RSAR |
+| Method | frontier tuning |
+| Config | `N/A` |
+| Best mAP | **N/A** |
+| Checkpoint | `work_dirs/frontier_017_24ep_seed1/latest.pth` |
+| Log | `work_dirs/frontier_017_24ep_seed1/20260324_124956.log` |
+| Eval Details | No eval results |
+
+### E0060: frontier_017_24ep_seed1_oriented_rcnn_rsar
+| Field | Value |
+| --- | --- |
+| Objective | 017_24ep_seed1_oriented_rcnn_rsar |
+| Dataset | RSAR |
+| Method | frontier tuning |
+| Config | `N/A` |
+| Best mAP | **N/A** |
+| Checkpoint | `work_dirs/frontier_017_24ep_seed1_oriented_rcnn_rsar/latest.pth` |
+| Log | `work_dirs/frontier_017_24ep_seed1_oriented_rcnn_rsar/20260324_181048.log` |
+| Eval Details | No eval results |
+
+### E0061: frontier_020_pafpn_24ep
+| Field | Value |
+| --- | --- |
+| Objective | 020_pafpn_24ep |
+| Dataset | RSAR |
+| Method | frontier tuning |
+| Config | `N/A` |
+| Best mAP | **N/A** |
+| Checkpoint | `work_dirs/frontier_020_pafpn_24ep/latest.pth` |
+| Log | `work_dirs/frontier_020_pafpn_24ep/20260324_193301.log` |
+| Eval Details | No eval results |
+
+### E0062: frontier_021_cefocal_roi_cls
+| Field | Value |
+| --- | --- |
+| Objective | 021_cefocal_roi_cls |
+| Dataset | RSAR |
+| Method | frontier tuning |
+| Config | `N/A` |
+| Best mAP | **N/A** |
+| Checkpoint | `work_dirs/frontier_021_cefocal_roi_cls/latest.pth` |
+| Log | `work_dirs/frontier_021_cefocal_roi_cls/20260325_040558.log` |
+| Eval Details | No eval results |
+
+### E0063: frontier_026_ocafpn_24ep
+| Field | Value |
+| --- | --- |
+| Objective | 026_ocafpn_24ep |
+| Dataset | RSAR |
+| Method | frontier tuning |
+| Config | `N/A` |
+| Best mAP | **N/A** |
+| Checkpoint | `work_dirs/frontier_026_ocafpn_24ep/latest.pth` |
+| Log | `work_dirs/frontier_026_ocafpn_24ep/20260325_110955.log` |
+| Eval Details | No eval results |
+
+### E0064: exp_aa_x_sup_polish
+| Field | Value |
+| --- | --- |
+| Objective | aa x sup polish |
+| Dataset | RSAR |
+| Method | SFOD iteration |
+| Config | `N/A` |
+| Best mAP | **N/A** |
+| Checkpoint | `work_dirs/exp_aa_x_sup_polish/latest_ema.pth` |
+| Log | `work_dirs/exp_aa_x_sup_polish/launcher.log` |
+| Eval Details | No eval results |
+
+### E0065: exp_ab_x_ema_sup_polish
+| Field | Value |
+| --- | --- |
+| Objective | ab x ema sup polish |
+| Dataset | RSAR |
+| Method | SFOD iteration |
+| Config | `N/A` |
+| Best mAP | **N/A** |
+| Checkpoint | `work_dirs/exp_ab_x_ema_sup_polish/latest_ema.pth` |
+| Log | `work_dirs/exp_ab_x_ema_sup_polish/launcher.log` |
+| Eval Details | No eval results |
+
+### E0066: exp_ac_x_ema_tiny_u
+| Field | Value |
+| --- | --- |
+| Objective | ac x ema tiny u |
+| Dataset | RSAR |
+| Method | SFOD iteration |
+| Config | `N/A` |
+| Best mAP | **N/A** |
+| Checkpoint | `work_dirs/exp_ac_x_ema_tiny_u/latest_ema.pth` |
+| Log | `work_dirs/exp_ac_x_ema_tiny_u/launcher.log` |
+| Eval Details | No eval results |
+
+### E0067: exp_ad_x_tail_protect
+| Field | Value |
+| --- | --- |
+| Objective | ad x tail protect |
+| Dataset | RSAR |
+| Method | SFOD iteration |
+| Config | `N/A` |
+| Best mAP | **N/A** |
+| Checkpoint | `work_dirs/exp_ad_x_tail_protect/latest_ema.pth` |
+| Log | `work_dirs/exp_ad_x_tail_protect/launcher.log` |
+| Eval Details | No eval results |
+
+### E0068: exp_ae_x_bridge_harbor_protect
+| Field | Value |
+| --- | --- |
+| Objective | ae x bridge harbor protect |
+| Dataset | RSAR |
+| Method | SFOD iteration |
+| Config | `N/A` |
+| Best mAP | **N/A** |
+| Checkpoint | `work_dirs/exp_ae_x_bridge_harbor_protect/latest_ema.pth` |
+| Log | `work_dirs/exp_ae_x_bridge_harbor_protect/launcher.log` |
+| Eval Details | No eval results |
+
+### E0069: exp_af_v_one_epoch_wu08
+| Field | Value |
+| --- | --- |
+| Objective | af v one epoch wu08 |
+| Dataset | RSAR |
+| Method | SFOD iteration |
+| Config | `N/A` |
+| Best mAP | **N/A** |
+| Checkpoint | `work_dirs/exp_af_v_one_epoch_wu08/latest_ema.pth` |
+| Log | `work_dirs/exp_af_v_one_epoch_wu08/launcher.log` |
+| Eval Details | No eval results |
+
+### E0070: exp_ag_v_one_epoch_tank80
+| Field | Value |
+| --- | --- |
+| Objective | ag v one epoch tank80 |
+| Dataset | RSAR |
+| Method | SFOD iteration |
+| Config | `N/A` |
+| Best mAP | **N/A** |
+| Checkpoint | `work_dirs/exp_ag_v_one_epoch_tank80/latest_ema.pth` |
+| Log | `work_dirs/exp_ag_v_one_epoch_tank80/launcher.log` |
+| Eval Details | No eval results |
+
+### E0071: exp_ah_x_ema_bbox_split
+| Field | Value |
+| --- | --- |
+| Objective | ah x ema bbox split |
+| Dataset | RSAR |
+| Method | SFOD iteration |
+| Config | `N/A` |
+| Best mAP | **N/A** |
+| Checkpoint | `work_dirs/exp_ah_x_ema_bbox_split/latest_ema.pth` |
+| Log | `work_dirs/exp_ah_x_ema_bbox_split/launcher.log` |
+| Eval Details | No eval results |
+
+### E0072: exp_ai_v_bbox_split
+| Field | Value |
+| --- | --- |
+| Objective | ai v bbox split |
+| Dataset | RSAR |
+| Method | SFOD iteration |
+| Config | `N/A` |
+| Best mAP | **N/A** |
+| Checkpoint | `work_dirs/exp_ai_v_bbox_split/latest_ema.pth` |
+| Log | `work_dirs/exp_ai_v_bbox_split/launcher.log` |
+| Eval Details | No eval results |
+
+### E0073: exp_aj_v_perclass_anneal
+| Field | Value |
+| --- | --- |
+| Objective | aj v perclass anneal |
+| Dataset | RSAR |
+| Method | SFOD iteration |
+| Config | `N/A` |
+| Best mAP | **N/A** |
+| Checkpoint | `work_dirs/exp_aj_v_perclass_anneal/latest_ema.pth` |
+| Log | `work_dirs/exp_aj_v_perclass_anneal/launcher.log` |
+| Eval Details | No eval results |
+
+### E0074: exp_ak_x_epoch2_condcrop
+| Field | Value |
+| --- | --- |
+| Objective | ak x epoch2 condcrop |
+| Dataset | RSAR |
+| Method | SFOD iteration |
+| Config | `N/A` |
+| Best mAP | **N/A** |
+| Checkpoint | `work_dirs/exp_ak_x_epoch2_condcrop/latest_ema.pth` |
+| Log | `work_dirs/exp_ak_x_epoch2_condcrop/launcher.log` |
+| Eval Details | No eval results |
+
+### E0075: exp_al_x_dtrcrop_epoch1
+| Field | Value |
+| --- | --- |
+| Objective | al x dtrcrop epoch1 |
+| Dataset | RSAR |
+| Method | SFOD iteration |
+| Config | `N/A` |
+| Best mAP | **N/A** |
+| Checkpoint | `work_dirs/exp_al_x_dtrcrop_epoch1/latest_ema.pth` |
+| Log | `work_dirs/exp_al_x_dtrcrop_epoch1/launcher.log` |
+| Eval Details | No eval results |
+
+### E0076: exp_an_x_sardet_unlabeled
+| Field | Value |
+| --- | --- |
+| Objective | an x sardet unlabeled |
+| Dataset | RSAR |
+| Method | SFOD iteration |
+| Config | `N/A` |
+| Best mAP | **N/A** |
+| Checkpoint | `work_dirs/exp_an_x_sardet_unlabeled/latest_ema.pth` |
+| Log | `work_dirs/exp_an_x_sardet_unlabeled/launcher.log` |
+| Eval Details | No eval results |
+
+### E0077: exp_ao_an_tiny_u
+| Field | Value |
+| --- | --- |
+| Objective | ao an tiny u |
+| Dataset | RSAR |
+| Method | SFOD iteration |
+| Config | `N/A` |
+| Best mAP | **N/A** |
+| Checkpoint | `work_dirs/exp_ao_an_tiny_u/latest_ema.pth` |
+| Log | `work_dirs/exp_ao_an_tiny_u/launcher.log` |
+| Eval Details | No eval results |
+
+### E0078: exp_ap_ao_tiny_u01
+| Field | Value |
+| --- | --- |
+| Objective | ap ao tiny u01 |
+| Dataset | RSAR |
+| Method | SFOD iteration |
+| Config | `N/A` |
+| Best mAP | **N/A** |
+| Checkpoint | `work_dirs/exp_ap_ao_tiny_u01/latest_ema.pth` |
+| Log | `work_dirs/exp_ap_ao_tiny_u01/launcher.log` |
+| Eval Details | No eval results |
+
+### E0079: exp_aq_ap_tiny_u005
+| Field | Value |
+| --- | --- |
+| Objective | aq ap tiny u005 |
+| Dataset | RSAR |
+| Method | SFOD iteration |
+| Config | `N/A` |
+| Best mAP | **N/A** |
+| Checkpoint | `work_dirs/exp_aq_ap_tiny_u005/latest_ema.pth` |
+| Log | `work_dirs/exp_aq_ap_tiny_u005/launcher.log` |
+| Eval Details | No eval results |
+
+### E0080: exp_ar_ap_tiny_u005_lowema
+| Field | Value |
+| --- | --- |
+| Objective | ar ap tiny u005 lowema |
+| Dataset | RSAR |
+| Method | SFOD iteration |
+| Config | `N/A` |
+| Best mAP | **N/A** |
+| Checkpoint | `work_dirs/exp_ar_ap_tiny_u005_lowema/latest_ema.pth` |
+| Log | `work_dirs/exp_ar_ap_tiny_u005_lowema/launcher.log` |
+| Eval Details | No eval results |
+
+### E0081: exp_as_ar_tiny_u003_lowema
+| Field | Value |
+| --- | --- |
+| Objective | as ar tiny u003 lowema |
+| Dataset | RSAR |
+| Method | SFOD iteration |
+| Config | `N/A` |
+| Best mAP | **N/A** |
+| Checkpoint | `work_dirs/exp_as_ar_tiny_u003_lowema/latest_ema.pth` |
+| Log | `work_dirs/exp_as_ar_tiny_u003_lowema/launcher.log` |
+| Eval Details | No eval results |
+
+### E0082: exp_at_ar_tiny_u004_lowema
+| Field | Value |
+| --- | --- |
+| Objective | at ar tiny u004 lowema |
+| Dataset | RSAR |
+| Method | SFOD iteration |
+| Config | `N/A` |
+| Best mAP | **N/A** |
+| Checkpoint | `work_dirs/exp_at_ar_tiny_u004_lowema/latest_ema.pth` |
+| Log | `work_dirs/exp_at_ar_tiny_u004_lowema/launcher.log` |
+| Eval Details | No eval results |
+
+### E0083: exp_au_ar_tiny_u006_lowema
+| Field | Value |
+| --- | --- |
+| Objective | au ar tiny u006 lowema |
+| Dataset | RSAR |
+| Method | SFOD iteration |
+| Config | `N/A` |
+| Best mAP | **N/A** |
+| Checkpoint | `work_dirs/exp_au_ar_tiny_u006_lowema/latest_ema.pth` |
+| Log | `work_dirs/exp_au_ar_tiny_u006_lowema/student_eval.log` |
+| Eval Details | No eval results |
+
+### E0084: exp_av_au_tiny_u006_lowema
+| Field | Value |
+| --- | --- |
+| Objective | av au tiny u006 lowema |
+| Dataset | RSAR |
+| Method | SFOD iteration |
+| Config | `N/A` |
+| Best mAP | **N/A** |
+| Checkpoint | `work_dirs/exp_av_au_tiny_u006_lowema/latest_ema.pth` |
+| Log | `work_dirs/exp_av_au_tiny_u006_lowema/student_eval.log` |
+| Eval Details | No eval results |
+
+### E0085: exp_aw_au_tiny_u005_lowema
+| Field | Value |
+| --- | --- |
+| Objective | aw au tiny u005 lowema |
+| Dataset | RSAR |
+| Method | SFOD iteration |
+| Config | `N/A` |
+| Best mAP | **N/A** |
+| Checkpoint | `work_dirs/exp_aw_au_tiny_u005_lowema/latest_ema.pth` |
+| Log | `work_dirs/exp_aw_au_tiny_u005_lowema/student_eval.log` |
+| Eval Details | No eval results |
+
+### E0086: exp_ax_au_tiny_u006_ema995
+| Field | Value |
+| --- | --- |
+| Objective | ax au tiny u006 ema995 |
+| Dataset | RSAR |
+| Method | SFOD iteration |
+| Config | `N/A` |
+| Best mAP | **N/A** |
+| Checkpoint | `work_dirs/exp_ax_au_tiny_u006_ema995/latest_ema.pth` |
+| Log | `work_dirs/exp_ax_au_tiny_u006_ema995/launcher.log` |
+| Eval Details | No eval results |
+
+### E0087: exp_ay_ax_tiny_u006_ema995
+| Field | Value |
+| --- | --- |
+| Objective | ay ax tiny u006 ema995 |
+| Dataset | RSAR |
+| Method | SFOD iteration |
+| Config | `N/A` |
+| Best mAP | **N/A** |
+| Checkpoint | `work_dirs/exp_ay_ax_tiny_u006_ema995/latest_ema.pth` |
+| Log | `work_dirs/exp_ay_ax_tiny_u006_ema995/launcher.log` |
+| Eval Details | No eval results |
+
+### E0088: exp_m_lora_cga
+| Field | Value |
+| --- | --- |
+| Objective | m lora cga |
+| Dataset | RSAR |
+| Method | SFOD iteration |
+| Config | `N/A` |
+| Best mAP | **N/A** |
+| Checkpoint | `work_dirs/exp_m_lora_cga/latest_ema.pth` |
+| Log | `work_dirs/exp_m_lora_cga/wait_and_resume.log` |
+| Eval Details | No eval results |
+
+### E0089: exp_m_wu_schedule
+| Field | Value |
+| --- | --- |
+| Objective | m wu schedule |
+| Dataset | RSAR |
+| Method | SFOD iteration |
+| Config | `N/A` |
+| Best mAP | **N/A** |
+| Checkpoint | `work_dirs/exp_m_wu_schedule/latest_ema.pth` |
+| Log | `work_dirs/exp_m_wu_schedule/train.log` |
+| Eval Details | No eval results |
+
+### E0090: exp_t_m_resume
+| Field | Value |
+| --- | --- |
+| Objective | t m resume |
+| Dataset | RSAR |
+| Method | SFOD iteration |
+| Config | `N/A` |
+| Best mAP | **N/A** |
+| Checkpoint | `work_dirs/exp_t_m_resume/latest_ema.pth` |
+| Log | `work_dirs/exp_t_m_resume/train_attempt1_sighup.log` |
+| Eval Details | No eval results |
+
+### E0091: exp_u_m_aircraft_protect
+| Field | Value |
+| --- | --- |
+| Objective | u m aircraft protect |
+| Dataset | RSAR |
+| Method | SFOD iteration |
+| Config | `N/A` |
+| Best mAP | **N/A** |
+| Checkpoint | `work_dirs/exp_u_m_aircraft_protect/latest_ema.pth` |
+| Log | `work_dirs/exp_u_m_aircraft_protect/train_attempt1_missing_ckpt.log` |
+| Eval Details | No eval results |
+
+### E0092: exp_v_t_aircraft_protect
+| Field | Value |
+| --- | --- |
+| Objective | v t aircraft protect |
+| Dataset | RSAR |
+| Method | SFOD iteration |
+| Config | `N/A` |
+| Best mAP | **N/A** |
+| Checkpoint | `work_dirs/exp_v_t_aircraft_protect/latest_ema.pth` |
+| Log | `work_dirs/exp_v_t_aircraft_protect/train.log` |
+| Eval Details | No eval results |
+
+### E0093: exp_w_v_polish
+| Field | Value |
+| --- | --- |
+| Objective | w v polish |
+| Dataset | RSAR |
+| Method | SFOD iteration |
+| Config | `N/A` |
+| Best mAP | **N/A** |
+| Checkpoint | `work_dirs/exp_w_v_polish/latest_ema.pth` |
+| Log | `work_dirs/exp_w_v_polish/launcher.log` |
+| Eval Details | No eval results |
+
+### E0094: exp_x_v_micro_polish
+| Field | Value |
+| --- | --- |
+| Objective | x v micro polish |
+| Dataset | RSAR |
+| Method | SFOD iteration |
+| Config | `N/A` |
+| Best mAP | **N/A** |
+| Checkpoint | `work_dirs/exp_x_v_micro_polish/latest_ema.pth` |
+| Log | `work_dirs/exp_x_v_micro_polish/launcher.log` |
+| Eval Details | No eval results |
+
+### E0095: exp_y_x_vitl14_lora
+| Field | Value |
+| --- | --- |
+| Objective | y x vitl14 lora |
+| Dataset | RSAR |
+| Method | SFOD iteration |
+| Config | `N/A` |
+| Best mAP | **N/A** |
+| Checkpoint | `work_dirs/exp_y_x_vitl14_lora/latest_ema.pth` |
+| Log | `work_dirs/exp_y_x_vitl14_lora/launcher.log` |
+| Eval Details | No eval results |
+
+### E0096: exp_z_x_lower_wu
+| Field | Value |
+| --- | --- |
+| Objective | z x lower wu |
+| Dataset | RSAR |
+| Method | SFOD iteration |
+| Config | `N/A` |
+| Best mAP | **N/A** |
+| Checkpoint | `work_dirs/exp_z_x_lower_wu/latest_ema.pth` |
+| Log | `work_dirs/exp_z_x_lower_wu/launcher.log` |
+| Eval Details | No eval results |
