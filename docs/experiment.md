@@ -1268,7 +1268,7 @@
 | Full | [x] |
 | Logs | `work_dirs/frontier_010_backbone_lr_mult/20260323_122614.log` |
 | Artifacts | `work_dirs/frontier_010_backbone_lr_mult/` |
-| Results | 训练完成，未执行独立评测（仅作为 SFOD 迭代链中间步骤） |
+| Results | Best mAP=**0.6575** (log.json val epoch=12) |
 | Plan ref | docs/plan.md §6.2 frontier-010 |
 
 
@@ -1476,7 +1476,7 @@
 | Full | [x] |
 | Logs | `work_dirs/frontier_017_24ep_seed1/20260324_124956.log` |
 | Artifacts | `work_dirs/frontier_017_24ep_seed1/` |
-| Results | 训练完成，未执行独立评测（仅作为 SFOD 迭代链中间步骤） |
+| Results | Best mAP=**0.6637** (log.json val epoch=10) |
 | Plan ref | docs/plan.md §6.2 frontier-017 |
 
 
@@ -1502,7 +1502,7 @@
 | Full | [x] |
 | Logs | `work_dirs/frontier_017_24ep_seed1_oriented_rcnn_rsar/20260324_181048.log` |
 | Artifacts | `work_dirs/frontier_017_24ep_seed1_oriented_rcnn_rsar/` |
-| Results | 训练完成，未执行独立评测（仅作为 SFOD 迭代链中间步骤） |
+| Results | Best mAP=**0.6559** (log.json val epoch=11) |
 | Plan ref | docs/plan.md §6.2 frontier-017 |
 
 
@@ -1528,7 +1528,7 @@
 | Full | [x] |
 | Logs | `work_dirs/frontier_020_pafpn_24ep/20260324_193301.log` |
 | Artifacts | `work_dirs/frontier_020_pafpn_24ep/` |
-| Results | 训练完成，未执行独立评测（仅作为 SFOD 迭代链中间步骤） |
+| Results | Best mAP=**0.7329** (log.json val epoch=21) |
 | Plan ref | docs/plan.md §6.2 frontier-020 |
 
 
@@ -1554,7 +1554,7 @@
 | Full | [x] |
 | Logs | `work_dirs/frontier_021_cefocal_roi_cls/20260325_040558.log` |
 | Artifacts | `work_dirs/frontier_021_cefocal_roi_cls/` |
-| Results | 训练完成，未执行独立评测（仅作为 SFOD 迭代链中间步骤） |
+| Results | Best mAP=**0.6489** (log.json val epoch=11) |
 | Plan ref | docs/plan.md §6.2 frontier-021 |
 
 
@@ -1580,7 +1580,7 @@
 | Full | [x] |
 | Logs | `work_dirs/frontier_026_ocafpn_24ep/20260325_110955.log` |
 | Artifacts | `work_dirs/frontier_026_ocafpn_24ep/` |
-| Results | 训练完成，未执行独立评测（仅作为 SFOD 迭代链中间步骤） |
+| Results | Best mAP=**0.6511** (log.json val epoch=11) |
 | Plan ref | docs/plan.md §6.2 frontier-026 |
 
 
@@ -1606,7 +1606,7 @@
 | Full | [x] |
 | Logs | `work_dirs/exp_aa_x_sup_polish/launcher.log` |
 | Artifacts | `work_dirs/exp_aa_x_sup_polish/` |
-| Results | 训练完成（SFOD 迭代链中间步骤）。后续迭代见 E0065: `exp_ab_x_ema_sup_polish` |
+| Results | Best mAP=**0.6822** (log.json val epoch=1) |
 | Plan ref | `docs/plan.md` §6.3 SFOD Chain (row: this exp), §6.5 LoRA Iteration Table |
 
 
@@ -1632,7 +1632,7 @@
 | Full | [x] |
 | Logs | `work_dirs/exp_ab_x_ema_sup_polish/launcher.log` |
 | Artifacts | `work_dirs/exp_ab_x_ema_sup_polish/` |
-| Results | 训练完成（SFOD 迭代链中间步骤）。后续迭代见 E0066: `exp_ac_x_ema_tiny_u` |
+| Results | Best mAP=**0.6832** (log.json val epoch=1) |
 | Plan ref | `docs/plan.md` §6.3 SFOD Chain (row: this exp), §6.5 LoRA Iteration Table |
 
 
@@ -1658,7 +1658,7 @@
 | Full | [x] |
 | Logs | `work_dirs/exp_ac_x_ema_tiny_u/launcher.log` |
 | Artifacts | `work_dirs/exp_ac_x_ema_tiny_u/` |
-| Results | 训练完成（SFOD 迭代链中间步骤）。后续迭代见 E0067: `exp_ad_x_tail_protect` |
+| Results | Best mAP=**0.6832** (log.json val epoch=1) |
 | Plan ref | `docs/plan.md` §6.3 SFOD Chain (row: this exp), §6.5 LoRA Iteration Table |
 
 
@@ -1684,7 +1684,7 @@
 | Full | [x] |
 | Logs | `work_dirs/exp_ad_x_tail_protect/launcher.log` |
 | Artifacts | `work_dirs/exp_ad_x_tail_protect/` |
-| Results | 训练完成（SFOD 迭代链中间步骤）。后续迭代见 E0068: `exp_ae_x_bridge_harbor_protect` |
+| Results | Best mAP=**0.6830** (log.json val epoch=1) |
 | Plan ref | `docs/plan.md` §6.3 SFOD Chain (row: this exp), §6.5 LoRA Iteration Table |
 
 
@@ -1710,7 +1710,7 @@
 | Full | [x] |
 | Logs | `work_dirs/exp_ae_x_bridge_harbor_protect/launcher.log` |
 | Artifacts | `work_dirs/exp_ae_x_bridge_harbor_protect/` |
-| Results | 训练完成（SFOD 迭代链中间步骤）。后续迭代见 E0069: `exp_af_v_one_epoch_wu08` |
+| Results | Best mAP=**0.6827** (log.json val epoch=1) |
 | Plan ref | `docs/plan.md` §6.3 SFOD Chain (row: this exp), §6.5 LoRA Iteration Table |
 
 
@@ -1736,7 +1736,7 @@
 | Full | [x] |
 | Logs | `work_dirs/exp_af_v_one_epoch_wu08/launcher.log` |
 | Artifacts | `work_dirs/exp_af_v_one_epoch_wu08/` |
-| Results | 训练完成（SFOD 迭代链中间步骤）。后续迭代见 E0070: `exp_ag_v_one_epoch_tank80` |
+| Results | Best mAP=**0.6795** (log.json val epoch=1) |
 | Plan ref | `docs/plan.md` §6.3 SFOD Chain (row: this exp), §6.5 LoRA Iteration Table |
 
 
@@ -1762,7 +1762,7 @@
 | Full | [x] |
 | Logs | `work_dirs/exp_ag_v_one_epoch_tank80/launcher.log` |
 | Artifacts | `work_dirs/exp_ag_v_one_epoch_tank80/` |
-| Results | 训练完成（SFOD 迭代链中间步骤）。后续迭代见 E0071: `exp_ah_x_ema_bbox_split` |
+| Results | Best mAP=**0.6797** (log.json val epoch=1) |
 | Plan ref | `docs/plan.md` §6.3 SFOD Chain (row: this exp), §6.5 LoRA Iteration Table |
 
 
@@ -1788,7 +1788,7 @@
 | Full | [x] |
 | Logs | `work_dirs/exp_ah_x_ema_bbox_split/launcher.log` |
 | Artifacts | `work_dirs/exp_ah_x_ema_bbox_split/` |
-| Results | 训练完成（SFOD 迭代链中间步骤）。后续迭代见 E0072: `exp_ai_v_bbox_split` |
+| Results | Best mAP=**0.6831** (log.json val epoch=1) |
 | Plan ref | `docs/plan.md` §6.3 SFOD Chain (row: this exp), §6.5 LoRA Iteration Table |
 
 
@@ -1814,7 +1814,7 @@
 | Full | [x] |
 | Logs | `work_dirs/exp_ai_v_bbox_split/launcher.log` |
 | Artifacts | `work_dirs/exp_ai_v_bbox_split/` |
-| Results | 训练完成（SFOD 迭代链中间步骤）。后续迭代见 E0073: `exp_aj_v_perclass_anneal` |
+| Results | Best mAP=**0.6807** (log.json val epoch=1) |
 | Plan ref | `docs/plan.md` §6.3 SFOD Chain (row: this exp), §6.5 LoRA Iteration Table |
 
 
@@ -1840,7 +1840,7 @@
 | Full | [x] |
 | Logs | `work_dirs/exp_aj_v_perclass_anneal/launcher.log` |
 | Artifacts | `work_dirs/exp_aj_v_perclass_anneal/` |
-| Results | 训练完成（SFOD 迭代链中间步骤）。后续迭代见 E0074: `exp_ak_x_epoch2_condcrop` |
+| Results | Best mAP=**0.6804** (log.json val epoch=1) |
 | Plan ref | `docs/plan.md` §6.3 SFOD Chain (row: this exp), §6.5 LoRA Iteration Table |
 
 
@@ -1866,7 +1866,7 @@
 | Full | [x] |
 | Logs | `work_dirs/exp_ak_x_epoch2_condcrop/launcher.log` |
 | Artifacts | `work_dirs/exp_ak_x_epoch2_condcrop/` |
-| Results | 训练完成（SFOD 迭代链中间步骤）。后续迭代见 E0075: `exp_al_x_dtrcrop_epoch1` |
+| Results | Best mAP=**0.6834** (log.json val epoch=1) |
 | Plan ref | `docs/plan.md` §6.3 SFOD Chain (row: this exp), §6.5 LoRA Iteration Table |
 
 
@@ -1892,7 +1892,7 @@
 | Full | [x] |
 | Logs | `work_dirs/exp_al_x_dtrcrop_epoch1/launcher.log` |
 | Artifacts | `work_dirs/exp_al_x_dtrcrop_epoch1/` |
-| Results | 训练完成（SFOD 迭代链中间步骤）。后续迭代见 E0076: `exp_an_x_sardet_unlabeled` |
+| Results | Best mAP=**0.6791** (log.json val epoch=1) |
 | Plan ref | `docs/plan.md` §6.3 SFOD Chain (row: this exp), §6.5 LoRA Iteration Table |
 
 
@@ -1918,7 +1918,7 @@
 | Full | [x] |
 | Logs | `work_dirs/exp_an_x_sardet_unlabeled/launcher.log` |
 | Artifacts | `work_dirs/exp_an_x_sardet_unlabeled/` |
-| Results | 训练完成（SFOD 迭代链中间步骤）。后续迭代见 E0077: `exp_ao_an_tiny_u` |
+| Results | Best mAP=**0.6957** (log.json val epoch=2) |
 | Plan ref | `docs/plan.md` §6.3 SFOD Chain (row: this exp), §6.5 LoRA Iteration Table |
 
 
@@ -1944,7 +1944,7 @@
 | Full | [x] |
 | Logs | `work_dirs/exp_ao_an_tiny_u/launcher.log` |
 | Artifacts | `work_dirs/exp_ao_an_tiny_u/` |
-| Results | 训练完成（SFOD 迭代链中间步骤）。后续迭代见 E0078: `exp_ap_ao_tiny_u01` |
+| Results | Best mAP=**0.6965** (log.json val epoch=1) |
 | Plan ref | `docs/plan.md` §6.3 SFOD Chain (row: this exp), §6.5 LoRA Iteration Table |
 
 
@@ -1970,7 +1970,7 @@
 | Full | [x] |
 | Logs | `work_dirs/exp_ap_ao_tiny_u01/launcher.log` |
 | Artifacts | `work_dirs/exp_ap_ao_tiny_u01/` |
-| Results | 训练完成（SFOD 迭代链中间步骤）。后续迭代见 E0079: `exp_aq_ap_tiny_u005` |
+| Results | Best mAP=**0.6976** (log.json val epoch=1) |
 | Plan ref | `docs/plan.md` §6.3 SFOD Chain (row: this exp), §6.5 LoRA Iteration Table |
 
 
@@ -1996,7 +1996,7 @@
 | Full | [x] |
 | Logs | `work_dirs/exp_aq_ap_tiny_u005/launcher.log` |
 | Artifacts | `work_dirs/exp_aq_ap_tiny_u005/` |
-| Results | 训练完成（SFOD 迭代链中间步骤）。后续迭代见 E0080: `exp_ar_ap_tiny_u005_lowema` |
+| Results | Best mAP=**0.6879** (log.json val epoch=1) |
 | Plan ref | `docs/plan.md` §6.3 SFOD Chain (row: this exp), §6.5 LoRA Iteration Table |
 
 
@@ -2022,7 +2022,7 @@
 | Full | [x] |
 | Logs | `work_dirs/exp_ar_ap_tiny_u005_lowema/launcher.log` |
 | Artifacts | `work_dirs/exp_ar_ap_tiny_u005_lowema/` |
-| Results | 训练完成（SFOD 迭代链中间步骤）。后续迭代见 E0081: `exp_as_ar_tiny_u003_lowema` |
+| Results | Best mAP=**0.6978** (log.json val epoch=1) |
 | Plan ref | `docs/plan.md` §6.3 SFOD Chain (row: this exp), §6.5 LoRA Iteration Table |
 
 
@@ -2048,7 +2048,7 @@
 | Full | [x] |
 | Logs | `work_dirs/exp_as_ar_tiny_u003_lowema/launcher.log` |
 | Artifacts | `work_dirs/exp_as_ar_tiny_u003_lowema/` |
-| Results | 训练完成（SFOD 迭代链中间步骤）。后续迭代见 E0082: `exp_at_ar_tiny_u004_lowema` |
+| Results | Best mAP=**0.6976** (log.json val epoch=1) |
 | Plan ref | `docs/plan.md` §6.3 SFOD Chain (row: this exp), §6.5 LoRA Iteration Table |
 
 
@@ -2074,7 +2074,7 @@
 | Full | [x] |
 | Logs | `work_dirs/exp_at_ar_tiny_u004_lowema/launcher.log` |
 | Artifacts | `work_dirs/exp_at_ar_tiny_u004_lowema/` |
-| Results | 训练完成（SFOD 迭代链中间步骤）。后续迭代见 E0083: `exp_au_ar_tiny_u006_lowema` |
+| Results | Best mAP=**0.6974** (log.json val epoch=1) |
 | Plan ref | `docs/plan.md` §6.3 SFOD Chain (row: this exp), §6.5 LoRA Iteration Table |
 
 
@@ -2100,7 +2100,7 @@
 | Full | [x] |
 | Logs | `work_dirs/exp_au_ar_tiny_u006_lowema/student_eval.log` |
 | Artifacts | `work_dirs/exp_au_ar_tiny_u006_lowema/` |
-| Results | 训练完成（SFOD 迭代链中间步骤）。后续迭代见 E0084: `exp_av_au_tiny_u006_lowema` |
+| Results | Best mAP=**0.6980** (log.json val epoch=1) |
 | Plan ref | `docs/plan.md` §6.3 SFOD Chain (row: this exp), §6.5 LoRA Iteration Table |
 
 
@@ -2126,7 +2126,7 @@
 | Full | [x] |
 | Logs | `work_dirs/exp_av_au_tiny_u006_lowema/student_eval.log` |
 | Artifacts | `work_dirs/exp_av_au_tiny_u006_lowema/` |
-| Results | 训练完成（SFOD 迭代链中间步骤）。后续迭代见 E0085: `exp_aw_au_tiny_u005_lowema` |
+| Results | Best mAP=**0.6971** (log.json val epoch=1) |
 | Plan ref | `docs/plan.md` §6.3 SFOD Chain (row: this exp), §6.5 LoRA Iteration Table |
 
 
@@ -2152,7 +2152,7 @@
 | Full | [x] |
 | Logs | `work_dirs/exp_aw_au_tiny_u005_lowema/student_eval.log` |
 | Artifacts | `work_dirs/exp_aw_au_tiny_u005_lowema/` |
-| Results | 训练完成（SFOD 迭代链中间步骤）。后续迭代见 E0086: `exp_ax_au_tiny_u006_ema995` |
+| Results | Best mAP=**0.6974** (log.json val epoch=1) |
 | Plan ref | `docs/plan.md` §6.3 SFOD Chain (row: this exp), §6.5 LoRA Iteration Table |
 
 
@@ -2178,7 +2178,7 @@
 | Full | [x] |
 | Logs | `work_dirs/exp_ax_au_tiny_u006_ema995/launcher.log` |
 | Artifacts | `work_dirs/exp_ax_au_tiny_u006_ema995/` |
-| Results | 训练完成（SFOD 迭代链中间步骤）。后续迭代见 E0087: `exp_ay_ax_tiny_u006_ema995` |
+| Results | Best mAP=**0.6987** (log.json val epoch=1) |
 | Plan ref | `docs/plan.md` §6.3 SFOD Chain (row: this exp), §6.5 LoRA Iteration Table |
 
 
@@ -2204,7 +2204,7 @@
 | Full | [x] |
 | Logs | `work_dirs/exp_ay_ax_tiny_u006_ema995/launcher.log` |
 | Artifacts | `work_dirs/exp_ay_ax_tiny_u006_ema995/` |
-| Results | 训练完成（SFOD 迭代链末端）。最终评测见 exp_ax LoRA eval pair |
+| Results | Best mAP=**0.6977** (log.json val epoch=1) |
 | Plan ref | `docs/plan.md` §6.3 SFOD Chain (row: this exp), §6.5 LoRA Iteration Table |
 
 
@@ -2230,7 +2230,7 @@
 | Full | [x] |
 | Logs | `work_dirs/exp_m_lora_cga/wait_and_resume.log` |
 | Artifacts | `work_dirs/exp_m_lora_cga/` |
-| Results | 训练完成（SFOD 迭代链中间步骤）。后续迭代见 E0089: `exp_m_wu_schedule` |
+| Results | Best mAP=**0.6639** (log.json val epoch=11) |
 | Plan ref | `docs/plan.md` §6.3 SFOD Chain (row: this exp), §6.5 LoRA Iteration Table |
 
 
@@ -2256,7 +2256,7 @@
 | Full | [x] |
 | Logs | `work_dirs/exp_m_wu_schedule/train.log` |
 | Artifacts | `work_dirs/exp_m_wu_schedule/` |
-| Results | 训练完成（SFOD 迭代链中间步骤）。后续迭代见 E0090: `exp_t_m_resume` |
+| Results | Best mAP=**0.6641** (log.json val epoch=7) |
 | Plan ref | `docs/plan.md` §6.3 SFOD Chain (row: this exp), §6.5 LoRA Iteration Table |
 
 
@@ -2282,7 +2282,7 @@
 | Full | [x] |
 | Logs | `work_dirs/exp_t_m_resume/train_attempt1_sighup.log` |
 | Artifacts | `work_dirs/exp_t_m_resume/` |
-| Results | 训练完成（SFOD 迭代链中间步骤）。后续迭代见 E0091: `exp_u_m_aircraft_protect` |
+| Results | Best mAP=**0.6688** (log.json val epoch=16) |
 | Plan ref | `docs/plan.md` §6.3 SFOD Chain (row: this exp), §6.5 LoRA Iteration Table |
 
 
@@ -2308,7 +2308,7 @@
 | Full | [x] |
 | Logs | `work_dirs/exp_u_m_aircraft_protect/train_attempt1_missing_ckpt.log` |
 | Artifacts | `work_dirs/exp_u_m_aircraft_protect/` |
-| Results | 训练完成（SFOD 迭代链中间步骤）。后续迭代见 E0092: `exp_v_t_aircraft_protect` |
+| Results | Best mAP=**0.6678** (log.json val epoch=12) |
 | Plan ref | `docs/plan.md` §6.3 SFOD Chain (row: this exp), §6.5 LoRA Iteration Table |
 
 
@@ -2334,7 +2334,7 @@
 | Full | [x] |
 | Logs | `work_dirs/exp_v_t_aircraft_protect/train.log` |
 | Artifacts | `work_dirs/exp_v_t_aircraft_protect/` |
-| Results | 训练完成（SFOD 迭代链中间步骤）。后续迭代见 E0093: `exp_w_v_polish` |
+| Results | Best mAP=**0.6780** (log.json val epoch=13) |
 | Plan ref | `docs/plan.md` §6.3 SFOD Chain (row: this exp), §6.5 LoRA Iteration Table |
 
 
@@ -2360,7 +2360,7 @@
 | Full | [x] |
 | Logs | `work_dirs/exp_w_v_polish/launcher.log` |
 | Artifacts | `work_dirs/exp_w_v_polish/` |
-| Results | 训练完成（SFOD 迭代链中间步骤）。后续迭代见 E0094: `exp_x_v_micro_polish` |
+| Results | Best mAP=**0.6822** (log.json val epoch=1) |
 | Plan ref | `docs/plan.md` §6.3 SFOD Chain (row: this exp), §6.5 LoRA Iteration Table |
 
 
@@ -2386,7 +2386,7 @@
 | Full | [x] |
 | Logs | `work_dirs/exp_x_v_micro_polish/launcher.log` |
 | Artifacts | `work_dirs/exp_x_v_micro_polish/` |
-| Results | 训练完成（SFOD 迭代链中间步骤）。后续迭代见 E0095: `exp_y_x_vitl14_lora` |
+| Results | Best mAP=**0.6835** (log.json val epoch=1) |
 | Plan ref | `docs/plan.md` §6.3 SFOD Chain (row: this exp), §6.5 LoRA Iteration Table |
 
 
@@ -2412,7 +2412,7 @@
 | Full | [x] |
 | Logs | `work_dirs/exp_y_x_vitl14_lora/launcher.log` |
 | Artifacts | `work_dirs/exp_y_x_vitl14_lora/` |
-| Results | 训练完成（SFOD 迭代链中间步骤）。后续迭代见 E0096: `exp_z_x_lower_wu` |
+| Results | Best mAP=**0.6813** (log.json val epoch=1) |
 | Plan ref | `docs/plan.md` §6.3 SFOD Chain (row: this exp), §6.5 LoRA Iteration Table |
 
 
@@ -2438,5 +2438,5 @@
 | Full | [x] |
 | Logs | `work_dirs/exp_z_x_lower_wu/launcher.log` |
 | Artifacts | `work_dirs/exp_z_x_lower_wu/` |
-| Results | 训练完成（SFOD 迭代链中间步骤）。后续迭代见 E0064: `exp_aa_x_sup_polish` |
+| Results | Best mAP=**0.6821** (log.json val epoch=1) |
 | Plan ref | `docs/plan.md` §6.3 SFOD Chain (row: this exp), §6.5 LoRA Iteration Table |
