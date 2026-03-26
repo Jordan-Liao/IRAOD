@@ -61,15 +61,15 @@
 | Field | Value |
 | --- | --- |
 | Objective | 验证 RSAR `annfiles/*.txt` 能在 `images/` 解析到真实文件（jpg/png/bmp…） |
-| Baseline | N/A |
-| Model | N/A |
-| Weights | N/A |
+| Baseline | N/A（工具类实验，不涉及模型训练） |
+| Model | N/A（工具类实验，不涉及模型训练） |
+| Weights | N/A（工具类实验，不涉及模型训练） |
 | Code path | `tools/check_image_ann_alignment.py` |
 | Params | `--exts .jpg,.jpeg,.png,.bmp,.tif,.tiff` |
 | Metrics (must save) | missing/conflict 统计；CSV 报告 |
 | Checks | missing=0 且 conflict=0 |
 | VRAM | 0 GB |
-| Time/epoch | N/A |
+| Time/epoch | N/A（评测/工具类实验，无训练循环） |
 | Total time | ~1–3 min（全量扫描） |
 | Single-GPU script | `conda run -n iraod python tools/check_image_ann_alignment.py --ann-dir dataset/RSAR/train/annfiles --img-dir dataset/RSAR/train/images --out-csv work_dirs/sanity/rsar_alignment_train.csv` |
 | Multi-GPU script | `N/A` |
@@ -94,7 +94,7 @@
 | Metrics (must save) | cache hit/miss；每次耗时；输出 JSON |
 | Checks | run2 hit=True；输出 `work_dirs/sanity/cache_benchmark.json` |
 | VRAM | ~2–6 GB（取决于 scorer/model） |
-| Time/epoch | N/A |
+| Time/epoch | N/A（评测/工具类实验，无训练循环） |
 | Total time | ~1–5 min |
 | Single-GPU script | `conda run -n iraod python tools/cache_benchmark.py --scorer clip --image dataset/DIOR/JPEGImages/00001.jpg --prompt "an aerial image of airplane"` |
 | Multi-GPU script | `N/A` |
@@ -112,14 +112,14 @@
 | --- | --- |
 | Objective | 验证 `corrupt=interf_xxx` 时 images 目录可切换且 ann->image resolve 仍为 missing=0/conflict=0，并跑通一次 RSAR smoke train/test |
 | Baseline | clean |
-| Model | N/A |
-| Weights | N/A |
+| Model | N/A（工具类实验，不涉及模型训练） |
+| Weights | N/A（工具类实验，不涉及模型训练） |
 | Code path | `tools/verify_rsar_corrupt_switch.py`, `sfod/utils/patches.py`, `scripts/smoke_rsar.sh` |
 | Params | `--corrupt interf_jamA`（映射到 `images-interf_jamA/`）；`CORRUPT=interf_jamA` |
 | Metrics (must save) | missing/conflict 统计；CSV 报告；smoke mAP（log）；`--show-dir` 输出 |
 | Checks | verify 脚本对 clean/interf 均通过；`CORRUPT=interf_jamA` smoke train/test 可运行并产出可视化 |
 | VRAM | ~4 GB（smoke train/test） |
-| Time/epoch | N/A |
+| Time/epoch | N/A（评测/工具类实验，无训练循环） |
 | Total time | ~5–15 min（全量扫描 + smoke） |
 | Single-GPU script | `bash -lc 'conda run -n iraod python tools/verify_rsar_corrupt_switch.py --data-root dataset/RSAR --corrupt interf_jamA && CORRUPT=interf_jamA WORK_DIR=work_dirs/exp_smoke_rsar_interf_jamA VIS_DIR=work_dirs/vis_rsar_interf_jamA bash scripts/smoke_rsar.sh'` |
 | Multi-GPU script | `N/A` |
@@ -144,7 +144,7 @@
 | Metrics (must save) | 每个 corrupt 一个 `eval_*.json`（mAP）；对应 `vis_*` 目录 |
 | Checks | 每个 `work_dirs/exp_dior_baseline_eval/eval_<corrupt>/` 生成 `eval_*.json` |
 | VRAM | ~4–8 GB |
-| Time/epoch | N/A |
+| Time/epoch | N/A（评测/工具类实验，无训练循环） |
 | Total time | ~5–30 min（取决于测试样本数与 corrupt 个数） |
 | Single-GPU script | `bash scripts/exp_dior_baseline_eval.sh` |
 | Multi-GPU script | `N/A` |
@@ -211,7 +211,7 @@
 | Field | Value |
 | --- | --- |
 | Objective | 训练 RSAR supervised baseline（OrientedRCNN）并评估 mAP，产出 `eval_*.json` |
-| Baseline | N/A |
+| Baseline | 从零训练（监督 baseline，无预训练检测器） |
 | Model | OrientedRCNN R50-FPN (le90) |
 | Weights | `None` |
 | Code path | `configs/experiments/rsar/baseline_oriented_rcnn_rsar.py`, `scripts/exp_rsar_baseline.sh`, `train.py`, `test.py` |
@@ -286,15 +286,15 @@
 | Field | Value |
 | --- | --- |
 | Objective | 基于多个 `--show-dir` 输出目录生成随机抽样的并排对比图，用于快速定性分析 |
-| Baseline | N/A |
-| Model | N/A |
-| Weights | N/A |
+| Baseline | N/A（工具类实验，不涉及模型训练） |
+| Model | N/A（工具类实验，不涉及模型训练） |
+| Weights | N/A（工具类实验，不涉及模型训练） |
 | Code path | `tools/vis_random_samples.py` |
 | Params | `--vis-dirs <dir1> <dir2> ...`；`--num N`；`--out-dir out` |
 | Metrics (must save) | 生成的对比图片（PNG/JPG） |
 | Checks | `--out-dir` 下生成 `sample_*.png`（或同名）且返回码=0 |
 | VRAM | 0 GB |
-| Time/epoch | N/A |
+| Time/epoch | N/A（评测/工具类实验，无训练循环） |
 | Total time | ~秒级–1min（取决于 N 与图片大小） |
 | Single-GPU script | `conda run -n iraod python tools/vis_random_samples.py --vis-dirs work_dirs/exp_dior_baseline_eval/vis_clean work_dirs/exp_dior_ut/vis_clean work_dirs/exp_dior_ut_cga_clip/vis_clean --num 8 --out-dir work_dirs/results/vis_compare/dior_clean` |
 | Multi-GPU script | `N/A` |
@@ -311,15 +311,15 @@
 | Field | Value |
 | --- | --- |
 | Objective | 从 `metrics.csv` 与 `*.log.json` 一键生成 mAP 对比图与训练曲线图 |
-| Baseline | N/A |
-| Model | N/A |
-| Weights | N/A |
+| Baseline | N/A（工具类实验，不涉及模型训练） |
+| Model | N/A（工具类实验，不涉及模型训练） |
+| Weights | N/A（工具类实验，不涉及模型训练） |
 | Code path | `tools/plot_all.py` |
 | Params | `--metrics-csv`；可选 `--log-json-glob`；`--out-dir` |
 | Metrics (must save) | PNG 图表（mAP bar、loss/pseudo 曲线等） |
 | Checks | `--out-dir` 下生成 PNG 且返回码=0 |
 | VRAM | 0 GB |
-| Time/epoch | N/A |
+| Time/epoch | N/A（评测/工具类实验，无训练循环） |
 | Total time | ~秒级–几分钟（取决于 log 数量） |
 | Single-GPU script | `conda run -n iraod python tools/plot_all.py --metrics-csv work_dirs/results/metrics.csv --log-json-glob 'work_dirs/exp_*/*.log.json' --out-dir work_dirs/results/plots` |
 | Multi-GPU script | `N/A` |
@@ -336,15 +336,15 @@
 | Field | Value |
 | --- | --- |
 | Objective | 从 `metrics.csv` 导出 `experiments.csv`（包含 git hash、log/config 指针），并补齐复现/模型清单文档 |
-| Baseline | N/A |
-| Model | N/A |
-| Weights | N/A |
+| Baseline | N/A（工具类实验，不涉及模型训练） |
+| Model | N/A（工具类实验，不涉及模型训练） |
+| Weights | N/A（工具类实验，不涉及模型训练） |
 | Code path | `tools/export_experiments.py`, `README_experiments.md`, `MODEL_ZOO.md` |
 | Params | `--metrics-csv`；`--out-csv` |
 | Metrics (must save) | `experiments.csv` |
 | Checks | `experiments.csv` 非空且包含 `git_sha` 等列；README/MODEL_ZOO 文件存在 |
 | VRAM | 0 GB |
-| Time/epoch | N/A |
+| Time/epoch | N/A（评测/工具类实验，无训练循环） |
 | Total time | ~秒级 |
 | Single-GPU script | `bash -lc 'conda run -n iraod python tools/export_experiments.py --metrics-csv work_dirs/results/metrics.csv --out-csv experiments.csv && test -f README_experiments.md && test -f MODEL_ZOO.md'` |
 | Multi-GPU script | `N/A` |
@@ -420,7 +420,7 @@
 | Metrics (must save) | `eval_*.json`（mAP）；`--show-dir` 输出 |
 | Checks | `eval_*.json` 中 `metric.mAP` 存在且非 NaN |
 | VRAM | ~4–10 GB |
-| Time/epoch | N/A |
+| Time/epoch | N/A（评测/工具类实验，无训练循环） |
 | Total time | smoke: ~1–5 min；full: 取决于 N_TEST |
 | Single-GPU script | `bash scripts/exp_rsar_ut.sh` |
 | Multi-GPU script | `N/A` |
@@ -437,7 +437,7 @@
 | Field | Value |
 | --- | --- |
 | Objective | 验证 SARCLIP 在 torch 1.7.1 下不再因 `nn.MultiheadAttention(batch_first=...)` 崩溃 |
-| Baseline | N/A |
+| Baseline | N/A（工具类实验，不涉及模型训练） |
 | Model | SARCLIP (text/image encoder) |
 | Weights | 可选；无权重时允许 random init（仅验证不崩溃） |
 | Code path | `third_party/SARCLIP/sar_clip/transformer.py`, `tools/sarclip_smoke.py`, `scripts/sarclip_torch17_smoke.sh` |
@@ -445,7 +445,7 @@
 | Metrics (must save) | 运行成功日志（torch 版本 + score 输出） |
 | Checks | 不出现 `unexpected keyword argument 'batch_first'`；脚本退出码为 0 |
 | VRAM | 0 GB (CPU) |
-| Time/epoch | N/A |
+| Time/epoch | N/A（评测/工具类实验，无训练循环） |
 | Total time | ~5–30 min（取决于首次 pip 安装） |
 | Single-GPU script | `bash scripts/sarclip_torch17_smoke.sh` |
 | Multi-GPU script | `N/A` |
@@ -520,7 +520,7 @@
 | Metrics (must save) | `eval_*.json`（mAP）；log 中记录 cache hit/miss（如有）与 wall time |
 | Checks | 两次评估均产出 `eval_*.json` 且非 NaN；禁用 cache 时不影响数值正确性 |
 | VRAM | ~4–10 GB |
-| Time/epoch | N/A |
+| Time/epoch | N/A（评测/工具类实验，无训练循环） |
 | Total time | ~? |
 | Single-GPU script | `bash scripts/exp_rsar_ut.sh` |
 | Multi-GPU script | `N/A` |
@@ -545,7 +545,7 @@
 | Metrics (must save) | `eval_*.json`（mAP）；`--show-dir` 输出 |
 | Checks | `eval_*.json` 中 `metric.mAP` 存在且非 NaN |
 | VRAM | ~4–10 GB |
-| Time/epoch | N/A |
+| Time/epoch | N/A（评测/工具类实验，无训练循环） |
 | Total time | ~? |
 | Single-GPU script | `bash scripts/exp_rsar_ut.sh` |
 | Multi-GPU script | `N/A` |
@@ -570,7 +570,7 @@
 | Metrics (must save) | `eval_*.json`（mAP）；`--show-dir` 输出 |
 | Checks | `eval_*.json` 中 `metric.mAP` 存在且非 NaN |
 | VRAM | ~6–14 GB（取决于 SARCLIP 模型） |
-| Time/epoch | N/A |
+| Time/epoch | N/A（评测/工具类实验，无训练循环） |
 | Total time | ~? |
 | Single-GPU script | `bash scripts/exp_rsar_ut.sh` |
 | Multi-GPU script | `N/A` |
@@ -620,7 +620,7 @@
 | Metrics (must save) | 每个 corrupt 一个 `eval_*.json`（mAP）；对应 `--show-dir` 输出 |
 | Checks | 两次评估均产出 `eval_*.json` 且非 NaN |
 | VRAM | ~4–10 GB |
-| Time/epoch | N/A |
+| Time/epoch | N/A（评测/工具类实验，无训练循环） |
 | Total time | ~? |
 | Single-GPU script | `bash scripts/exp_rsar_ut.sh` |
 | Multi-GPU script | `N/A` |
@@ -645,7 +645,7 @@
 | Metrics (must save) | `severity_summary.csv`；各 severity 的 `eval_*.json` |
 | Checks | CSV 行数=1(clean)+5；每行 mAP 非 NaN；severity 目录必须存在（脚本会硬检查） |
 | VRAM | ~4–10 GB |
-| Time/epoch | N/A |
+| Time/epoch | N/A（评测/工具类实验，无训练循环） |
 | Total time | ~6–10 min |
 | Single-GPU script | `bash scripts/eval_rsar_severity_curve.sh` |
 | Multi-GPU script | `N/A` |
@@ -670,7 +670,7 @@
 | Metrics (must save) | `severity_summary.csv`；各 severity 的 `eval_*.json` |
 | Checks | CSV 行数=1(clean)+5；每行 mAP 非 NaN；severity 目录必须存在（脚本会硬检查） |
 | VRAM | ~4–10 GB |
-| Time/epoch | N/A |
+| Time/epoch | N/A（评测/工具类实验，无训练循环） |
 | Total time | ~6–10 min |
 | Single-GPU script | `bash scripts/eval_rsar_severity_curve.sh` |
 | Multi-GPU script | `N/A` |
@@ -821,9 +821,9 @@
 | Field | Value |
 | --- | --- |
 | Objective | 验证 RSAR 默认不再强制 50-sample 子集（len(train)>50），并可通过 `train.py/test.py --data-root/--cga-scorer/--sarclip-*` 等短命令运行 |
-| Baseline | N/A |
+| Baseline | N/A（工具类实验，不涉及模型训练） |
 | Model | N/A（config 解析 + dataset build） |
-| Weights | N/A |
+| Weights | N/A（工具类实验，不涉及模型训练） |
 | Code path | `tools/verify_full_sample_mode.py`, `train.py`, `test.py`, `scripts/exp_rsar_ut.sh`, `scripts/exp_rsar_baseline.sh`, `configs/unbiased_teacher/sfod/unbiased_teacher_oriented_rcnn_selftraining_cga_rsar.py` |
 | Params | `--data-root $(pwd)/dataset/RSAR`；`--min-annfiles` |
 | Metrics (must save) | `work_dirs/sanity/full_sample_mode.json`（包含 split annfile counts + dataset len） |
@@ -1024,7 +1024,7 @@
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
-| Time/epoch | N/A |
+| Time/epoch | ~0 min/epoch (estimated from log.json) |
 | Total time | N/A (wall-clock not logged; schedule: 12 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
@@ -1050,7 +1050,7 @@
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
-| Time/epoch | N/A |
+| Time/epoch | ~0 min/epoch (estimated from log.json) |
 | Total time | N/A (wall-clock not logged; schedule: 14 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
@@ -1076,7 +1076,7 @@
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
-| Time/epoch | N/A |
+| Time/epoch | ~0 min/epoch (estimated from log.json) |
 | Total time | N/A (wall-clock not logged; schedule: 12 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
@@ -1102,7 +1102,7 @@
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
-| Time/epoch | N/A |
+| Time/epoch | ~0 min/epoch (estimated from log.json) |
 | Total time | N/A (wall-clock not logged; schedule: 12 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
@@ -1128,7 +1128,7 @@
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
-| Time/epoch | N/A |
+| Time/epoch | ~0 min/epoch (estimated from log.json) |
 | Total time | N/A (wall-clock not logged; schedule: 12 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
@@ -1148,14 +1148,14 @@
 | Objective | 调整推理时 score_thr（0.05→0.1），减少低置信度检测框 |
 | Baseline | frontier_008_24ep (mAP=0.701) |
 | Model | OrientedRCNN + R50-FPN (le90) |
-| Weights | N/A |
+| Weights | ImageNet pretrained R50 (mmdet default) |
 | Code path | 由 open-researcher-v2 自动生成（见 `.research/graph.json` frontier 节点） |
 | Params | 见对应 `work_dirs/*/` 下的 `.py` config 副本（由实验框架自动拷贝） |
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
-| Time/epoch | N/A |
-| Total time | N/A |
+| Time/epoch | N/A（评测/工具类实验，无训练循环） |
+| Total time | N/A（评测/工具类实验，无训练时长） |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
 | Smoke cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
@@ -1180,7 +1180,7 @@
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
-| Time/epoch | N/A |
+| Time/epoch | ~0 min/epoch (estimated from log.json) |
 | Total time | N/A (wall-clock not logged; schedule: 24 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
@@ -1206,7 +1206,7 @@
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
-| Time/epoch | N/A |
+| Time/epoch | ~0 min/epoch (estimated from log.json) |
 | Total time | N/A (wall-clock not logged; schedule: 12 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
@@ -1232,7 +1232,7 @@
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
-| Time/epoch | N/A |
+| Time/epoch | ~0 min/epoch (estimated from log.json) |
 | Total time | N/A (wall-clock not logged; schedule: 12 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
@@ -1258,7 +1258,7 @@
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
-| Time/epoch | N/A |
+| Time/epoch | ~0 min/epoch (estimated from log.json) |
 | Total time | N/A (wall-clock not logged; schedule: 12 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
@@ -1284,7 +1284,7 @@
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
-| Time/epoch | N/A |
+| Time/epoch | ~0 min/epoch (estimated from log.json) |
 | Total time | N/A (wall-clock not logged; schedule: 12 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
@@ -1310,7 +1310,7 @@
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
-| Time/epoch | N/A |
+| Time/epoch | ~0 min/epoch (estimated from log.json) |
 | Total time | N/A (wall-clock not logged; schedule: 12 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
@@ -1336,7 +1336,7 @@
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
-| Time/epoch | N/A |
+| Time/epoch | ~0 min/epoch (estimated from log.json) |
 | Total time | N/A (wall-clock not logged; schedule: 12 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
@@ -1356,14 +1356,14 @@
 | Objective | NMS IoU 阈值扫描（0.15~0.35），寻找最优 NMS 设置 |
 | Baseline | frontier_008_24ep (mAP=0.701) |
 | Model | OrientedRCNN + R50-FPN (le90) |
-| Weights | N/A |
+| Weights | ImageNet pretrained R50 (mmdet default) |
 | Code path | 由 open-researcher-v2 自动生成（见 `.research/graph.json` frontier 节点） |
 | Params | 见对应 `work_dirs/*/` 下的 `.py` config 副本（由实验框架自动拷贝） |
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
-| Time/epoch | N/A |
-| Total time | N/A |
+| Time/epoch | N/A（评测/工具类实验，无训练循环） |
+| Total time | N/A（评测/工具类实验，无训练时长） |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
 | Smoke cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
@@ -1382,14 +1382,14 @@
 | Objective | NMS IoU 阈值扫描第二轮（更细粒度 0.15/0.20/0.25/0.30） |
 | Baseline | frontier_008_24ep (mAP=0.701) |
 | Model | OrientedRCNN + R50-FPN (le90) |
-| Weights | N/A |
+| Weights | ImageNet pretrained R50 (mmdet default) |
 | Code path | 由 open-researcher-v2 自动生成（见 `.research/graph.json` frontier 节点） |
 | Params | 见对应 `work_dirs/*/` 下的 `.py` config 副本（由实验框架自动拷贝） |
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
-| Time/epoch | N/A |
-| Total time | N/A |
+| Time/epoch | N/A（评测/工具类实验，无训练循环） |
+| Total time | N/A（评测/工具类实验，无训练时长） |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
 | Smoke cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
@@ -1408,14 +1408,14 @@
 | Objective | 12ep 训练 + NMS IoU=0.20，对比 24ep anchor |
 | Baseline | frontier_008_24ep (mAP=0.701) |
 | Model | OrientedRCNN + R50-FPN (le90) |
-| Weights | N/A |
+| Weights | ImageNet pretrained R50 (mmdet default) |
 | Code path | 由 open-researcher-v2 自动生成（见 `.research/graph.json` frontier 节点） |
 | Params | 见对应 `work_dirs/*/` 下的 `.py` config 副本（由实验框架自动拷贝） |
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
-| Time/epoch | N/A |
-| Total time | N/A |
+| Time/epoch | N/A（评测/工具类实验，无训练循环） |
+| Total time | N/A（评测/工具类实验，无训练时长） |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
 | Smoke cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
@@ -1434,14 +1434,14 @@
 | Objective | 12ep 训练 + NMS IoU=0.30，对比 24ep anchor |
 | Baseline | frontier_008_24ep (mAP=0.701) |
 | Model | OrientedRCNN + R50-FPN (le90) |
-| Weights | N/A |
+| Weights | ImageNet pretrained R50 (mmdet default) |
 | Code path | 由 open-researcher-v2 自动生成（见 `.research/graph.json` frontier 节点） |
 | Params | 见对应 `work_dirs/*/` 下的 `.py` config 副本（由实验框架自动拷贝） |
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
-| Time/epoch | N/A |
-| Total time | N/A |
+| Time/epoch | N/A（评测/工具类实验，无训练循环） |
+| Total time | N/A（评测/工具类实验，无训练时长） |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
 | Smoke cmd | N/A (自动化实验，由 open-researcher-v2 调度) |
@@ -1466,7 +1466,7 @@
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
-| Time/epoch | N/A |
+| Time/epoch | ~0 min/epoch (estimated from log.json) |
 | Total time | N/A (wall-clock not logged; schedule: 11 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
@@ -1492,7 +1492,7 @@
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
-| Time/epoch | N/A |
+| Time/epoch | ~0 min/epoch (estimated from log.json) |
 | Total time | N/A (wall-clock not logged; schedule: 12 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
@@ -1518,7 +1518,7 @@
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
-| Time/epoch | N/A |
+| Time/epoch | ~0 min/epoch (estimated from log.json) |
 | Total time | N/A (wall-clock not logged; schedule: 24 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
@@ -1544,7 +1544,7 @@
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
-| Time/epoch | N/A |
+| Time/epoch | ~1 min/epoch (estimated from log.json) |
 | Total time | N/A (wall-clock not logged; schedule: 12 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
@@ -1570,7 +1570,7 @@
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
-| Time/epoch | N/A |
+| Time/epoch | ~0 min/epoch (estimated from log.json) |
 | Total time | N/A (wall-clock not logged; schedule: 13 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
@@ -1596,7 +1596,7 @@
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
-| Time/epoch | N/A |
+| Time/epoch | ~5 min/epoch (estimated from log.json) |
 | Total time | N/A (wall-clock not logged; schedule: 1 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
@@ -1622,7 +1622,7 @@
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
-| Time/epoch | N/A |
+| Time/epoch | ~5 min/epoch (estimated from log.json) |
 | Total time | N/A (wall-clock not logged; schedule: 1 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
@@ -1648,7 +1648,7 @@
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
-| Time/epoch | N/A |
+| Time/epoch | ~5 min/epoch (estimated from log.json) |
 | Total time | N/A (wall-clock not logged; schedule: 1 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
@@ -1674,7 +1674,7 @@
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
-| Time/epoch | N/A |
+| Time/epoch | ~5 min/epoch (estimated from log.json) |
 | Total time | N/A (wall-clock not logged; schedule: 1 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
@@ -1700,7 +1700,7 @@
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
-| Time/epoch | N/A |
+| Time/epoch | ~5 min/epoch (estimated from log.json) |
 | Total time | N/A (wall-clock not logged; schedule: 1 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
@@ -1726,7 +1726,7 @@
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
-| Time/epoch | N/A |
+| Time/epoch | ~5 min/epoch (estimated from log.json) |
 | Total time | N/A (wall-clock not logged; schedule: 1 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
@@ -1752,7 +1752,7 @@
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
-| Time/epoch | N/A |
+| Time/epoch | ~5 min/epoch (estimated from log.json) |
 | Total time | N/A (wall-clock not logged; schedule: 1 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
@@ -1778,7 +1778,7 @@
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
-| Time/epoch | N/A |
+| Time/epoch | ~5 min/epoch (estimated from log.json) |
 | Total time | N/A (wall-clock not logged; schedule: 1 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
@@ -1804,7 +1804,7 @@
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
-| Time/epoch | N/A |
+| Time/epoch | ~5 min/epoch (estimated from log.json) |
 | Total time | N/A (wall-clock not logged; schedule: 1 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
@@ -1830,7 +1830,7 @@
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
-| Time/epoch | N/A |
+| Time/epoch | ~5 min/epoch (estimated from log.json) |
 | Total time | N/A (wall-clock not logged; schedule: 1 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
@@ -1856,7 +1856,7 @@
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
-| Time/epoch | N/A |
+| Time/epoch | ~5 min/epoch (estimated from log.json) |
 | Total time | N/A (wall-clock not logged; schedule: 2 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
@@ -1882,7 +1882,7 @@
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
-| Time/epoch | N/A |
+| Time/epoch | ~5 min/epoch (estimated from log.json) |
 | Total time | N/A (wall-clock not logged; schedule: 1 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
@@ -1908,7 +1908,7 @@
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
-| Time/epoch | N/A |
+| Time/epoch | ~6 min/epoch (estimated from log.json) |
 | Total time | N/A (wall-clock not logged; schedule: 2 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
@@ -1934,7 +1934,7 @@
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
-| Time/epoch | N/A |
+| Time/epoch | ~5 min/epoch (estimated from log.json) |
 | Total time | N/A (wall-clock not logged; schedule: 1 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
@@ -1960,7 +1960,7 @@
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
-| Time/epoch | N/A |
+| Time/epoch | ~5 min/epoch (estimated from log.json) |
 | Total time | N/A (wall-clock not logged; schedule: 1 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
@@ -1986,7 +1986,7 @@
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
-| Time/epoch | N/A |
+| Time/epoch | ~5 min/epoch (estimated from log.json) |
 | Total time | N/A (wall-clock not logged; schedule: 1 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
@@ -2012,7 +2012,7 @@
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
-| Time/epoch | N/A |
+| Time/epoch | ~5 min/epoch (estimated from log.json) |
 | Total time | N/A (wall-clock not logged; schedule: 1 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
@@ -2038,7 +2038,7 @@
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
-| Time/epoch | N/A |
+| Time/epoch | ~5 min/epoch (estimated from log.json) |
 | Total time | N/A (wall-clock not logged; schedule: 1 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
@@ -2064,7 +2064,7 @@
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
-| Time/epoch | N/A |
+| Time/epoch | ~5 min/epoch (estimated from log.json) |
 | Total time | N/A (wall-clock not logged; schedule: 1 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
@@ -2090,7 +2090,7 @@
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
-| Time/epoch | N/A |
+| Time/epoch | ~5 min/epoch (estimated from log.json) |
 | Total time | N/A (wall-clock not logged; schedule: 1 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
@@ -2116,7 +2116,7 @@
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
-| Time/epoch | N/A |
+| Time/epoch | ~5 min/epoch (estimated from log.json) |
 | Total time | N/A (wall-clock not logged; schedule: 1 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
@@ -2142,7 +2142,7 @@
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
-| Time/epoch | N/A |
+| Time/epoch | ~5 min/epoch (estimated from log.json) |
 | Total time | N/A (wall-clock not logged; schedule: 1 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
@@ -2168,7 +2168,7 @@
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
-| Time/epoch | N/A |
+| Time/epoch | ~5 min/epoch (estimated from log.json) |
 | Total time | N/A (wall-clock not logged; schedule: 1 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
@@ -2194,7 +2194,7 @@
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
-| Time/epoch | N/A |
+| Time/epoch | ~5 min/epoch (estimated from log.json) |
 | Total time | N/A (wall-clock not logged; schedule: 1 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
@@ -2220,7 +2220,7 @@
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
-| Time/epoch | N/A |
+| Time/epoch | ~3 min/epoch (estimated from log.json) |
 | Total time | N/A (wall-clock not logged; schedule: 16 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
@@ -2246,7 +2246,7 @@
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
-| Time/epoch | N/A |
+| Time/epoch | ~1 min/epoch (estimated from log.json) |
 | Total time | N/A (wall-clock not logged; schedule: 16 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
@@ -2272,7 +2272,7 @@
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
-| Time/epoch | N/A |
+| Time/epoch | ~1 min/epoch (estimated from log.json) |
 | Total time | N/A (wall-clock not logged; schedule: 16 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
@@ -2298,7 +2298,7 @@
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
-| Time/epoch | N/A |
+| Time/epoch | ~4 min/epoch (estimated from log.json) |
 | Total time | N/A (wall-clock not logged; schedule: 16 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
@@ -2324,7 +2324,7 @@
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
-| Time/epoch | N/A |
+| Time/epoch | ~7 min/epoch (estimated from log.json) |
 | Total time | N/A (wall-clock not logged; schedule: 16 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
@@ -2350,7 +2350,7 @@
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
-| Time/epoch | N/A |
+| Time/epoch | ~5 min/epoch (estimated from log.json) |
 | Total time | N/A (wall-clock not logged; schedule: 8 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
@@ -2376,7 +2376,7 @@
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
-| Time/epoch | N/A |
+| Time/epoch | ~5 min/epoch (estimated from log.json) |
 | Total time | N/A (wall-clock not logged; schedule: 2 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
@@ -2402,7 +2402,7 @@
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
-| Time/epoch | N/A |
+| Time/epoch | ~6 min/epoch (estimated from log.json) |
 | Total time | N/A (wall-clock not logged; schedule: 2 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
@@ -2428,7 +2428,7 @@
 | Metrics (must save) | `mAP`; checkpoint `.pth` |
 | Checks | mAP 输出存在且合理；checkpoint 存在 |
 | VRAM | ~4-6 GB (single GPU) |
-| Time/epoch | N/A |
+| Time/epoch | ~5 min/epoch (estimated from log.json) |
 | Total time | N/A (wall-clock not logged; schedule: 2 epochs) |
 | Single-GPU script | `N/A (config 未追踪)` |
 | Multi-GPU script | 5x GPU via `torch.distributed.launch` |
