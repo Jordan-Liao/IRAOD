@@ -543,21 +543,68 @@ RSAR_ROOT/
 
 | ID | Method | mAP | vs Baseline | Status |
 |----|--------|-----|-------------|--------|
+| frontier-001 | Anchor baseline (12ep) | 0.6544 | -0.0466 | reference |
+| frontier-002 | LR schedule tuning | 0.6609 | -0.0401 | discarded |
+| frontier-004 | GWD loss | 0.6040 | -0.0970 | discarded (regression) |
+| frontier-005 | PolyRotate aug | 0.6226 | -0.0784 | discarded |
+| frontier-006 | Multi-scale training | 0.6366 | -0.0644 | discarded |
+| frontier-007 | Score threshold tuning | 0.6623 | -0.0387 | discarded |
+| frontier-008 | **24ep schedule** | **0.7005** | **+0.0000** | **anchor (baseline)** |
+| frontier-009 | Cosine LR | 0.6659 | -0.0351 | discarded |
+| frontier-012 | Weight decay 10x | 0.5184 | -0.1826 | discarded (severe) |
+| frontier-013 | Cosine LR seed1 | 0.6731 | -0.0279 | discarded |
+| frontier-014 | NMS IoU sweep | 0.6734 (thr=0.30) | — | confirmed NMS=0.30 |
+| frontier-015 | 12ep + NMS sweep | 0.6686 | -0.0324 | discarded |
 | frontier-020 | FPN → PAFPN | 0.7005 | -0.0005 | discarded (marginal) |
 | frontier-021 | RoI cls CE → CEFocalLoss | 0.6212 | -0.0798 | discarded (regression) |
-| frontier-022 | R50 → OrthoNet50 | — | — | rejected (no pretrained weights) |
-| frontier-023 | SmoothL1 → GDLoss/KLDLoss | — | — | rejected |
-| frontier-024 | R50 → OrthoNet50 (with R50 init) | — | — | approved (pending) |
-| frontier-025 | MaxIoUAssigner → ATSSAssigner | — | — | approved (pending) |
 | frontier-026 | FPN → OCA-FPN | — | — | running |
 
 ### 6.3 SFOD Iteration Chain (exp_m ~ exp_ay)
 
 Semi-supervised iterative training experiments on RSAR with CGA/LoRA/EMA variations. See docs/semi_supervised_experiments.md for detailed per-class results.
 
-### 6.4 Key Findings
+### 6.4 Innovation 1: OrthoNet & OCA-FPN
 
-1. **PAFPN** marginal (+0.0005), not worth the complexity
-2. **CEFocalLoss** significant regression (-0.08), incompatible with current pipeline
-3. **24ep schedule** is well-tuned anchor, hard to beat with simple swaps
-4. Future directions: attention-based necks (OCA-FPN), advanced label assignment (ATSS)
+- **OrthoNet backbone**: Orthogonal channel attention network, registered as `OrthoNet` in mmdet_extension
+- **OCA-FPN neck**: FPN + OrthoChannelAttention on each output level
+- Config: `configs/unbiased_teacher/sfod/unbiased_teacher_oriented_rcnn_selftraining_cga_o_rsar.py`
+- frontier-026 (OCA-FPN): **running** on 134 server
+
+### 6.5 Innovation 2: SAR-CLIP LoRA Fine-tuning
+
+用 SARDet100k 训练集裁剪目标 patch + 干扰增强 → LoRA 微调 SAR-CLIP (ViT-L-14) → 提升 CGA 打分精度。
+
+**LoRA 训练**: 4 linear layers, 122,880 trainable params (0.12%), 147,796 patches from RSAR train
+**CGA 零样本分类精度** (RSAR 6类):
+
+| Scorer | Accuracy |
+|--------|----------|
+| ViT-L-14 (no LoRA) | 0.6021 |
+| ViT-L-14 + SARDet LoRA | **0.6513** (+4.9%) |
+
+**端到端检测 mAP** (SFOD chain, best iteration exp_ax):
+
+| CGA Scorer | mAP |
+|------------|-----|
+| No LoRA | 0.6842 |
+| With LoRA | **0.6943** (+1.0%) |
+
+**SFOD Iteration Progression** (LoRA-enhanced CGA):
+
+| Iteration | No LoRA mAP | With LoRA mAP | Delta |
+|-----------|-------------|---------------|-------|
+| exp_x | 0.6694 | 0.6797 | +0.0103 |
+| exp_z | 0.6668 | 0.6781 | +0.0113 |
+| exp_ab | 0.6706 | 0.6794 | +0.0088 |
+| exp_an | 0.6800 | 0.6909 | +0.0109 |
+| exp_ar | 0.6828 | 0.6935 | +0.0107 |
+| exp_au | 0.6834 | 0.6938 | +0.0104 |
+| **exp_ax** | **0.6842** | **0.6943** | **+0.0101** |
+
+### 6.6 Key Findings
+
+1. **24ep schedule** (frontier-008, mAP=0.7005) is the well-tuned anchor
+2. Simple neck/loss swaps (PAFPN, CEFocal, GWD, cosine LR) all regress — 24ep anchor is hard to beat
+3. **SAR-CLIP LoRA** consistently improves CGA scoring (+4.9% zero-shot accuracy) and end-to-end mAP (+1.0%)
+4. **SFOD iteration chain** with LoRA-enhanced CGA reaches mAP=0.6943, stable +1% gain across iterations
+5. **OCA-FPN** (OrthoChannelAttention) experiment in progress
