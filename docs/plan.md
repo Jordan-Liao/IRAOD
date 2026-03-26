@@ -541,23 +541,23 @@ RSAR_ROOT/
 
 ### 6.2 Frontier Experiments
 
-| ID | Method | mAP | vs Baseline | Status |
-|----|--------|-----|-------------|--------|
-| frontier-001 | Anchor baseline (12ep) | 0.6544 | -0.0466 | reference |
-| frontier-002 | LR schedule tuning | 0.6609 | -0.0401 | discarded |
-| frontier-004 | GWD loss | 0.6040 | -0.0970 | discarded (regression) |
-| frontier-005 | PolyRotate aug | 0.6226 | -0.0784 | discarded |
-| frontier-006 | Multi-scale training | 0.6366 | -0.0644 | discarded |
-| frontier-007 | Score threshold tuning | 0.6623 | -0.0387 | discarded |
-| frontier-008 | **24ep schedule** | **0.7005** | **+0.0000** | **anchor (baseline)** |
-| frontier-009 | Cosine LR | 0.6659 | -0.0351 | discarded |
-| frontier-012 | Weight decay 10x | 0.5184 | -0.1826 | discarded (severe) |
-| frontier-013 | Cosine LR seed1 | 0.6731 | -0.0279 | discarded |
-| frontier-014 | NMS IoU sweep | 0.6734 (thr=0.30) | — | confirmed NMS=0.30 |
-| frontier-015 | 12ep + NMS sweep | 0.6686 | -0.0324 | discarded |
-| frontier-020 | FPN → PAFPN | 0.7005 | -0.0005 | discarded (marginal) |
-| frontier-021 | RoI cls CE → CEFocalLoss | 0.6212 | -0.0798 | discarded (regression) |
-| frontier-026 | FPN → OCA-FPN | — | — | running |
+| ID | Method | mAP | vs Baseline | Status | Experiment ID |
+|----|--------|-----|-------------|--------|---------------|
+| frontier-001 | Anchor baseline (12ep) | 0.6544 | -0.0466 | reference  E0042 |
+| frontier-002 | LR schedule tuning | 0.6609 | -0.0401 | discarded  E0043 |
+| frontier-004 | GWD loss | 0.6040 | -0.0970 | discarded (regression)  E0044 |
+| frontier-005 | PolyRotate aug | 0.6226 | -0.0784 | discarded  E0045 |
+| frontier-006 | Multi-scale training | 0.6366 | -0.0644 | discarded  E0046 |
+| frontier-007 | Score threshold tuning | 0.6623 | -0.0387 | discarded  E0047 |
+| frontier-008 | **24ep schedule** | **0.7005** | **+0.0000** | **anchor (baseline)**  E0048 |
+| frontier-009 | Cosine LR | 0.6659 | -0.0351 | discarded  E0049 |
+| frontier-012 | Weight decay 10x | 0.5184 | -0.1826 | discarded (severe)  E0051 |
+| frontier-013 | Cosine LR seed1 | 0.6731 | -0.0279 | discarded  E0053 |
+| frontier-014 | NMS IoU sweep | 0.6734 (thr=0.30) | — | confirmed NMS=0.30  E0055 |
+| frontier-015 | 12ep + NMS sweep | 0.6686 | -0.0324 | discarded  E0057 |
+| frontier-020 | FPN → PAFPN | 0.7005 | -0.0005 | discarded (marginal)  E0061 |
+| frontier-021 | RoI cls CE → CEFocalLoss | 0.6212 | -0.0798 | discarded (regression)  E0062 |
+| frontier-026 | FPN → OCA-FPN | — | — | running  E0063 |
 
 ### 6.3 SFOD Iteration Chain (exp_m ~ exp_ay)
 
