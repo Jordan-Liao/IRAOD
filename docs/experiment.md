@@ -1007,664 +1007,940 @@
 
 ---
 
+
 ## New Experiments (Auto-collected 2026-03-26)
+
 
 ### E0042: frontier_001_anchor
 | Field | Value |
 | --- | --- |
-| Objective | 001_anchor |
+| Objective | 001 anchor |
 | Dataset | RSAR |
-| Method | frontier tuning |
+| Method | Frontier tuning (OrientedRCNN R50-FPN) |
+| Model | OrientedRCNN + R50-FPN (le90) |
 | Config | `N/A` |
+| Params | See config file |
 | Best mAP | **0.6544** |
 | Checkpoint | `work_dirs/frontier_001_anchor/latest.pth` |
-| Log | `work_dirs/frontier_001_anchor/20260321_223758.log` |
+| Logs | `work_dirs/frontier_001_anchor/20260321_223758.log` |
+| Log JSON | `work_dirs/frontier_001_anchor/20260321_223758.log.json` |
 | Eval Details | test_eval_epoch11: mAP=0.6544 |
+| Artifacts | `work_dirs/frontier_001_anchor/` |
+
 
 ### E0043: frontier_002_lr_schedule
 | Field | Value |
 | --- | --- |
-| Objective | 002_lr_schedule |
+| Objective | 002 lr schedule |
 | Dataset | RSAR |
-| Method | frontier tuning |
+| Method | Frontier tuning (OrientedRCNN R50-FPN) |
+| Model | OrientedRCNN + R50-FPN (le90) |
 | Config | `N/A` |
+| Params | See config file |
 | Best mAP | **0.6609** |
 | Checkpoint | `work_dirs/frontier_002_lr_schedule/latest.pth` |
-| Log | `work_dirs/frontier_002_lr_schedule/20260322_142136.log` |
-| Eval Details | test_epoch11_nms02: mAP=0.6609; test_epoch13_nms02: mAP=0.6569; test_epoch14_nms02: mAP=0.6576 |
+| Logs | `work_dirs/frontier_002_lr_schedule/20260322_142136.log` |
+| Log JSON | `work_dirs/frontier_002_lr_schedule/20260322_142136.log.json` |
+| Eval Details | test_epoch13_nms02: mAP=0.6569; test_epoch11_nms02: mAP=0.6609; test_epoch14_nms02: mAP=0.6576 |
+| Artifacts | `work_dirs/frontier_002_lr_schedule/` |
+
 
 ### E0044: frontier_004_gwd_loss
 | Field | Value |
 | --- | --- |
-| Objective | 004_gwd_loss |
+| Objective | 004 gwd loss |
 | Dataset | RSAR |
-| Method | frontier tuning |
+| Method | Frontier tuning (OrientedRCNN R50-FPN) |
+| Model | OrientedRCNN + R50-FPN (le90) |
 | Config | `N/A` |
+| Params | See config file |
 | Best mAP | **0.6040** |
 | Checkpoint | `work_dirs/frontier_004_gwd_loss/latest.pth` |
-| Log | `work_dirs/frontier_004_gwd_loss/20260322_183045.log` |
+| Logs | `work_dirs/frontier_004_gwd_loss/20260322_183045.log` |
+| Log JSON | `work_dirs/frontier_004_gwd_loss/20260322_183045.log.json` |
 | Eval Details | test_eval_ep12: mAP=0.6040 |
+| Artifacts | `work_dirs/frontier_004_gwd_loss/` |
+
 
 ### E0045: frontier_005_polyrotate
 | Field | Value |
 | --- | --- |
-| Objective | 005_polyrotate |
+| Objective | 005 polyrotate |
 | Dataset | RSAR |
-| Method | frontier tuning |
+| Method | Frontier tuning (OrientedRCNN R50-FPN) |
+| Model | OrientedRCNN + R50-FPN (le90) |
 | Config | `N/A` |
+| Params | See config file |
 | Best mAP | **0.6226** |
 | Checkpoint | `work_dirs/frontier_005_polyrotate/latest.pth` |
-| Log | `work_dirs/frontier_005_polyrotate/20260322_220419.log` |
+| Logs | `work_dirs/frontier_005_polyrotate/20260322_220419.log` |
+| Log JSON | `work_dirs/frontier_005_polyrotate/20260322_220419.log.json` |
 | Eval Details | test_eval_ep12: mAP=0.6226 |
+| Artifacts | `work_dirs/frontier_005_polyrotate/` |
+
 
 ### E0046: frontier_006_multiscale
 | Field | Value |
 | --- | --- |
-| Objective | 006_multiscale |
+| Objective | 006 multiscale |
 | Dataset | RSAR |
-| Method | frontier tuning |
+| Method | Frontier tuning (OrientedRCNN R50-FPN) |
+| Model | OrientedRCNN + R50-FPN (le90) |
 | Config | `N/A` |
+| Params | See config file |
 | Best mAP | **0.6366** |
 | Checkpoint | `work_dirs/frontier_006_multiscale/latest.pth` |
-| Log | `work_dirs/frontier_006_multiscale/20260323_014428.log` |
+| Logs | `work_dirs/frontier_006_multiscale/20260323_014428.log` |
+| Log JSON | `work_dirs/frontier_006_multiscale/20260323_014428.log.json` |
 | Eval Details | test_default_nms: mAP=0.6366 |
+| Artifacts | `work_dirs/frontier_006_multiscale/` |
+
 
 ### E0047: frontier_007_score_thr
 | Field | Value |
 | --- | --- |
-| Objective | 007_score_thr |
+| Objective | 007 score thr |
 | Dataset | RSAR |
-| Method | frontier tuning |
+| Method | Frontier tuning (OrientedRCNN R50-FPN) |
+| Model | OrientedRCNN + R50-FPN (le90) |
 | Config | `N/A` |
+| Params | See config file |
 | Best mAP | **0.6623** |
 | Checkpoint | `N/A` |
-| Log | `N/A` |
+| Logs | `N/A` |
+| Log JSON | `N/A` |
 | Eval Details | test_eval: mAP=0.6623 |
+| Artifacts | `work_dirs/frontier_007_score_thr/` |
+
 
 ### E0048: frontier_008_24ep
 | Field | Value |
 | --- | --- |
-| Objective | 008_24ep |
+| Objective | 008 24ep |
 | Dataset | RSAR |
-| Method | frontier tuning |
+| Method | Frontier tuning (OrientedRCNN R50-FPN) |
+| Model | OrientedRCNN + R50-FPN (le90) |
 | Config | `N/A` |
+| Params | See config file |
 | Best mAP | **0.7005** |
 | Checkpoint | `work_dirs/frontier_008_24ep/latest.pth` |
-| Log | `work_dirs/frontier_008_24ep/20260323_215733.log` |
+| Logs | `work_dirs/frontier_008_24ep/20260323_215733.log` |
+| Log JSON | `work_dirs/frontier_008_24ep/20260323_215733.log.json` |
 | Eval Details | test_nms03_epoch21: mAP=0.7005 |
+| Artifacts | `work_dirs/frontier_008_24ep/` |
+
 
 ### E0049: frontier_009_cosine_lr
 | Field | Value |
 | --- | --- |
-| Objective | 009_cosine_lr |
+| Objective | 009 cosine lr |
 | Dataset | RSAR |
-| Method | frontier tuning |
+| Method | Frontier tuning (OrientedRCNN R50-FPN) |
+| Model | OrientedRCNN + R50-FPN (le90) |
 | Config | `N/A` |
+| Params | See config file |
 | Best mAP | **0.6659** |
 | Checkpoint | `work_dirs/frontier_009_cosine_lr/latest.pth` |
-| Log | `work_dirs/frontier_009_cosine_lr/test_nms02.log` |
-| Eval Details | test_default_nms: mAP=0.6570; test_ep12_nms02: mAP=0.6653; test_nms02: mAP=0.6659 |
+| Logs | `work_dirs/frontier_009_cosine_lr/test_nms02.log` |
+| Log JSON | `work_dirs/frontier_009_cosine_lr/20260323_053351.log.json` |
+| Eval Details | test_nms02: mAP=0.6659; test_default_nms: mAP=0.6570; test_ep12_nms02: mAP=0.6653 |
+| Artifacts | `work_dirs/frontier_009_cosine_lr/` |
+
 
 ### E0050: frontier_009_cosine_lr_repro
 | Field | Value |
 | --- | --- |
-| Objective | 009_cosine_lr_repro |
+| Objective | 009 cosine lr repro |
 | Dataset | RSAR |
-| Method | frontier tuning |
+| Method | Frontier tuning (OrientedRCNN R50-FPN) |
+| Model | OrientedRCNN + R50-FPN (le90) |
 | Config | `N/A` |
+| Params | See config file |
 | Best mAP | **0.6621** |
 | Checkpoint | `work_dirs/frontier_009_cosine_lr_repro/latest.pth` |
-| Log | `work_dirs/frontier_009_cosine_lr_repro/test_epoch12_nms02.log` |
-| Eval Details | test_epoch11_nms02: mAP=0.6621; test_epoch12_default: mAP=0.6547; test_epoch12_nms02: mAP=0.6543 |
+| Logs | `work_dirs/frontier_009_cosine_lr_repro/test_epoch12_nms02.log` |
+| Log JSON | `work_dirs/frontier_009_cosine_lr_repro/20260323_090112.log.json` |
+| Eval Details | test_epoch12_nms02: mAP=0.6543; test_epoch11_nms02: mAP=0.6621; test_epoch12_default: mAP=0.6547 |
+| Artifacts | `work_dirs/frontier_009_cosine_lr_repro/` |
+
 
 ### E0051: frontier_010_backbone_lr_mult
 | Field | Value |
 | --- | --- |
-| Objective | 010_backbone_lr_mult |
+| Objective | 010 backbone lr mult |
 | Dataset | RSAR |
-| Method | frontier tuning |
+| Method | Frontier tuning (OrientedRCNN R50-FPN) |
+| Model | OrientedRCNN + R50-FPN (le90) |
 | Config | `N/A` |
-| Best mAP | **N/A** |
+| Params | See config file |
+| Best mAP | N/A (no eval JSON) |
 | Checkpoint | `work_dirs/frontier_010_backbone_lr_mult/latest.pth` |
-| Log | `work_dirs/frontier_010_backbone_lr_mult/20260323_122614.log` |
+| Logs | `work_dirs/frontier_010_backbone_lr_mult/20260323_122614.log` |
+| Log JSON | `work_dirs/frontier_010_backbone_lr_mult/20260323_122614.log.json` |
 | Eval Details | No eval results |
+| Artifacts | `work_dirs/frontier_010_backbone_lr_mult/` |
+
 
 ### E0052: frontier_012_wd10x
 | Field | Value |
 | --- | --- |
-| Objective | 012_wd10x |
+| Objective | 012 wd10x |
 | Dataset | RSAR |
-| Method | frontier tuning |
+| Method | Frontier tuning (OrientedRCNN R50-FPN) |
+| Model | OrientedRCNN + R50-FPN (le90) |
 | Config | `N/A` |
+| Params | See config file |
 | Best mAP | **0.5184** |
 | Checkpoint | `work_dirs/frontier_012_wd10x/latest.pth` |
-| Log | `work_dirs/frontier_012_wd10x/20260323_171451.log` |
+| Logs | `work_dirs/frontier_012_wd10x/20260323_171451.log` |
+| Log JSON | `work_dirs/frontier_012_wd10x/20260323_171451.log.json` |
 | Eval Details | test_nms02_epoch12: mAP=0.5184 |
+| Artifacts | `work_dirs/frontier_012_wd10x/` |
+
 
 ### E0053: frontier_013_cosine_lr_seed0
 | Field | Value |
 | --- | --- |
-| Objective | 013_cosine_lr_seed0 |
+| Objective | 013 cosine lr seed0 |
 | Dataset | RSAR |
-| Method | frontier tuning |
+| Method | Frontier tuning (OrientedRCNN R50-FPN) |
+| Model | OrientedRCNN + R50-FPN (le90) |
 | Config | `N/A` |
+| Params | See config file |
 | Best mAP | **0.6645** |
 | Checkpoint | `work_dirs/frontier_013_cosine_lr_seed0/latest.pth` |
-| Log | `work_dirs/frontier_013_cosine_lr_seed0/20260324_052009.log` |
+| Logs | `work_dirs/frontier_013_cosine_lr_seed0/20260324_052009.log` |
+| Log JSON | `work_dirs/frontier_013_cosine_lr_seed0/20260324_052009.log.json` |
 | Eval Details | test_nms03_ep11: mAP=0.6645 |
+| Artifacts | `work_dirs/frontier_013_cosine_lr_seed0/` |
+
 
 ### E0054: frontier_013_cosine_lr_seed1
 | Field | Value |
 | --- | --- |
-| Objective | 013_cosine_lr_seed1 |
+| Objective | 013 cosine lr seed1 |
 | Dataset | RSAR |
-| Method | frontier tuning |
+| Method | Frontier tuning (OrientedRCNN R50-FPN) |
+| Model | OrientedRCNN + R50-FPN (le90) |
 | Config | `N/A` |
+| Params | See config file |
 | Best mAP | **0.6731** |
 | Checkpoint | `work_dirs/frontier_013_cosine_lr_seed1/latest.pth` |
-| Log | `work_dirs/frontier_013_cosine_lr_seed1/20260324_085806.log` |
+| Logs | `work_dirs/frontier_013_cosine_lr_seed1/20260324_085806.log` |
+| Log JSON | `work_dirs/frontier_013_cosine_lr_seed1/20260324_085806.log.json` |
 | Eval Details | test_nms03_ep11: mAP=0.6731 |
+| Artifacts | `work_dirs/frontier_013_cosine_lr_seed1/` |
+
 
 ### E0055: frontier_014_nms_sweep_run
 | Field | Value |
 | --- | --- |
-| Objective | 014_nms_sweep_run |
+| Objective | 014 nms sweep run |
 | Dataset | RSAR |
-| Method | frontier tuning |
+| Method | Frontier tuning (OrientedRCNN R50-FPN) |
+| Model | OrientedRCNN + R50-FPN (le90) |
 | Config | `N/A` |
+| Params | See config file |
 | Best mAP | **0.6553** |
 | Checkpoint | `N/A` |
-| Log | `N/A` |
+| Logs | `N/A` |
+| Log JSON | `N/A` |
 | Eval Details | thr_015: mAP=0.6553 |
+| Artifacts | `work_dirs/frontier_014_nms_sweep_run/` |
+
 
 ### E0056: frontier_014_nms_sweep_run2
 | Field | Value |
 | --- | --- |
-| Objective | 014_nms_sweep_run2 |
+| Objective | 014 nms sweep run2 |
 | Dataset | RSAR |
-| Method | frontier tuning |
+| Method | Frontier tuning (OrientedRCNN R50-FPN) |
+| Model | OrientedRCNN + R50-FPN (le90) |
 | Config | `N/A` |
+| Params | See config file |
 | Best mAP | **0.6734** |
 | Checkpoint | `N/A` |
-| Log | `N/A` |
-| Eval Details | thr_015: mAP=0.6553; thr_020: mAP=0.6632; thr_025: mAP=0.6659; thr_030: mAP=0.6734 |
+| Logs | `N/A` |
+| Log JSON | `N/A` |
+| Eval Details | thr_025: mAP=0.6659; thr_030: mAP=0.6734; thr_020: mAP=0.6632; thr_015: mAP=0.6553 |
+| Artifacts | `work_dirs/frontier_014_nms_sweep_run2/` |
+
 
 ### E0057: frontier_015_epoch12_nms02
 | Field | Value |
 | --- | --- |
-| Objective | 015_epoch12_nms02 |
+| Objective | 015 epoch12 nms02 |
 | Dataset | RSAR |
-| Method | frontier tuning |
+| Method | Frontier tuning (OrientedRCNN R50-FPN) |
+| Model | OrientedRCNN + R50-FPN (le90) |
 | Config | `N/A` |
+| Params | See config file |
 | Best mAP | **0.6627** |
 | Checkpoint | `N/A` |
-| Log | `N/A` |
-| Eval Details | .: mAP=0.6627 |
+| Logs | `N/A` |
+| Log JSON | `N/A` |
+| Eval Details | default: mAP=0.6627 |
+| Artifacts | `work_dirs/frontier_015_epoch12_nms02/` |
+
 
 ### E0058: frontier_015_epoch12_nms03
 | Field | Value |
 | --- | --- |
-| Objective | 015_epoch12_nms03 |
+| Objective | 015 epoch12 nms03 |
 | Dataset | RSAR |
-| Method | frontier tuning |
+| Method | Frontier tuning (OrientedRCNN R50-FPN) |
+| Model | OrientedRCNN + R50-FPN (le90) |
 | Config | `N/A` |
+| Params | See config file |
 | Best mAP | **0.6686** |
 | Checkpoint | `N/A` |
-| Log | `N/A` |
-| Eval Details | .: mAP=0.6686 |
+| Logs | `N/A` |
+| Log JSON | `N/A` |
+| Eval Details | default: mAP=0.6686 |
+| Artifacts | `work_dirs/frontier_015_epoch12_nms03/` |
+
 
 ### E0059: frontier_017_24ep_seed1
 | Field | Value |
 | --- | --- |
-| Objective | 017_24ep_seed1 |
+| Objective | 017 24ep seed1 |
 | Dataset | RSAR |
-| Method | frontier tuning |
+| Method | Frontier tuning (OrientedRCNN R50-FPN) |
+| Model | OrientedRCNN + R50-FPN (le90) |
 | Config | `N/A` |
-| Best mAP | **N/A** |
+| Params | See config file |
+| Best mAP | N/A (no eval JSON) |
 | Checkpoint | `work_dirs/frontier_017_24ep_seed1/latest.pth` |
-| Log | `work_dirs/frontier_017_24ep_seed1/20260324_124956.log` |
+| Logs | `work_dirs/frontier_017_24ep_seed1/20260324_124956.log` |
+| Log JSON | `work_dirs/frontier_017_24ep_seed1/20260324_124956.log.json` |
 | Eval Details | No eval results |
+| Artifacts | `work_dirs/frontier_017_24ep_seed1/` |
+
 
 ### E0060: frontier_017_24ep_seed1_oriented_rcnn_rsar
 | Field | Value |
 | --- | --- |
-| Objective | 017_24ep_seed1_oriented_rcnn_rsar |
+| Objective | 017 24ep seed1 oriented rcnn rsar |
 | Dataset | RSAR |
-| Method | frontier tuning |
+| Method | Frontier tuning (OrientedRCNN R50-FPN) |
+| Model | OrientedRCNN + R50-FPN (le90) |
 | Config | `N/A` |
-| Best mAP | **N/A** |
+| Params | See config file |
+| Best mAP | N/A (no eval JSON) |
 | Checkpoint | `work_dirs/frontier_017_24ep_seed1_oriented_rcnn_rsar/latest.pth` |
-| Log | `work_dirs/frontier_017_24ep_seed1_oriented_rcnn_rsar/20260324_181048.log` |
+| Logs | `work_dirs/frontier_017_24ep_seed1_oriented_rcnn_rsar/20260324_181048.log` |
+| Log JSON | `work_dirs/frontier_017_24ep_seed1_oriented_rcnn_rsar/20260324_181048.log.json` |
 | Eval Details | No eval results |
+| Artifacts | `work_dirs/frontier_017_24ep_seed1_oriented_rcnn_rsar/` |
+
 
 ### E0061: frontier_020_pafpn_24ep
 | Field | Value |
 | --- | --- |
-| Objective | 020_pafpn_24ep |
+| Objective | 020 pafpn 24ep |
 | Dataset | RSAR |
-| Method | frontier tuning |
+| Method | Frontier tuning (OrientedRCNN R50-FPN) |
+| Model | OrientedRCNN + R50-FPN (le90) |
 | Config | `N/A` |
-| Best mAP | **N/A** |
+| Params | See config file |
+| Best mAP | N/A (no eval JSON) |
 | Checkpoint | `work_dirs/frontier_020_pafpn_24ep/latest.pth` |
-| Log | `work_dirs/frontier_020_pafpn_24ep/20260324_193301.log` |
+| Logs | `work_dirs/frontier_020_pafpn_24ep/20260324_193301.log` |
+| Log JSON | `work_dirs/frontier_020_pafpn_24ep/20260324_193301.log.json` |
 | Eval Details | No eval results |
+| Artifacts | `work_dirs/frontier_020_pafpn_24ep/` |
+
 
 ### E0062: frontier_021_cefocal_roi_cls
 | Field | Value |
 | --- | --- |
-| Objective | 021_cefocal_roi_cls |
+| Objective | 021 cefocal roi cls |
 | Dataset | RSAR |
-| Method | frontier tuning |
+| Method | Frontier tuning (OrientedRCNN R50-FPN) |
+| Model | OrientedRCNN + R50-FPN (le90) |
 | Config | `N/A` |
-| Best mAP | **N/A** |
+| Params | See config file |
+| Best mAP | N/A (no eval JSON) |
 | Checkpoint | `work_dirs/frontier_021_cefocal_roi_cls/latest.pth` |
-| Log | `work_dirs/frontier_021_cefocal_roi_cls/20260325_040558.log` |
+| Logs | `work_dirs/frontier_021_cefocal_roi_cls/20260325_040558.log` |
+| Log JSON | `work_dirs/frontier_021_cefocal_roi_cls/20260325_040558.log.json` |
 | Eval Details | No eval results |
+| Artifacts | `work_dirs/frontier_021_cefocal_roi_cls/` |
+
 
 ### E0063: frontier_026_ocafpn_24ep
 | Field | Value |
 | --- | --- |
-| Objective | 026_ocafpn_24ep |
+| Objective | 026 ocafpn 24ep |
 | Dataset | RSAR |
-| Method | frontier tuning |
+| Method | Frontier tuning (OrientedRCNN R50-FPN) |
+| Model | OrientedRCNN + R50-FPN (le90) |
 | Config | `N/A` |
-| Best mAP | **N/A** |
+| Params | See config file |
+| Best mAP | N/A (no eval JSON) |
 | Checkpoint | `work_dirs/frontier_026_ocafpn_24ep/latest.pth` |
-| Log | `work_dirs/frontier_026_ocafpn_24ep/20260325_110955.log` |
+| Logs | `work_dirs/frontier_026_ocafpn_24ep/20260325_110955.log` |
+| Log JSON | `work_dirs/frontier_026_ocafpn_24ep/20260325_110955.log.json` |
 | Eval Details | No eval results |
+| Artifacts | `work_dirs/frontier_026_ocafpn_24ep/` |
+
 
 ### E0064: exp_aa_x_sup_polish
 | Field | Value |
 | --- | --- |
 | Objective | aa x sup polish |
 | Dataset | RSAR |
-| Method | SFOD iteration |
+| Method | SFOD iteration (UT + CGA) |
+| Model | OrientedRCNN + R50-FPN (le90) |
 | Config | `N/A` |
-| Best mAP | **N/A** |
+| Params | See config file |
+| Best mAP | N/A (no eval JSON) |
 | Checkpoint | `work_dirs/exp_aa_x_sup_polish/latest_ema.pth` |
-| Log | `work_dirs/exp_aa_x_sup_polish/launcher.log` |
+| Logs | `work_dirs/exp_aa_x_sup_polish/launcher.log` |
+| Log JSON | `work_dirs/exp_aa_x_sup_polish/20260321_044035.log.json` |
 | Eval Details | No eval results |
+| Artifacts | `work_dirs/exp_aa_x_sup_polish/` |
+
 
 ### E0065: exp_ab_x_ema_sup_polish
 | Field | Value |
 | --- | --- |
 | Objective | ab x ema sup polish |
 | Dataset | RSAR |
-| Method | SFOD iteration |
+| Method | SFOD iteration (UT + CGA) |
+| Model | OrientedRCNN + R50-FPN (le90) |
 | Config | `N/A` |
-| Best mAP | **N/A** |
+| Params | See config file |
+| Best mAP | N/A (no eval JSON) |
 | Checkpoint | `work_dirs/exp_ab_x_ema_sup_polish/latest_ema.pth` |
-| Log | `work_dirs/exp_ab_x_ema_sup_polish/launcher.log` |
+| Logs | `work_dirs/exp_ab_x_ema_sup_polish/launcher.log` |
+| Log JSON | `work_dirs/exp_ab_x_ema_sup_polish/20260321_055630.log.json` |
 | Eval Details | No eval results |
+| Artifacts | `work_dirs/exp_ab_x_ema_sup_polish/` |
+
 
 ### E0066: exp_ac_x_ema_tiny_u
 | Field | Value |
 | --- | --- |
 | Objective | ac x ema tiny u |
 | Dataset | RSAR |
-| Method | SFOD iteration |
+| Method | SFOD iteration (UT + CGA) |
+| Model | OrientedRCNN + R50-FPN (le90) |
 | Config | `N/A` |
-| Best mAP | **N/A** |
+| Params | See config file |
+| Best mAP | N/A (no eval JSON) |
 | Checkpoint | `work_dirs/exp_ac_x_ema_tiny_u/latest_ema.pth` |
-| Log | `work_dirs/exp_ac_x_ema_tiny_u/launcher.log` |
+| Logs | `work_dirs/exp_ac_x_ema_tiny_u/launcher.log` |
+| Log JSON | `work_dirs/exp_ac_x_ema_tiny_u/20260321_064636.log.json` |
 | Eval Details | No eval results |
+| Artifacts | `work_dirs/exp_ac_x_ema_tiny_u/` |
+
 
 ### E0067: exp_ad_x_tail_protect
 | Field | Value |
 | --- | --- |
 | Objective | ad x tail protect |
 | Dataset | RSAR |
-| Method | SFOD iteration |
+| Method | SFOD iteration (UT + CGA) |
+| Model | OrientedRCNN + R50-FPN (le90) |
 | Config | `N/A` |
-| Best mAP | **N/A** |
+| Params | See config file |
+| Best mAP | N/A (no eval JSON) |
 | Checkpoint | `work_dirs/exp_ad_x_tail_protect/latest_ema.pth` |
-| Log | `work_dirs/exp_ad_x_tail_protect/launcher.log` |
+| Logs | `work_dirs/exp_ad_x_tail_protect/launcher.log` |
+| Log JSON | `work_dirs/exp_ad_x_tail_protect/20260321_080003.log.json` |
 | Eval Details | No eval results |
+| Artifacts | `work_dirs/exp_ad_x_tail_protect/` |
+
 
 ### E0068: exp_ae_x_bridge_harbor_protect
 | Field | Value |
 | --- | --- |
 | Objective | ae x bridge harbor protect |
 | Dataset | RSAR |
-| Method | SFOD iteration |
+| Method | SFOD iteration (UT + CGA) |
+| Model | OrientedRCNN + R50-FPN (le90) |
 | Config | `N/A` |
-| Best mAP | **N/A** |
+| Params | See config file |
+| Best mAP | N/A (no eval JSON) |
 | Checkpoint | `work_dirs/exp_ae_x_bridge_harbor_protect/latest_ema.pth` |
-| Log | `work_dirs/exp_ae_x_bridge_harbor_protect/launcher.log` |
+| Logs | `work_dirs/exp_ae_x_bridge_harbor_protect/launcher.log` |
+| Log JSON | `work_dirs/exp_ae_x_bridge_harbor_protect/20260321_085057.log.json` |
 | Eval Details | No eval results |
+| Artifacts | `work_dirs/exp_ae_x_bridge_harbor_protect/` |
+
 
 ### E0069: exp_af_v_one_epoch_wu08
 | Field | Value |
 | --- | --- |
 | Objective | af v one epoch wu08 |
 | Dataset | RSAR |
-| Method | SFOD iteration |
+| Method | SFOD iteration (UT + CGA) |
+| Model | OrientedRCNN + R50-FPN (le90) |
 | Config | `N/A` |
-| Best mAP | **N/A** |
+| Params | See config file |
+| Best mAP | N/A (no eval JSON) |
 | Checkpoint | `work_dirs/exp_af_v_one_epoch_wu08/latest_ema.pth` |
-| Log | `work_dirs/exp_af_v_one_epoch_wu08/launcher.log` |
+| Logs | `work_dirs/exp_af_v_one_epoch_wu08/launcher.log` |
+| Log JSON | `work_dirs/exp_af_v_one_epoch_wu08/20260321_094231.log.json` |
 | Eval Details | No eval results |
+| Artifacts | `work_dirs/exp_af_v_one_epoch_wu08/` |
+
 
 ### E0070: exp_ag_v_one_epoch_tank80
 | Field | Value |
 | --- | --- |
 | Objective | ag v one epoch tank80 |
 | Dataset | RSAR |
-| Method | SFOD iteration |
+| Method | SFOD iteration (UT + CGA) |
+| Model | OrientedRCNN + R50-FPN (le90) |
 | Config | `N/A` |
-| Best mAP | **N/A** |
+| Params | See config file |
+| Best mAP | N/A (no eval JSON) |
 | Checkpoint | `work_dirs/exp_ag_v_one_epoch_tank80/latest_ema.pth` |
-| Log | `work_dirs/exp_ag_v_one_epoch_tank80/launcher.log` |
+| Logs | `work_dirs/exp_ag_v_one_epoch_tank80/launcher.log` |
+| Log JSON | `work_dirs/exp_ag_v_one_epoch_tank80/20260321_103322.log.json` |
 | Eval Details | No eval results |
+| Artifacts | `work_dirs/exp_ag_v_one_epoch_tank80/` |
+
 
 ### E0071: exp_ah_x_ema_bbox_split
 | Field | Value |
 | --- | --- |
 | Objective | ah x ema bbox split |
 | Dataset | RSAR |
-| Method | SFOD iteration |
+| Method | SFOD iteration (UT + CGA) |
+| Model | OrientedRCNN + R50-FPN (le90) |
 | Config | `N/A` |
-| Best mAP | **N/A** |
+| Params | See config file |
+| Best mAP | N/A (no eval JSON) |
 | Checkpoint | `work_dirs/exp_ah_x_ema_bbox_split/latest_ema.pth` |
-| Log | `work_dirs/exp_ah_x_ema_bbox_split/launcher.log` |
+| Logs | `work_dirs/exp_ah_x_ema_bbox_split/launcher.log` |
+| Log JSON | `work_dirs/exp_ah_x_ema_bbox_split/20260321_112640.log.json` |
 | Eval Details | No eval results |
+| Artifacts | `work_dirs/exp_ah_x_ema_bbox_split/` |
+
 
 ### E0072: exp_ai_v_bbox_split
 | Field | Value |
 | --- | --- |
 | Objective | ai v bbox split |
 | Dataset | RSAR |
-| Method | SFOD iteration |
+| Method | SFOD iteration (UT + CGA) |
+| Model | OrientedRCNN + R50-FPN (le90) |
 | Config | `N/A` |
-| Best mAP | **N/A** |
+| Params | See config file |
+| Best mAP | N/A (no eval JSON) |
 | Checkpoint | `work_dirs/exp_ai_v_bbox_split/latest_ema.pth` |
-| Log | `work_dirs/exp_ai_v_bbox_split/launcher.log` |
+| Logs | `work_dirs/exp_ai_v_bbox_split/launcher.log` |
+| Log JSON | `work_dirs/exp_ai_v_bbox_split/20260321_121757.log.json` |
 | Eval Details | No eval results |
+| Artifacts | `work_dirs/exp_ai_v_bbox_split/` |
+
 
 ### E0073: exp_aj_v_perclass_anneal
 | Field | Value |
 | --- | --- |
 | Objective | aj v perclass anneal |
 | Dataset | RSAR |
-| Method | SFOD iteration |
+| Method | SFOD iteration (UT + CGA) |
+| Model | OrientedRCNN + R50-FPN (le90) |
 | Config | `N/A` |
-| Best mAP | **N/A** |
+| Params | See config file |
+| Best mAP | N/A (no eval JSON) |
 | Checkpoint | `work_dirs/exp_aj_v_perclass_anneal/latest_ema.pth` |
-| Log | `work_dirs/exp_aj_v_perclass_anneal/launcher.log` |
+| Logs | `work_dirs/exp_aj_v_perclass_anneal/launcher.log` |
+| Log JSON | `work_dirs/exp_aj_v_perclass_anneal/20260321_130828.log.json` |
 | Eval Details | No eval results |
+| Artifacts | `work_dirs/exp_aj_v_perclass_anneal/` |
+
 
 ### E0074: exp_ak_x_epoch2_condcrop
 | Field | Value |
 | --- | --- |
 | Objective | ak x epoch2 condcrop |
 | Dataset | RSAR |
-| Method | SFOD iteration |
+| Method | SFOD iteration (UT + CGA) |
+| Model | OrientedRCNN + R50-FPN (le90) |
 | Config | `N/A` |
-| Best mAP | **N/A** |
+| Params | See config file |
+| Best mAP | N/A (no eval JSON) |
 | Checkpoint | `work_dirs/exp_ak_x_epoch2_condcrop/latest_ema.pth` |
-| Log | `work_dirs/exp_ak_x_epoch2_condcrop/launcher.log` |
+| Logs | `work_dirs/exp_ak_x_epoch2_condcrop/launcher.log` |
+| Log JSON | `work_dirs/exp_ak_x_epoch2_condcrop/20260321_135851.log.json` |
 | Eval Details | No eval results |
+| Artifacts | `work_dirs/exp_ak_x_epoch2_condcrop/` |
+
 
 ### E0075: exp_al_x_dtrcrop_epoch1
 | Field | Value |
 | --- | --- |
 | Objective | al x dtrcrop epoch1 |
 | Dataset | RSAR |
-| Method | SFOD iteration |
+| Method | SFOD iteration (UT + CGA) |
+| Model | OrientedRCNN + R50-FPN (le90) |
 | Config | `N/A` |
-| Best mAP | **N/A** |
+| Params | See config file |
+| Best mAP | N/A (no eval JSON) |
 | Checkpoint | `work_dirs/exp_al_x_dtrcrop_epoch1/latest_ema.pth` |
-| Log | `work_dirs/exp_al_x_dtrcrop_epoch1/launcher.log` |
+| Logs | `work_dirs/exp_al_x_dtrcrop_epoch1/launcher.log` |
+| Log JSON | `work_dirs/exp_al_x_dtrcrop_epoch1/20260321_153925.log.json` |
 | Eval Details | No eval results |
+| Artifacts | `work_dirs/exp_al_x_dtrcrop_epoch1/` |
+
 
 ### E0076: exp_an_x_sardet_unlabeled
 | Field | Value |
 | --- | --- |
 | Objective | an x sardet unlabeled |
 | Dataset | RSAR |
-| Method | SFOD iteration |
+| Method | SFOD iteration (UT + CGA) |
+| Model | OrientedRCNN + R50-FPN (le90) |
 | Config | `N/A` |
-| Best mAP | **N/A** |
+| Params | See config file |
+| Best mAP | N/A (no eval JSON) |
 | Checkpoint | `work_dirs/exp_an_x_sardet_unlabeled/latest_ema.pth` |
-| Log | `work_dirs/exp_an_x_sardet_unlabeled/launcher.log` |
+| Logs | `work_dirs/exp_an_x_sardet_unlabeled/launcher.log` |
+| Log JSON | `work_dirs/exp_an_x_sardet_unlabeled/20260322_013503.log.json` |
 | Eval Details | No eval results |
+| Artifacts | `work_dirs/exp_an_x_sardet_unlabeled/` |
+
 
 ### E0077: exp_ao_an_tiny_u
 | Field | Value |
 | --- | --- |
 | Objective | ao an tiny u |
 | Dataset | RSAR |
-| Method | SFOD iteration |
+| Method | SFOD iteration (UT + CGA) |
+| Model | OrientedRCNN + R50-FPN (le90) |
 | Config | `N/A` |
-| Best mAP | **N/A** |
+| Params | See config file |
+| Best mAP | N/A (no eval JSON) |
 | Checkpoint | `work_dirs/exp_ao_an_tiny_u/latest_ema.pth` |
-| Log | `work_dirs/exp_ao_an_tiny_u/launcher.log` |
+| Logs | `work_dirs/exp_ao_an_tiny_u/launcher.log` |
+| Log JSON | `work_dirs/exp_ao_an_tiny_u/20260322_040222.log.json` |
 | Eval Details | No eval results |
+| Artifacts | `work_dirs/exp_ao_an_tiny_u/` |
+
 
 ### E0078: exp_ap_ao_tiny_u01
 | Field | Value |
 | --- | --- |
 | Objective | ap ao tiny u01 |
 | Dataset | RSAR |
-| Method | SFOD iteration |
+| Method | SFOD iteration (UT + CGA) |
+| Model | OrientedRCNN + R50-FPN (le90) |
 | Config | `N/A` |
-| Best mAP | **N/A** |
+| Params | See config file |
+| Best mAP | N/A (no eval JSON) |
 | Checkpoint | `work_dirs/exp_ap_ao_tiny_u01/latest_ema.pth` |
-| Log | `work_dirs/exp_ap_ao_tiny_u01/launcher.log` |
+| Logs | `work_dirs/exp_ap_ao_tiny_u01/launcher.log` |
+| Log JSON | `work_dirs/exp_ap_ao_tiny_u01/20260322_045601.log.json` |
 | Eval Details | No eval results |
+| Artifacts | `work_dirs/exp_ap_ao_tiny_u01/` |
+
 
 ### E0079: exp_aq_ap_tiny_u005
 | Field | Value |
 | --- | --- |
 | Objective | aq ap tiny u005 |
 | Dataset | RSAR |
-| Method | SFOD iteration |
+| Method | SFOD iteration (UT + CGA) |
+| Model | OrientedRCNN + R50-FPN (le90) |
 | Config | `N/A` |
-| Best mAP | **N/A** |
+| Params | See config file |
+| Best mAP | N/A (no eval JSON) |
 | Checkpoint | `work_dirs/exp_aq_ap_tiny_u005/latest_ema.pth` |
-| Log | `work_dirs/exp_aq_ap_tiny_u005/launcher.log` |
+| Logs | `work_dirs/exp_aq_ap_tiny_u005/launcher.log` |
+| Log JSON | `work_dirs/exp_aq_ap_tiny_u005/20260322_054913.log.json` |
 | Eval Details | No eval results |
+| Artifacts | `work_dirs/exp_aq_ap_tiny_u005/` |
+
 
 ### E0080: exp_ar_ap_tiny_u005_lowema
 | Field | Value |
 | --- | --- |
 | Objective | ar ap tiny u005 lowema |
 | Dataset | RSAR |
-| Method | SFOD iteration |
+| Method | SFOD iteration (UT + CGA) |
+| Model | OrientedRCNN + R50-FPN (le90) |
 | Config | `N/A` |
-| Best mAP | **N/A** |
+| Params | See config file |
+| Best mAP | N/A (no eval JSON) |
 | Checkpoint | `work_dirs/exp_ar_ap_tiny_u005_lowema/latest_ema.pth` |
-| Log | `work_dirs/exp_ar_ap_tiny_u005_lowema/launcher.log` |
+| Logs | `work_dirs/exp_ar_ap_tiny_u005_lowema/launcher.log` |
+| Log JSON | `work_dirs/exp_ar_ap_tiny_u005_lowema/20260322_064345.log.json` |
 | Eval Details | No eval results |
+| Artifacts | `work_dirs/exp_ar_ap_tiny_u005_lowema/` |
+
 
 ### E0081: exp_as_ar_tiny_u003_lowema
 | Field | Value |
 | --- | --- |
 | Objective | as ar tiny u003 lowema |
 | Dataset | RSAR |
-| Method | SFOD iteration |
+| Method | SFOD iteration (UT + CGA) |
+| Model | OrientedRCNN + R50-FPN (le90) |
 | Config | `N/A` |
-| Best mAP | **N/A** |
+| Params | See config file |
+| Best mAP | N/A (no eval JSON) |
 | Checkpoint | `work_dirs/exp_as_ar_tiny_u003_lowema/latest_ema.pth` |
-| Log | `work_dirs/exp_as_ar_tiny_u003_lowema/launcher.log` |
+| Logs | `work_dirs/exp_as_ar_tiny_u003_lowema/launcher.log` |
+| Log JSON | `work_dirs/exp_as_ar_tiny_u003_lowema/20260322_073734.log.json` |
 | Eval Details | No eval results |
+| Artifacts | `work_dirs/exp_as_ar_tiny_u003_lowema/` |
+
 
 ### E0082: exp_at_ar_tiny_u004_lowema
 | Field | Value |
 | --- | --- |
 | Objective | at ar tiny u004 lowema |
 | Dataset | RSAR |
-| Method | SFOD iteration |
+| Method | SFOD iteration (UT + CGA) |
+| Model | OrientedRCNN + R50-FPN (le90) |
 | Config | `N/A` |
-| Best mAP | **N/A** |
+| Params | See config file |
+| Best mAP | N/A (no eval JSON) |
 | Checkpoint | `work_dirs/exp_at_ar_tiny_u004_lowema/latest_ema.pth` |
-| Log | `work_dirs/exp_at_ar_tiny_u004_lowema/launcher.log` |
+| Logs | `work_dirs/exp_at_ar_tiny_u004_lowema/launcher.log` |
+| Log JSON | `work_dirs/exp_at_ar_tiny_u004_lowema/20260322_083047.log.json` |
 | Eval Details | No eval results |
+| Artifacts | `work_dirs/exp_at_ar_tiny_u004_lowema/` |
+
 
 ### E0083: exp_au_ar_tiny_u006_lowema
 | Field | Value |
 | --- | --- |
 | Objective | au ar tiny u006 lowema |
 | Dataset | RSAR |
-| Method | SFOD iteration |
+| Method | SFOD iteration (UT + CGA) |
+| Model | OrientedRCNN + R50-FPN (le90) |
 | Config | `N/A` |
-| Best mAP | **N/A** |
+| Params | See config file |
+| Best mAP | N/A (no eval JSON) |
 | Checkpoint | `work_dirs/exp_au_ar_tiny_u006_lowema/latest_ema.pth` |
-| Log | `work_dirs/exp_au_ar_tiny_u006_lowema/student_eval.log` |
+| Logs | `work_dirs/exp_au_ar_tiny_u006_lowema/student_eval.log` |
+| Log JSON | `work_dirs/exp_au_ar_tiny_u006_lowema/20260322_092406.log.json` |
 | Eval Details | No eval results |
+| Artifacts | `work_dirs/exp_au_ar_tiny_u006_lowema/` |
+
 
 ### E0084: exp_av_au_tiny_u006_lowema
 | Field | Value |
 | --- | --- |
 | Objective | av au tiny u006 lowema |
 | Dataset | RSAR |
-| Method | SFOD iteration |
+| Method | SFOD iteration (UT + CGA) |
+| Model | OrientedRCNN + R50-FPN (le90) |
 | Config | `N/A` |
-| Best mAP | **N/A** |
+| Params | See config file |
+| Best mAP | N/A (no eval JSON) |
 | Checkpoint | `work_dirs/exp_av_au_tiny_u006_lowema/latest_ema.pth` |
-| Log | `work_dirs/exp_av_au_tiny_u006_lowema/student_eval.log` |
+| Logs | `work_dirs/exp_av_au_tiny_u006_lowema/student_eval.log` |
+| Log JSON | `work_dirs/exp_av_au_tiny_u006_lowema/20260322_101843.log.json` |
 | Eval Details | No eval results |
+| Artifacts | `work_dirs/exp_av_au_tiny_u006_lowema/` |
+
 
 ### E0085: exp_aw_au_tiny_u005_lowema
 | Field | Value |
 | --- | --- |
 | Objective | aw au tiny u005 lowema |
 | Dataset | RSAR |
-| Method | SFOD iteration |
+| Method | SFOD iteration (UT + CGA) |
+| Model | OrientedRCNN + R50-FPN (le90) |
 | Config | `N/A` |
-| Best mAP | **N/A** |
+| Params | See config file |
+| Best mAP | N/A (no eval JSON) |
 | Checkpoint | `work_dirs/exp_aw_au_tiny_u005_lowema/latest_ema.pth` |
-| Log | `work_dirs/exp_aw_au_tiny_u005_lowema/student_eval.log` |
+| Logs | `work_dirs/exp_aw_au_tiny_u005_lowema/student_eval.log` |
+| Log JSON | `work_dirs/exp_aw_au_tiny_u005_lowema/20260322_111314.log.json` |
 | Eval Details | No eval results |
+| Artifacts | `work_dirs/exp_aw_au_tiny_u005_lowema/` |
+
 
 ### E0086: exp_ax_au_tiny_u006_ema995
 | Field | Value |
 | --- | --- |
 | Objective | ax au tiny u006 ema995 |
 | Dataset | RSAR |
-| Method | SFOD iteration |
+| Method | SFOD iteration (UT + CGA) |
+| Model | OrientedRCNN + R50-FPN (le90) |
 | Config | `N/A` |
-| Best mAP | **N/A** |
+| Params | See config file |
+| Best mAP | N/A (no eval JSON) |
 | Checkpoint | `work_dirs/exp_ax_au_tiny_u006_ema995/latest_ema.pth` |
-| Log | `work_dirs/exp_ax_au_tiny_u006_ema995/launcher.log` |
+| Logs | `work_dirs/exp_ax_au_tiny_u006_ema995/launcher.log` |
+| Log JSON | `work_dirs/exp_ax_au_tiny_u006_ema995/20260322_121331.log.json` |
 | Eval Details | No eval results |
+| Artifacts | `work_dirs/exp_ax_au_tiny_u006_ema995/` |
+
 
 ### E0087: exp_ay_ax_tiny_u006_ema995
 | Field | Value |
 | --- | --- |
 | Objective | ay ax tiny u006 ema995 |
 | Dataset | RSAR |
-| Method | SFOD iteration |
+| Method | SFOD iteration (UT + CGA) |
+| Model | OrientedRCNN + R50-FPN (le90) |
 | Config | `N/A` |
-| Best mAP | **N/A** |
+| Params | See config file |
+| Best mAP | N/A (no eval JSON) |
 | Checkpoint | `work_dirs/exp_ay_ax_tiny_u006_ema995/latest_ema.pth` |
-| Log | `work_dirs/exp_ay_ax_tiny_u006_ema995/launcher.log` |
+| Logs | `work_dirs/exp_ay_ax_tiny_u006_ema995/launcher.log` |
+| Log JSON | `work_dirs/exp_ay_ax_tiny_u006_ema995/20260322_130706.log.json` |
 | Eval Details | No eval results |
+| Artifacts | `work_dirs/exp_ay_ax_tiny_u006_ema995/` |
+
 
 ### E0088: exp_m_lora_cga
 | Field | Value |
 | --- | --- |
 | Objective | m lora cga |
 | Dataset | RSAR |
-| Method | SFOD iteration |
+| Method | SFOD iteration (UT + CGA) |
+| Model | OrientedRCNN + R50-FPN (le90) |
 | Config | `N/A` |
-| Best mAP | **N/A** |
+| Params | See config file |
+| Best mAP | N/A (no eval JSON) |
 | Checkpoint | `work_dirs/exp_m_lora_cga/latest_ema.pth` |
-| Log | `work_dirs/exp_m_lora_cga/wait_and_resume.log` |
+| Logs | `work_dirs/exp_m_lora_cga/wait_and_resume.log` |
+| Log JSON | `work_dirs/exp_m_lora_cga/20260318_164736.log.json` |
 | Eval Details | No eval results |
+| Artifacts | `work_dirs/exp_m_lora_cga/` |
+
 
 ### E0089: exp_m_wu_schedule
 | Field | Value |
 | --- | --- |
 | Objective | m wu schedule |
 | Dataset | RSAR |
-| Method | SFOD iteration |
+| Method | SFOD iteration (UT + CGA) |
+| Model | OrientedRCNN + R50-FPN (le90) |
 | Config | `N/A` |
-| Best mAP | **N/A** |
+| Params | See config file |
+| Best mAP | N/A (no eval JSON) |
 | Checkpoint | `work_dirs/exp_m_wu_schedule/latest_ema.pth` |
-| Log | `work_dirs/exp_m_wu_schedule/train.log` |
+| Logs | `work_dirs/exp_m_wu_schedule/train.log` |
+| Log JSON | `work_dirs/exp_m_wu_schedule/20260318_144218.log.json` |
 | Eval Details | No eval results |
+| Artifacts | `work_dirs/exp_m_wu_schedule/` |
+
 
 ### E0090: exp_t_m_resume
 | Field | Value |
 | --- | --- |
 | Objective | t m resume |
 | Dataset | RSAR |
-| Method | SFOD iteration |
+| Method | SFOD iteration (UT + CGA) |
+| Model | OrientedRCNN + R50-FPN (le90) |
 | Config | `N/A` |
-| Best mAP | **N/A** |
+| Params | See config file |
+| Best mAP | N/A (no eval JSON) |
 | Checkpoint | `work_dirs/exp_t_m_resume/latest_ema.pth` |
-| Log | `work_dirs/exp_t_m_resume/train_attempt1_sighup.log` |
+| Logs | `work_dirs/exp_t_m_resume/train_attempt1_sighup.log` |
+| Log JSON | `work_dirs/exp_t_m_resume/20260319_013150.log.json` |
 | Eval Details | No eval results |
+| Artifacts | `work_dirs/exp_t_m_resume/` |
+
 
 ### E0091: exp_u_m_aircraft_protect
 | Field | Value |
 | --- | --- |
 | Objective | u m aircraft protect |
 | Dataset | RSAR |
-| Method | SFOD iteration |
+| Method | SFOD iteration (UT + CGA) |
+| Model | OrientedRCNN + R50-FPN (le90) |
 | Config | `N/A` |
-| Best mAP | **N/A** |
+| Params | See config file |
+| Best mAP | N/A (no eval JSON) |
 | Checkpoint | `work_dirs/exp_u_m_aircraft_protect/latest_ema.pth` |
-| Log | `work_dirs/exp_u_m_aircraft_protect/train_attempt1_missing_ckpt.log` |
+| Logs | `work_dirs/exp_u_m_aircraft_protect/train_attempt1_missing_ckpt.log` |
+| Log JSON | `work_dirs/exp_u_m_aircraft_protect/20260319_034331.log.json` |
 | Eval Details | No eval results |
+| Artifacts | `work_dirs/exp_u_m_aircraft_protect/` |
+
 
 ### E0092: exp_v_t_aircraft_protect
 | Field | Value |
 | --- | --- |
 | Objective | v t aircraft protect |
 | Dataset | RSAR |
-| Method | SFOD iteration |
+| Method | SFOD iteration (UT + CGA) |
+| Model | OrientedRCNN + R50-FPN (le90) |
 | Config | `N/A` |
-| Best mAP | **N/A** |
+| Params | See config file |
+| Best mAP | N/A (no eval JSON) |
 | Checkpoint | `work_dirs/exp_v_t_aircraft_protect/latest_ema.pth` |
-| Log | `work_dirs/exp_v_t_aircraft_protect/train.log` |
+| Logs | `work_dirs/exp_v_t_aircraft_protect/train.log` |
+| Log JSON | `work_dirs/exp_v_t_aircraft_protect/20260319_143803.log.json` |
 | Eval Details | No eval results |
+| Artifacts | `work_dirs/exp_v_t_aircraft_protect/` |
+
 
 ### E0093: exp_w_v_polish
 | Field | Value |
 | --- | --- |
 | Objective | w v polish |
 | Dataset | RSAR |
-| Method | SFOD iteration |
+| Method | SFOD iteration (UT + CGA) |
+| Model | OrientedRCNN + R50-FPN (le90) |
 | Config | `N/A` |
-| Best mAP | **N/A** |
+| Params | See config file |
+| Best mAP | N/A (no eval JSON) |
 | Checkpoint | `work_dirs/exp_w_v_polish/latest_ema.pth` |
-| Log | `work_dirs/exp_w_v_polish/launcher.log` |
+| Logs | `work_dirs/exp_w_v_polish/launcher.log` |
+| Log JSON | `work_dirs/exp_w_v_polish/20260320_135514.log.json` |
 | Eval Details | No eval results |
+| Artifacts | `work_dirs/exp_w_v_polish/` |
+
 
 ### E0094: exp_x_v_micro_polish
 | Field | Value |
 | --- | --- |
 | Objective | x v micro polish |
 | Dataset | RSAR |
-| Method | SFOD iteration |
+| Method | SFOD iteration (UT + CGA) |
+| Model | OrientedRCNN + R50-FPN (le90) |
 | Config | `N/A` |
-| Best mAP | **N/A** |
+| Params | See config file |
+| Best mAP | N/A (no eval JSON) |
 | Checkpoint | `work_dirs/exp_x_v_micro_polish/latest_ema.pth` |
-| Log | `work_dirs/exp_x_v_micro_polish/launcher.log` |
+| Logs | `work_dirs/exp_x_v_micro_polish/launcher.log` |
+| Log JSON | `work_dirs/exp_x_v_micro_polish/20260320_203002.log.json` |
 | Eval Details | No eval results |
+| Artifacts | `work_dirs/exp_x_v_micro_polish/` |
+
 
 ### E0095: exp_y_x_vitl14_lora
 | Field | Value |
 | --- | --- |
 | Objective | y x vitl14 lora |
 | Dataset | RSAR |
-| Method | SFOD iteration |
+| Method | SFOD iteration (UT + CGA) |
+| Model | OrientedRCNN + R50-FPN (le90) |
 | Config | `N/A` |
-| Best mAP | **N/A** |
+| Params | See config file |
+| Best mAP | N/A (no eval JSON) |
 | Checkpoint | `work_dirs/exp_y_x_vitl14_lora/latest_ema.pth` |
-| Log | `work_dirs/exp_y_x_vitl14_lora/launcher.log` |
+| Logs | `work_dirs/exp_y_x_vitl14_lora/launcher.log` |
+| Log JSON | `work_dirs/exp_y_x_vitl14_lora/20260320_230509.log.json` |
 | Eval Details | No eval results |
+| Artifacts | `work_dirs/exp_y_x_vitl14_lora/` |
+
 
 ### E0096: exp_z_x_lower_wu
 | Field | Value |
 | --- | --- |
 | Objective | z x lower wu |
 | Dataset | RSAR |
-| Method | SFOD iteration |
+| Method | SFOD iteration (UT + CGA) |
+| Model | OrientedRCNN + R50-FPN (le90) |
 | Config | `N/A` |
-| Best mAP | **N/A** |
+| Params | See config file |
+| Best mAP | N/A (no eval JSON) |
 | Checkpoint | `work_dirs/exp_z_x_lower_wu/latest_ema.pth` |
-| Log | `work_dirs/exp_z_x_lower_wu/launcher.log` |
+| Logs | `work_dirs/exp_z_x_lower_wu/launcher.log` |
+| Log JSON | `work_dirs/exp_z_x_lower_wu/20260321_025447.log.json` |
 | Eval Details | No eval results |
+| Artifacts | `work_dirs/exp_z_x_lower_wu/` |
