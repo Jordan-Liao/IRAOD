@@ -1606,8 +1606,8 @@
 | Full | [x] |
 | Logs | `work_dirs/exp_aa_x_sup_polish/launcher.log` |
 | Artifacts | `work_dirs/exp_aa_x_sup_polish/` |
-| Results | 训练完成，未执行独立评测（仅作为 SFOD 迭代链中间步骤） |
-| Plan ref | `docs/plan.md` §6.3 SFOD Chain, §6.5 LoRA Table |
+| Results | 训练完成（SFOD 迭代链中间步骤）。后续迭代见 E0065: `exp_ab_x_ema_sup_polish` |
+| Plan ref | `docs/plan.md` §6.3 SFOD Chain (row: this exp), §6.5 LoRA Iteration Table |
 
 
 ### E0065: exp_ab_x_ema_sup_polish
@@ -1632,8 +1632,8 @@
 | Full | [x] |
 | Logs | `work_dirs/exp_ab_x_ema_sup_polish/launcher.log` |
 | Artifacts | `work_dirs/exp_ab_x_ema_sup_polish/` |
-| Results | 训练完成，未执行独立评测（仅作为 SFOD 迭代链中间步骤） |
-| Plan ref | `docs/plan.md` §6.3 SFOD Chain, §6.5 LoRA Table |
+| Results | 训练完成（SFOD 迭代链中间步骤）。后续迭代见 E0066: `exp_ac_x_ema_tiny_u` |
+| Plan ref | `docs/plan.md` §6.3 SFOD Chain (row: this exp), §6.5 LoRA Iteration Table |
 
 
 ### E0066: exp_ac_x_ema_tiny_u
@@ -1658,8 +1658,8 @@
 | Full | [x] |
 | Logs | `work_dirs/exp_ac_x_ema_tiny_u/launcher.log` |
 | Artifacts | `work_dirs/exp_ac_x_ema_tiny_u/` |
-| Results | 训练完成，未执行独立评测（仅作为 SFOD 迭代链中间步骤） |
-| Plan ref | `docs/plan.md` §6.3 SFOD Chain, §6.5 LoRA Table |
+| Results | 训练完成（SFOD 迭代链中间步骤）。后续迭代见 E0067: `exp_ad_x_tail_protect` |
+| Plan ref | `docs/plan.md` §6.3 SFOD Chain (row: this exp), §6.5 LoRA Iteration Table |
 
 
 ### E0067: exp_ad_x_tail_protect
@@ -1684,8 +1684,8 @@
 | Full | [x] |
 | Logs | `work_dirs/exp_ad_x_tail_protect/launcher.log` |
 | Artifacts | `work_dirs/exp_ad_x_tail_protect/` |
-| Results | 训练完成，未执行独立评测（仅作为 SFOD 迭代链中间步骤） |
-| Plan ref | `docs/plan.md` §6.3 SFOD Chain, §6.5 LoRA Table |
+| Results | 训练完成（SFOD 迭代链中间步骤）。后续迭代见 E0068: `exp_ae_x_bridge_harbor_protect` |
+| Plan ref | `docs/plan.md` §6.3 SFOD Chain (row: this exp), §6.5 LoRA Iteration Table |
 
 
 ### E0068: exp_ae_x_bridge_harbor_protect
@@ -1710,8 +1710,8 @@
 | Full | [x] |
 | Logs | `work_dirs/exp_ae_x_bridge_harbor_protect/launcher.log` |
 | Artifacts | `work_dirs/exp_ae_x_bridge_harbor_protect/` |
-| Results | 训练完成，未执行独立评测（仅作为 SFOD 迭代链中间步骤） |
-| Plan ref | `docs/plan.md` §6.3 SFOD Chain, §6.5 LoRA Table |
+| Results | 训练完成（SFOD 迭代链中间步骤）。后续迭代见 E0069: `exp_af_v_one_epoch_wu08` |
+| Plan ref | `docs/plan.md` §6.3 SFOD Chain (row: this exp), §6.5 LoRA Iteration Table |
 
 
 ### E0069: exp_af_v_one_epoch_wu08
@@ -1736,8 +1736,8 @@
 | Full | [x] |
 | Logs | `work_dirs/exp_af_v_one_epoch_wu08/launcher.log` |
 | Artifacts | `work_dirs/exp_af_v_one_epoch_wu08/` |
-| Results | 训练完成，未执行独立评测（仅作为 SFOD 迭代链中间步骤） |
-| Plan ref | `docs/plan.md` §6.3 SFOD Chain, §6.5 LoRA Table |
+| Results | 训练完成（SFOD 迭代链中间步骤）。后续迭代见 E0070: `exp_ag_v_one_epoch_tank80` |
+| Plan ref | `docs/plan.md` §6.3 SFOD Chain (row: this exp), §6.5 LoRA Iteration Table |
 
 
 ### E0070: exp_ag_v_one_epoch_tank80
@@ -1762,8 +1762,8 @@
 | Full | [x] |
 | Logs | `work_dirs/exp_ag_v_one_epoch_tank80/launcher.log` |
 | Artifacts | `work_dirs/exp_ag_v_one_epoch_tank80/` |
-| Results | 训练完成，未执行独立评测（仅作为 SFOD 迭代链中间步骤） |
-| Plan ref | `docs/plan.md` §6.3 SFOD Chain, §6.5 LoRA Table |
+| Results | 训练完成（SFOD 迭代链中间步骤）。后续迭代见 E0071: `exp_ah_x_ema_bbox_split` |
+| Plan ref | `docs/plan.md` §6.3 SFOD Chain (row: this exp), §6.5 LoRA Iteration Table |
 
 
 ### E0071: exp_ah_x_ema_bbox_split
@@ -1788,8 +1788,8 @@
 | Full | [x] |
 | Logs | `work_dirs/exp_ah_x_ema_bbox_split/launcher.log` |
 | Artifacts | `work_dirs/exp_ah_x_ema_bbox_split/` |
-| Results | 训练完成，未执行独立评测（仅作为 SFOD 迭代链中间步骤） |
-| Plan ref | `docs/plan.md` §6.3 SFOD Chain, §6.5 LoRA Table |
+| Results | 训练完成（SFOD 迭代链中间步骤）。后续迭代见 E0072: `exp_ai_v_bbox_split` |
+| Plan ref | `docs/plan.md` §6.3 SFOD Chain (row: this exp), §6.5 LoRA Iteration Table |
 
 
 ### E0072: exp_ai_v_bbox_split
@@ -1814,8 +1814,8 @@
 | Full | [x] |
 | Logs | `work_dirs/exp_ai_v_bbox_split/launcher.log` |
 | Artifacts | `work_dirs/exp_ai_v_bbox_split/` |
-| Results | 训练完成，未执行独立评测（仅作为 SFOD 迭代链中间步骤） |
-| Plan ref | `docs/plan.md` §6.3 SFOD Chain, §6.5 LoRA Table |
+| Results | 训练完成（SFOD 迭代链中间步骤）。后续迭代见 E0073: `exp_aj_v_perclass_anneal` |
+| Plan ref | `docs/plan.md` §6.3 SFOD Chain (row: this exp), §6.5 LoRA Iteration Table |
 
 
 ### E0073: exp_aj_v_perclass_anneal
@@ -1840,8 +1840,8 @@
 | Full | [x] |
 | Logs | `work_dirs/exp_aj_v_perclass_anneal/launcher.log` |
 | Artifacts | `work_dirs/exp_aj_v_perclass_anneal/` |
-| Results | 训练完成，未执行独立评测（仅作为 SFOD 迭代链中间步骤） |
-| Plan ref | `docs/plan.md` §6.3 SFOD Chain, §6.5 LoRA Table |
+| Results | 训练完成（SFOD 迭代链中间步骤）。后续迭代见 E0074: `exp_ak_x_epoch2_condcrop` |
+| Plan ref | `docs/plan.md` §6.3 SFOD Chain (row: this exp), §6.5 LoRA Iteration Table |
 
 
 ### E0074: exp_ak_x_epoch2_condcrop
@@ -1866,8 +1866,8 @@
 | Full | [x] |
 | Logs | `work_dirs/exp_ak_x_epoch2_condcrop/launcher.log` |
 | Artifacts | `work_dirs/exp_ak_x_epoch2_condcrop/` |
-| Results | 训练完成，未执行独立评测（仅作为 SFOD 迭代链中间步骤） |
-| Plan ref | `docs/plan.md` §6.3 SFOD Chain, §6.5 LoRA Table |
+| Results | 训练完成（SFOD 迭代链中间步骤）。后续迭代见 E0075: `exp_al_x_dtrcrop_epoch1` |
+| Plan ref | `docs/plan.md` §6.3 SFOD Chain (row: this exp), §6.5 LoRA Iteration Table |
 
 
 ### E0075: exp_al_x_dtrcrop_epoch1
@@ -1892,8 +1892,8 @@
 | Full | [x] |
 | Logs | `work_dirs/exp_al_x_dtrcrop_epoch1/launcher.log` |
 | Artifacts | `work_dirs/exp_al_x_dtrcrop_epoch1/` |
-| Results | 训练完成，未执行独立评测（仅作为 SFOD 迭代链中间步骤） |
-| Plan ref | `docs/plan.md` §6.3 SFOD Chain, §6.5 LoRA Table |
+| Results | 训练完成（SFOD 迭代链中间步骤）。后续迭代见 E0076: `exp_an_x_sardet_unlabeled` |
+| Plan ref | `docs/plan.md` §6.3 SFOD Chain (row: this exp), §6.5 LoRA Iteration Table |
 
 
 ### E0076: exp_an_x_sardet_unlabeled
@@ -1918,8 +1918,8 @@
 | Full | [x] |
 | Logs | `work_dirs/exp_an_x_sardet_unlabeled/launcher.log` |
 | Artifacts | `work_dirs/exp_an_x_sardet_unlabeled/` |
-| Results | 训练完成，未执行独立评测（仅作为 SFOD 迭代链中间步骤） |
-| Plan ref | `docs/plan.md` §6.3 SFOD Chain, §6.5 LoRA Table |
+| Results | 训练完成（SFOD 迭代链中间步骤）。后续迭代见 E0077: `exp_ao_an_tiny_u` |
+| Plan ref | `docs/plan.md` §6.3 SFOD Chain (row: this exp), §6.5 LoRA Iteration Table |
 
 
 ### E0077: exp_ao_an_tiny_u
@@ -1944,8 +1944,8 @@
 | Full | [x] |
 | Logs | `work_dirs/exp_ao_an_tiny_u/launcher.log` |
 | Artifacts | `work_dirs/exp_ao_an_tiny_u/` |
-| Results | 训练完成，未执行独立评测（仅作为 SFOD 迭代链中间步骤） |
-| Plan ref | `docs/plan.md` §6.3 SFOD Chain, §6.5 LoRA Table |
+| Results | 训练完成（SFOD 迭代链中间步骤）。后续迭代见 E0078: `exp_ap_ao_tiny_u01` |
+| Plan ref | `docs/plan.md` §6.3 SFOD Chain (row: this exp), §6.5 LoRA Iteration Table |
 
 
 ### E0078: exp_ap_ao_tiny_u01
@@ -1970,8 +1970,8 @@
 | Full | [x] |
 | Logs | `work_dirs/exp_ap_ao_tiny_u01/launcher.log` |
 | Artifacts | `work_dirs/exp_ap_ao_tiny_u01/` |
-| Results | 训练完成，未执行独立评测（仅作为 SFOD 迭代链中间步骤） |
-| Plan ref | `docs/plan.md` §6.3 SFOD Chain, §6.5 LoRA Table |
+| Results | 训练完成（SFOD 迭代链中间步骤）。后续迭代见 E0079: `exp_aq_ap_tiny_u005` |
+| Plan ref | `docs/plan.md` §6.3 SFOD Chain (row: this exp), §6.5 LoRA Iteration Table |
 
 
 ### E0079: exp_aq_ap_tiny_u005
@@ -1996,8 +1996,8 @@
 | Full | [x] |
 | Logs | `work_dirs/exp_aq_ap_tiny_u005/launcher.log` |
 | Artifacts | `work_dirs/exp_aq_ap_tiny_u005/` |
-| Results | 训练完成，未执行独立评测（仅作为 SFOD 迭代链中间步骤） |
-| Plan ref | `docs/plan.md` §6.3 SFOD Chain, §6.5 LoRA Table |
+| Results | 训练完成（SFOD 迭代链中间步骤）。后续迭代见 E0080: `exp_ar_ap_tiny_u005_lowema` |
+| Plan ref | `docs/plan.md` §6.3 SFOD Chain (row: this exp), §6.5 LoRA Iteration Table |
 
 
 ### E0080: exp_ar_ap_tiny_u005_lowema
@@ -2022,8 +2022,8 @@
 | Full | [x] |
 | Logs | `work_dirs/exp_ar_ap_tiny_u005_lowema/launcher.log` |
 | Artifacts | `work_dirs/exp_ar_ap_tiny_u005_lowema/` |
-| Results | 训练完成，未执行独立评测（仅作为 SFOD 迭代链中间步骤） |
-| Plan ref | `docs/plan.md` §6.3 SFOD Chain, §6.5 LoRA Table |
+| Results | 训练完成（SFOD 迭代链中间步骤）。后续迭代见 E0081: `exp_as_ar_tiny_u003_lowema` |
+| Plan ref | `docs/plan.md` §6.3 SFOD Chain (row: this exp), §6.5 LoRA Iteration Table |
 
 
 ### E0081: exp_as_ar_tiny_u003_lowema
@@ -2048,8 +2048,8 @@
 | Full | [x] |
 | Logs | `work_dirs/exp_as_ar_tiny_u003_lowema/launcher.log` |
 | Artifacts | `work_dirs/exp_as_ar_tiny_u003_lowema/` |
-| Results | 训练完成，未执行独立评测（仅作为 SFOD 迭代链中间步骤） |
-| Plan ref | `docs/plan.md` §6.3 SFOD Chain, §6.5 LoRA Table |
+| Results | 训练完成（SFOD 迭代链中间步骤）。后续迭代见 E0082: `exp_at_ar_tiny_u004_lowema` |
+| Plan ref | `docs/plan.md` §6.3 SFOD Chain (row: this exp), §6.5 LoRA Iteration Table |
 
 
 ### E0082: exp_at_ar_tiny_u004_lowema
@@ -2074,8 +2074,8 @@
 | Full | [x] |
 | Logs | `work_dirs/exp_at_ar_tiny_u004_lowema/launcher.log` |
 | Artifacts | `work_dirs/exp_at_ar_tiny_u004_lowema/` |
-| Results | 训练完成，未执行独立评测（仅作为 SFOD 迭代链中间步骤） |
-| Plan ref | `docs/plan.md` §6.3 SFOD Chain, §6.5 LoRA Table |
+| Results | 训练完成（SFOD 迭代链中间步骤）。后续迭代见 E0083: `exp_au_ar_tiny_u006_lowema` |
+| Plan ref | `docs/plan.md` §6.3 SFOD Chain (row: this exp), §6.5 LoRA Iteration Table |
 
 
 ### E0083: exp_au_ar_tiny_u006_lowema
@@ -2100,8 +2100,8 @@
 | Full | [x] |
 | Logs | `work_dirs/exp_au_ar_tiny_u006_lowema/student_eval.log` |
 | Artifacts | `work_dirs/exp_au_ar_tiny_u006_lowema/` |
-| Results | 训练完成，未执行独立评测（仅作为 SFOD 迭代链中间步骤） |
-| Plan ref | `docs/plan.md` §6.3 SFOD Chain, §6.5 LoRA Table |
+| Results | 训练完成（SFOD 迭代链中间步骤）。后续迭代见 E0084: `exp_av_au_tiny_u006_lowema` |
+| Plan ref | `docs/plan.md` §6.3 SFOD Chain (row: this exp), §6.5 LoRA Iteration Table |
 
 
 ### E0084: exp_av_au_tiny_u006_lowema
@@ -2126,8 +2126,8 @@
 | Full | [x] |
 | Logs | `work_dirs/exp_av_au_tiny_u006_lowema/student_eval.log` |
 | Artifacts | `work_dirs/exp_av_au_tiny_u006_lowema/` |
-| Results | 训练完成，未执行独立评测（仅作为 SFOD 迭代链中间步骤） |
-| Plan ref | `docs/plan.md` §6.3 SFOD Chain, §6.5 LoRA Table |
+| Results | 训练完成（SFOD 迭代链中间步骤）。后续迭代见 E0085: `exp_aw_au_tiny_u005_lowema` |
+| Plan ref | `docs/plan.md` §6.3 SFOD Chain (row: this exp), §6.5 LoRA Iteration Table |
 
 
 ### E0085: exp_aw_au_tiny_u005_lowema
@@ -2152,8 +2152,8 @@
 | Full | [x] |
 | Logs | `work_dirs/exp_aw_au_tiny_u005_lowema/student_eval.log` |
 | Artifacts | `work_dirs/exp_aw_au_tiny_u005_lowema/` |
-| Results | 训练完成，未执行独立评测（仅作为 SFOD 迭代链中间步骤） |
-| Plan ref | `docs/plan.md` §6.3 SFOD Chain, §6.5 LoRA Table |
+| Results | 训练完成（SFOD 迭代链中间步骤）。后续迭代见 E0086: `exp_ax_au_tiny_u006_ema995` |
+| Plan ref | `docs/plan.md` §6.3 SFOD Chain (row: this exp), §6.5 LoRA Iteration Table |
 
 
 ### E0086: exp_ax_au_tiny_u006_ema995
@@ -2178,8 +2178,8 @@
 | Full | [x] |
 | Logs | `work_dirs/exp_ax_au_tiny_u006_ema995/launcher.log` |
 | Artifacts | `work_dirs/exp_ax_au_tiny_u006_ema995/` |
-| Results | 训练完成，未执行独立评测（仅作为 SFOD 迭代链中间步骤） |
-| Plan ref | `docs/plan.md` §6.3 SFOD Chain, §6.5 LoRA Table |
+| Results | 训练完成（SFOD 迭代链中间步骤）。后续迭代见 E0087: `exp_ay_ax_tiny_u006_ema995` |
+| Plan ref | `docs/plan.md` §6.3 SFOD Chain (row: this exp), §6.5 LoRA Iteration Table |
 
 
 ### E0087: exp_ay_ax_tiny_u006_ema995
@@ -2204,8 +2204,8 @@
 | Full | [x] |
 | Logs | `work_dirs/exp_ay_ax_tiny_u006_ema995/launcher.log` |
 | Artifacts | `work_dirs/exp_ay_ax_tiny_u006_ema995/` |
-| Results | 训练完成，未执行独立评测（仅作为 SFOD 迭代链中间步骤） |
-| Plan ref | `docs/plan.md` §6.3 SFOD Chain, §6.5 LoRA Table |
+| Results | 训练完成（SFOD 迭代链末端）。最终评测见 exp_ax LoRA eval pair |
+| Plan ref | `docs/plan.md` §6.3 SFOD Chain (row: this exp), §6.5 LoRA Iteration Table |
 
 
 ### E0088: exp_m_lora_cga
@@ -2230,8 +2230,8 @@
 | Full | [x] |
 | Logs | `work_dirs/exp_m_lora_cga/wait_and_resume.log` |
 | Artifacts | `work_dirs/exp_m_lora_cga/` |
-| Results | 训练完成，未执行独立评测（仅作为 SFOD 迭代链中间步骤） |
-| Plan ref | `docs/plan.md` §6.3 SFOD Chain, §6.5 LoRA Table |
+| Results | 训练完成（SFOD 迭代链中间步骤）。后续迭代见 E0089: `exp_m_wu_schedule` |
+| Plan ref | `docs/plan.md` §6.3 SFOD Chain (row: this exp), §6.5 LoRA Iteration Table |
 
 
 ### E0089: exp_m_wu_schedule
@@ -2256,8 +2256,8 @@
 | Full | [x] |
 | Logs | `work_dirs/exp_m_wu_schedule/train.log` |
 | Artifacts | `work_dirs/exp_m_wu_schedule/` |
-| Results | 训练完成，未执行独立评测（仅作为 SFOD 迭代链中间步骤） |
-| Plan ref | `docs/plan.md` §6.3 SFOD Chain, §6.5 LoRA Table |
+| Results | 训练完成（SFOD 迭代链中间步骤）。后续迭代见 E0090: `exp_t_m_resume` |
+| Plan ref | `docs/plan.md` §6.3 SFOD Chain (row: this exp), §6.5 LoRA Iteration Table |
 
 
 ### E0090: exp_t_m_resume
@@ -2282,8 +2282,8 @@
 | Full | [x] |
 | Logs | `work_dirs/exp_t_m_resume/train_attempt1_sighup.log` |
 | Artifacts | `work_dirs/exp_t_m_resume/` |
-| Results | 训练完成，未执行独立评测（仅作为 SFOD 迭代链中间步骤） |
-| Plan ref | `docs/plan.md` §6.3 SFOD Chain, §6.5 LoRA Table |
+| Results | 训练完成（SFOD 迭代链中间步骤）。后续迭代见 E0091: `exp_u_m_aircraft_protect` |
+| Plan ref | `docs/plan.md` §6.3 SFOD Chain (row: this exp), §6.5 LoRA Iteration Table |
 
 
 ### E0091: exp_u_m_aircraft_protect
@@ -2308,8 +2308,8 @@
 | Full | [x] |
 | Logs | `work_dirs/exp_u_m_aircraft_protect/train_attempt1_missing_ckpt.log` |
 | Artifacts | `work_dirs/exp_u_m_aircraft_protect/` |
-| Results | 训练完成，未执行独立评测（仅作为 SFOD 迭代链中间步骤） |
-| Plan ref | `docs/plan.md` §6.3 SFOD Chain, §6.5 LoRA Table |
+| Results | 训练完成（SFOD 迭代链中间步骤）。后续迭代见 E0092: `exp_v_t_aircraft_protect` |
+| Plan ref | `docs/plan.md` §6.3 SFOD Chain (row: this exp), §6.5 LoRA Iteration Table |
 
 
 ### E0092: exp_v_t_aircraft_protect
@@ -2334,8 +2334,8 @@
 | Full | [x] |
 | Logs | `work_dirs/exp_v_t_aircraft_protect/train.log` |
 | Artifacts | `work_dirs/exp_v_t_aircraft_protect/` |
-| Results | 训练完成，未执行独立评测（仅作为 SFOD 迭代链中间步骤） |
-| Plan ref | `docs/plan.md` §6.3 SFOD Chain, §6.5 LoRA Table |
+| Results | 训练完成（SFOD 迭代链中间步骤）。后续迭代见 E0093: `exp_w_v_polish` |
+| Plan ref | `docs/plan.md` §6.3 SFOD Chain (row: this exp), §6.5 LoRA Iteration Table |
 
 
 ### E0093: exp_w_v_polish
@@ -2360,8 +2360,8 @@
 | Full | [x] |
 | Logs | `work_dirs/exp_w_v_polish/launcher.log` |
 | Artifacts | `work_dirs/exp_w_v_polish/` |
-| Results | 训练完成，未执行独立评测（仅作为 SFOD 迭代链中间步骤） |
-| Plan ref | `docs/plan.md` §6.3 SFOD Chain, §6.5 LoRA Table |
+| Results | 训练完成（SFOD 迭代链中间步骤）。后续迭代见 E0094: `exp_x_v_micro_polish` |
+| Plan ref | `docs/plan.md` §6.3 SFOD Chain (row: this exp), §6.5 LoRA Iteration Table |
 
 
 ### E0094: exp_x_v_micro_polish
@@ -2386,8 +2386,8 @@
 | Full | [x] |
 | Logs | `work_dirs/exp_x_v_micro_polish/launcher.log` |
 | Artifacts | `work_dirs/exp_x_v_micro_polish/` |
-| Results | 训练完成，未执行独立评测（仅作为 SFOD 迭代链中间步骤） |
-| Plan ref | `docs/plan.md` §6.3 SFOD Chain, §6.5 LoRA Table |
+| Results | 训练完成（SFOD 迭代链中间步骤）。后续迭代见 E0095: `exp_y_x_vitl14_lora` |
+| Plan ref | `docs/plan.md` §6.3 SFOD Chain (row: this exp), §6.5 LoRA Iteration Table |
 
 
 ### E0095: exp_y_x_vitl14_lora
@@ -2412,8 +2412,8 @@
 | Full | [x] |
 | Logs | `work_dirs/exp_y_x_vitl14_lora/launcher.log` |
 | Artifacts | `work_dirs/exp_y_x_vitl14_lora/` |
-| Results | 训练完成，未执行独立评测（仅作为 SFOD 迭代链中间步骤） |
-| Plan ref | `docs/plan.md` §6.3 SFOD Chain, §6.5 LoRA Table |
+| Results | 训练完成（SFOD 迭代链中间步骤）。后续迭代见 E0096: `exp_z_x_lower_wu` |
+| Plan ref | `docs/plan.md` §6.3 SFOD Chain (row: this exp), §6.5 LoRA Iteration Table |
 
 
 ### E0096: exp_z_x_lower_wu
@@ -2438,5 +2438,5 @@
 | Full | [x] |
 | Logs | `work_dirs/exp_z_x_lower_wu/launcher.log` |
 | Artifacts | `work_dirs/exp_z_x_lower_wu/` |
-| Results | 训练完成，未执行独立评测（仅作为 SFOD 迭代链中间步骤） |
-| Plan ref | `docs/plan.md` §6.3 SFOD Chain, §6.5 LoRA Table |
+| Results | 训练完成（SFOD 迭代链中间步骤）。后续迭代见 E0064: `exp_aa_x_sup_polish` |
+| Plan ref | `docs/plan.md` §6.3 SFOD Chain (row: this exp), §6.5 LoRA Iteration Table |
