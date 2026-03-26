@@ -1,0 +1,27 @@
+bootstrap:
+  working_dir: /home/zechuan/IRAOD
+  install_command: null
+  data_command: null
+  requires_gpu: true
+  # Smoke must prove the workspace can actually run end-to-end.
+  smoke_command: 'bash -lc "source /home/zechuan/miniconda3/etc/profile.d/conda.sh
+    && conda run --no-capture-output -n iraod python -c ''import torch; assert torch.cuda.is_available()''
+    && conda run --no-capture-output -n iraod bash scripts/smoke_rsar.sh"'
+  expected_paths:
+  - dataset/RSAR/train/annfiles
+  - dataset/RSAR/train/images
+  - dataset/RSAR/val/annfiles
+  - dataset/RSAR/val/images
+  - dataset/RSAR/test/annfiles
+  - dataset/RSAR/test/images
+interaction:
+  mode: autopilot
+limits:
+  max_rounds: 20
+  timeout_minutes: 0
+metrics:
+  primary:
+    name: mAP
+    direction: higher_is_better
+    dataset: RSAR
+    split: test

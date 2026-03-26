@@ -1,0 +1,10 @@
+{
+  "phase": "experiment",
+  "round": 3,
+  "workers": [],
+  "control": {
+    "paused": false,
+    "skip_current": false,
+    "awaiting_review": null
+  }
+}

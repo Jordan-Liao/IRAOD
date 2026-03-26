@@ -1,0 +1,539 @@
+{
+  "repo_profile": {
+    "resource_capabilities": {
+      "requires_gpu": true,
+      "launch_modes": [
+        {
+          "name": "single_gpu",
+          "entry": "bash -lc \"source /home/zechuan/miniconda3/etc/profile.d/conda.sh && conda run --no-capture-output -n iraod python train.py\"",
+          "notes": "Default --launcher none."
+        },
+        {
+          "name": "ddp_pytorch",
+          "entry": "bash -lc \"source /home/zechuan/miniconda3/etc/profile.d/conda.sh && CUDA_VISIBLE_DEVICES=0,1,2,3,4 conda run --no-capture-output -n iraod python -m torch.distributed.launch --nproc_per_node=5 train.py --launcher pytorch\"",
+          "notes": "train.py/test.py support --launcher pytorch via mmcv.init_dist. Repo convention uses 5 GPUs."
+        }
+      ],
+      "common_knobs": [
+        "--data-root (rewrites RSAR ann/img paths)",
+        "--samples-per-gpu",
+        "--workers-per-gpu",
+        "--launcher {none,pytorch,slurm,mpi}"
+      ],
+      "smoke_check": "bash scripts/smoke_rsar.sh"
+    },
+    "baseline_anchor": {
+      "config": "configs/experiments/rsar/frontier_008_24ep_oriented_rcnn_rsar.py",
+      "checkpoint": "work_dirs/frontier_008_24ep/epoch_21.pth",
+      "eval_patch": "configs/experiments/rsar/frontier_015_nms03_oriented_rcnn_rsar.py",
+      "metric": "mAP",
+      "value": 0.701,
+      "nms_iou_thr": 0.3,
+      "iou_thr": 0.5,
+      "notes": "All method changes must beat this anchor under fixed test-time NMS IoU=0.30."
+    }
+  },
+  "hypotheses": [
+    {
+      "id": "hyp-001",
+      "summary": "Replacing the RoI classification loss with CE-Focal reduces class imbalance / hard-negative dominance and improves RSAR test mAP at fixed schedule.",
+      "rationale": "RSAR contains small/dense objects and background clutter. A focal-style reweighting can reduce overconfidence on easy negatives and focus learning on hard examples without changing the training recipe (epochs/LR/NMS). The repo already provides a registered CE-style focal loss (mmdet_extension.models.loss.CEFocalLoss), enabling a clean one-axis test.",
+      "status": "rejected",
+      "parent_hypothesis_ids": [],
+      "expected_evidence": [
+        "benchmark"
+      ],
+      "confidence": "high",
+      "tags": [
+        "loss",
+        "classification",
+        "method"
+      ]
+    },
+    {
+      "id": "hyp-002",
+      "summary": "Upgrading the neck from vanilla FPN to PAFPN improves multi-scale fusion for small/elongated rotated targets, improving RSAR test mAP.",
+      "rationale": "FPN is top-down only. PAFPN adds bottom-up path aggregation, often improving localization and recall for small objects and crowded scenes—both common in remote-sensing imagery. This is a method-level architectural change (feature fusion) and is a single-axis swap with the rest of Oriented R-CNN unchanged. A single-run result slightly underperformed the anchor; treat as likely null until multi-seed repro.",
+      "status": "inactive",
+      "parent_hypothesis_ids": [],
+      "expected_evidence": [
+        "benchmark"
+      ],
+      "confidence": "low",
+      "tags": [
+        "architecture",
+        "neck",
+        "multiscale"
+      ]
+    },
+    {
+      "id": "hyp-003",
+      "summary": "Replacing ResNet-50 with the repo-provided OrthoNet-50 (orthogonal channel attention) improves SAR texture feature extraction and raises RSAR test mAP.",
+      "rationale": "SAR textures are sensitive to speckle-like patterns and directional structure. OrthoNet introduces an orthogonal channel attention mechanism that could better model such textures than standard ResNet, while keeping the detector scaffold (RPN/ROI heads) unchanged. This is higher risk because no pretrained checkpoint is currently tracked in-repo, but it expands the frontier with a backbone-level method contribution.",
+      "status": "rejected",
+      "parent_hypothesis_ids": [],
+      "expected_evidence": [
+        "benchmark"
+      ],
+      "confidence": "low",
+      "tags": [
+        "architecture",
+        "backbone",
+        "attention"
+      ]
+    },
+    {
+      "id": "hyp-004",
+      "summary": "OrthoNet-50 with explicit ResNet-50 pretrained initialization (plus Ortho attention) improves RSAR test mAP under the fixed 24-epoch anchor recipe.",
+      "rationale": "A prior OrthoNet proposal was rejected due to unclear/fair initialization vs the pretrained ResNet-50 anchor. By explicitly initializing OrthoNet from torchvision ResNet-50 weights (non-matching attention weights left random), we reduce the pretraining confound and can attribute any gain to the orthogonal channel attention mechanism.",
+      "status": "active",
+      "parent_hypothesis_ids": [
+        "hyp-003"
+      ],
+      "expected_evidence": [
+        "benchmark"
+      ],
+      "confidence": "pending",
+      "tags": [
+        "architecture",
+        "backbone",
+        "attention",
+        "initialization"
+      ]
+    },
+    {
+      "id": "hyp-005",
+      "summary": "Replacing SmoothL1 with an IoU-aware rotated bbox regression loss (e.g., GDLoss/KLDLoss) improves oriented localization and RSAR test mAP at fixed recipe.",
+      "rationale": "SmoothL1 optimizes parameter-space deltas and can be misaligned with rotated IoU geometry. IoU-aware distribution/geometry losses (GWD/KLD-style) can better capture orientation/scale coupling, potentially improving final box quality without changing the training schedule or NMS.",
+      "status": "inactive",
+      "parent_hypothesis_ids": [],
+      "expected_evidence": [
+        "benchmark"
+      ],
+      "confidence": "pending",
+      "tags": [
+        "loss",
+        "bbox_regression",
+        "rotation",
+        "method"
+      ]
+    },
+    {
+      "id": "hyp-006",
+      "summary": "Replacing RPN MaxIoUAssigner with ATSSAssigner improves positive/negative assignment in dense SAR scenes and increases RSAR test mAP under the fixed 24-epoch anchor recipe.",
+      "rationale": "The baseline uses fixed IoU thresholds for RPN assignment, which can be brittle for small/elongated objects and crowded remote-sensing layouts. ATSS is a method-level label assignment algorithm that adaptively selects positives per-level, often improving recall without changing LR/epochs/NMS.",
+      "status": "active",
+      "parent_hypothesis_ids": [],
+      "expected_evidence": [
+        "benchmark"
+      ],
+      "confidence": "pending",
+      "tags": [
+        "training",
+        "label_assignment",
+        "rpn",
+        "method"
+      ]
+    },
+    {
+      "id": "hyp-007",
+      "summary": "Adding lightweight orthogonal channel attention to the FPN neck (OCA-FPN) improves multi-scale feature selection for SAR textures and increases RSAR test mAP under the fixed 24-epoch anchor recipe.",
+      "rationale": "We already have a repo-implemented OrthoChannelAttention (used in OrthoNet). Applying a similar attention block on FPN outputs is a small architectural change focused on feature reweighting, potentially boosting small-object signal without touching the optimizer schedule or NMS.",
+      "status": "active",
+      "parent_hypothesis_ids": [
+        "hyp-004"
+      ],
+      "expected_evidence": [
+        "benchmark"
+      ],
+      "confidence": "pending",
+      "tags": [
+        "architecture",
+        "neck",
+        "attention",
+        "method"
+      ]
+    }
+  ],
+  "experiment_specs": [
+    {
+      "id": "spec-001",
+      "hypothesis_id": "hyp-001",
+      "summary": "RSAR 24ep OrientedRCNN-R50-FPN: switch RoI cls loss from CrossEntropyLoss → CEFocalLoss (mmdet_extension).",
+      "change_plan": "Single axis: in roi_head.bbox_head.loss_cls, set type=CEFocalLoss (use_sigmoid=False, gamma=2.0). Ensure mmdet_extension is imported via custom_imports so the loss is registered. Keep all schedule/optimizer/NMS unchanged.",
+      "evaluation_plan": "Train with the 24-epoch anchor schedule (step=[16,22]). Evaluate RSAR test mAP with fixed NMS IoU=0.30 as specified in .research/evaluation.md. Success: mAP > 0.701; report delta vs anchor.",
+      "attribution_focus": "Isolate the effect of focal reweighting for RoI classification on the fixed two-stage rotated detector.",
+      "expected_signal": "Small but consistent mAP gain (≈ +0.3 to +1.0) driven by improved precision/recall on hard classes/scenes.",
+      "risk_level": "low",
+      "resource_request": {
+        "gpu_count": 5,
+        "gpu_mem_mb": 24000,
+        "shareable": false
+      },
+      "execution_shape": {
+        "precision": "fp32"
+      },
+      "expected_duration_minutes": 450,
+      "resource_profile": "ddp_pytorch",
+      "workload_label": "train+test"
+    },
+    {
+      "id": "spec-002",
+      "hypothesis_id": "hyp-002",
+      "summary": "RSAR 24ep OrientedRCNN-R50: switch neck from FPN → PAFPN (same channels/outs).",
+      "change_plan": "Single axis: replace model.neck from type=FPN to type=PAFPN using in_channels=[256,512,1024,2048], out_channels=256, num_outs=5. Keep backbone/head/train_cfg/test_cfg identical to anchor.",
+      "evaluation_plan": "Train with the 24-epoch anchor schedule (step=[16,22]). Evaluate RSAR test mAP with fixed NMS IoU=0.30 as specified in .research/evaluation.md. Success: mAP > 0.701; otherwise archive.",
+      "attribution_focus": "Isolate the impact of bottom-up path aggregation in the feature pyramid for rotated two-stage detection.",
+      "expected_signal": "Moderate mAP gain (≈ +0.5 to +1.5) if improved multi-scale fusion increases recall for small objects.",
+      "risk_level": "medium",
+      "resource_request": {
+        "gpu_count": 5,
+        "gpu_mem_mb": 24000,
+        "shareable": false
+      },
+      "execution_shape": {
+        "precision": "fp32"
+      },
+      "expected_duration_minutes": 450,
+      "resource_profile": "ddp_pytorch",
+      "workload_label": "train+test"
+    },
+    {
+      "id": "spec-003",
+      "hypothesis_id": "hyp-003",
+      "summary": "RSAR 24ep OrientedRCNN: switch backbone from ResNet-50 → OrthoNet-50 (repo module).",
+      "change_plan": "Single axis: replace model.backbone.type from ResNet to OrthoNet (depth=50, out_indices=(0,1,2,3), frozen_stages=1, norm_eval=True). Add custom_imports to import mmdet_extension.models.backbones so OrthoNet is registered. Keep neck/head/schedule/optimizer fixed.",
+      "evaluation_plan": "Train with the 24-epoch anchor schedule (step=[16,22]). Evaluate RSAR test mAP with fixed NMS IoU=0.30 as specified in .research/evaluation.md. Success: mAP > 0.701; if training is unstable or underperforms significantly, mark as rejected and do not iterate without a pretrained initialization plan.",
+      "attribution_focus": "Isolate the effect of orthogonal channel attention in the backbone on RSAR detection.",
+      "expected_signal": "If the backbone better models SAR textures, expect improved localization/classification and a measurable mAP gain; otherwise likely underperforms due to lack of pretrained initialization.",
+      "risk_level": "high",
+      "resource_request": {
+        "gpu_count": 5,
+        "gpu_mem_mb": 24000,
+        "shareable": false
+      },
+      "execution_shape": {
+        "precision": "fp32"
+      },
+      "expected_duration_minutes": 450,
+      "resource_profile": "ddp_pytorch",
+      "workload_label": "train+test"
+    },
+    {
+      "id": "spec-004",
+      "hypothesis_id": "hyp-004",
+      "summary": "RSAR 24ep OrientedRCNN: backbone swap ResNet50→OrthoNet50 with explicit ResNet50 pretrained init (strict=False) for fair attribution.",
+      "change_plan": "Single axis: replace model.backbone.type ResNet→OrthoNet (depth=50, out_indices=(0,1,2,3), frozen_stages=1, norm_eval=True). Ensure OrthoNet is registered (import mmdet_extension.models.backbones). Add/patch initialization so OrthoNet loads torchvision ResNet50 weights with strict=False (matching conv/bn/stage weights), leaving attention parameters randomly initialized. Keep neck/head/optimizer/schedule/test_cfg identical to anchor.",
+      "evaluation_plan": "Train with the 24-epoch anchor schedule (step=[16,22]). Evaluate RSAR test mAP with fixed NMS IoU=0.30 per .research/evaluation.md. Success: mAP > 0.701; also report delta vs anchor.",
+      "attribution_focus": "Isolate backbone architectural change (orthogonal channel attention) under a fair pretrained initialization.",
+      "expected_signal": "If Ortho attention helps SAR textures, expect measurable mAP gain (≈ +0.3 to +1.5). If no gain, performance should match anchor within noise given similar initialization.",
+      "risk_level": "high",
+      "resource_request": {
+        "gpu_count": 5,
+        "gpu_mem_mb": 24000,
+        "shareable": false
+      },
+      "execution_shape": {
+        "precision": "fp32"
+      },
+      "expected_duration_minutes": 450,
+      "resource_profile": "ddp_pytorch",
+      "workload_label": "train+test"
+    },
+    {
+      "id": "spec-005",
+      "hypothesis_id": "hyp-005",
+      "summary": "RSAR 24ep OrientedRCNN-R50-FPN: switch RoI bbox regression loss SmoothL1→IoU-aware rotated loss (GDLoss(gwd) or KLDLoss) with everything else fixed.",
+      "change_plan": "Single axis: in roi_head.bbox_head.loss_bbox, replace SmoothL1Loss with an IoU-aware rotated bbox loss supported by mmrotate (prefer GDLoss with loss_type=\"gwd\" and a conservative weight like 5.0, or KLDLoss if available). Keep bbox_coder, cls loss, backbone/neck, optimizer, schedule, and test_cfg unchanged.",
+      "evaluation_plan": "Train with the 24-epoch anchor schedule (step=[16,22]). Evaluate RSAR test mAP with fixed NMS IoU=0.30 per .research/evaluation.md. Success: mAP > 0.701; report delta vs anchor.",
+      "attribution_focus": "Isolate the effect of an IoU-aware rotated bbox regression objective in the RoI head.",
+      "expected_signal": "Potential gain in localization quality and AP (≈ +0.2 to +1.0) if regression aligns better with rotated IoU; risk of degradation if loss is unstable.",
+      "risk_level": "medium",
+      "resource_request": {
+        "gpu_count": 5,
+        "gpu_mem_mb": 24000,
+        "shareable": false
+      },
+      "execution_shape": {
+        "precision": "fp32"
+      },
+      "expected_duration_minutes": 450,
+      "resource_profile": "ddp_pytorch",
+      "workload_label": "train+test"
+    },
+    {
+      "id": "spec-006",
+      "hypothesis_id": "hyp-006",
+      "summary": "RSAR 24ep OrientedRCNN-R50-FPN: switch RPN assigner from MaxIoUAssigner -> ATSSAssigner (topk=9), keep everything else fixed.",
+      "change_plan": "Single axis: in model.train_cfg.rpn.assigner, replace type=MaxIoUAssigner(...) with type=ATSSAssigner(topk=9). Do not change LR/epochs/weight_decay/NMS, and keep the RPN head/anchors/samplers unchanged.",
+      "evaluation_plan": "Train with the 24-epoch anchor schedule (configs/experiments/rsar/frontier_008_24ep_oriented_rcnn_rsar.py as base). Evaluate RSAR test mAP with fixed NMS IoU=0.30 per .research/evaluation.md. Success: mAP > 0.701; otherwise record delta and archive.",
+      "attribution_focus": "Isolate the effect of adaptive training-time label assignment in RPN on the final two-stage rotated detector.",
+      "expected_signal": "If assignment improves recall/quality of proposals, expect a small but measurable mAP gain (≈ +0.2 to +1.0).",
+      "risk_level": "low",
+      "resource_request": {
+        "gpu_count": 5,
+        "gpu_mem_mb": 24000,
+        "shareable": false
+      },
+      "execution_shape": {
+        "precision": "fp32"
+      },
+      "expected_duration_minutes": 450,
+      "resource_profile": "ddp_pytorch",
+      "workload_label": "train+test"
+    },
+    {
+      "id": "spec-007",
+      "hypothesis_id": "hyp-007",
+      "summary": "RSAR 24ep OrientedRCNN-R50: replace neck FPN -> OCA-FPN (FPN + OrthoChannelAttention on each output level), keep everything else fixed.",
+      "change_plan": "Single axis: introduce a new neck module OCAFPN that wraps standard FPN and applies OrthoChannelAttention (reduction=16) to each of the 5 output feature maps. Register it under mmdet NECKS (e.g., mmdet_extension/models/necks/oca_fpn.py + mmdet_extension/models/__init__.py). In the experiment config, replace model.neck.type from FPN to OCAFPN with identical in_channels/out_channels/num_outs. Keep backbone/head/train_cfg/test_cfg/optimizer/schedule/NMS unchanged.",
+      "evaluation_plan": "Train with the 24-epoch anchor schedule (frontier_008_24ep_oriented_rcnn_rsar.py as base). Evaluate RSAR test mAP with fixed NMS IoU=0.30 per .research/evaluation.md. Success: mAP > 0.701; otherwise archive as negative.",
+      "attribution_focus": "Isolate attention-based feature reweighting in the multi-scale neck (no backbone/head changes).",
+      "expected_signal": "If attention suppresses clutter and boosts small-object features, expect modest mAP gain (≈ +0.3 to +1.2).",
+      "risk_level": "medium",
+      "resource_request": {
+        "gpu_count": 5,
+        "gpu_mem_mb": 24000,
+        "shareable": false
+      },
+      "execution_shape": {
+        "precision": "fp32"
+      },
+      "expected_duration_minutes": 480,
+      "resource_profile": "ddp_pytorch",
+      "workload_label": "train+test"
+    }
+  ],
+  "evidence": [
+    {
+      "id": "ev-baseline",
+      "frontier_id": "frontier-baseline",
+      "execution_id": "ts-2026-03-24T20:00:00Z",
+      "metric": "mAP",
+      "value": 0.701,
+      "reliability": "strong",
+      "reason_code": "result_observed",
+      "description": "24-epoch schedule with NMS IoU=0.30 on RSAR test split. Best val epoch=21."
+    },
+    {
+      "id": "ev-frontier-020",
+      "frontier_id": "frontier-020",
+      "hypothesis_id": "hyp-002",
+      "experiment_spec_id": "spec-002",
+      "execution_id": "ts-2026-03-24T19:13:04Z",
+      "metric": "mAP",
+      "value": 0.7005311846733093,
+      "delta_vs_anchor": -0.0004688153266906663,
+      "anchor_value": 0.701,
+      "description": "RSAR test mAP with fixed NMS IoU=0.30 for FPN→PAFPN neck swap (single run). Slightly below anchor (0.701).",
+      "reliability": "strong",
+      "reason_code": "result_observed"
+    },
+    {
+      "id": "ev-frontier-021",
+      "frontier_id": "frontier-021",
+      "hypothesis_id": "hyp-001",
+      "experiment_spec_id": "spec-001",
+      "execution_id": "ts-2026-03-25T01:48:39.566222+00:00",
+      "metric": "mAP",
+      "value": 0.6212170124053955,
+      "delta_vs_anchor": -0.07978298759460449,
+      "anchor_value": 0.701,
+      "description": "RSAR test mAP with fixed NMS IoU=0.30 for RoI cls loss swap CE→CEFocalLoss (single run). Large regression vs anchor (0.701).",
+      "reliability": "strong",
+      "reason_code": "test_regression"
+    }
+  ],
+  "claim_updates": [
+    {
+      "id": "claim-frontier-020-001",
+      "frontier_id": "frontier-020",
+      "hypothesis_id": "hyp-002",
+      "experiment_spec_id": "spec-002",
+      "execution_id": "ts-2026-03-24T19:13:04Z",
+      "transition": "downgrade",
+      "confidence": "medium",
+      "reason_code": "contradicted_by_result",
+      "reason": "Single-axis neck swap did not beat the fixed-NMS anchor; observed test mAP is marginally lower (Δ≈-0.00047), consistent with no improvement (possible run-to-run noise).",
+      "evidence_ids": [
+        "ev-frontier-020"
+      ]
+    },
+    {
+      "id": "claim-frontier-021-001",
+      "frontier_id": "frontier-021",
+      "hypothesis_id": "hyp-001",
+      "experiment_spec_id": "spec-001",
+      "execution_id": "ts-2026-03-25T01:48:39.566222+00:00",
+      "transition": "reject",
+      "confidence": "high",
+      "reason_code": "regression_detected",
+      "reason": "Observed RSAR test mAP 0.6212 is far below the fixed-NMS anchor 0.701 (Δ≈-0.0798) for a single-axis loss swap, contradicting the hypothesis under this setting.",
+      "evidence_ids": [
+        "ev-frontier-021"
+      ]
+    }
+  ],
+  "branch_relations": [],
+  "frontier": [
+    {
+      "id": "frontier-baseline",
+      "description": "Anchor: 24ep OrientedRCNN-R50-FPN, step=[16,22], NMS IoU=0.30, test mAP=0.701",
+      "status": "archived",
+      "priority": 0,
+      "selection_reason_code": "anchor"
+    },
+    {
+      "id": "frontier-020",
+      "hypothesis_id": "hyp-002",
+      "experiment_spec_id": "spec-002",
+      "description": "Method: replace neck FPN→PAFPN under the 24ep anchor schedule; eval RSAR test mAP with NMS IoU=0.30.",
+      "priority": 1,
+      "status": "archived",
+      "claim_state": "downgraded",
+      "selection_reason_code": "manager_refresh",
+      "review_reason_code": "weak_evidence",
+      "review_reason": "Post-run: PAFPN neck swap produced mAP 0.7005 vs anchor 0.701 at fixed NMS IoU=0.30 (single run). No measurable gain; archive as weak negative evidence.",
+      "repro_required": false,
+      "attribution_focus": "neck feature fusion",
+      "anchor_role": "",
+      "scores": {
+        "expected_value": 7,
+        "attribution": 4,
+        "cost": 7,
+        "diversity": 4
+      },
+      "last_claim_update_id": "claim-frontier-020-001"
+    },
+    {
+      "id": "frontier-021",
+      "hypothesis_id": "hyp-001",
+      "experiment_spec_id": "spec-001",
+      "description": "Method: switch RoI cls loss CE→CE-Focal (CEFocalLoss) with everything else fixed; eval RSAR test mAP @ NMS=0.30.",
+      "priority": 1,
+      "status": "archived",
+      "claim_state": "rejected",
+      "selection_reason_code": "manager_refresh",
+      "review_reason_code": "strong_evidence",
+      "review_reason": "Post-run: CE→CEFocalLoss RoI cls swap regressed to test mAP 0.6212 vs anchor 0.701 at fixed NMS IoU=0.30 (Δ≈-0.0798). Reject this hypothesis/spec setting.",
+      "repro_required": false,
+      "attribution_focus": "RoI classification loss",
+      "anchor_role": "",
+      "scores": {
+        "expected_value": 5,
+        "attribution": 5,
+        "cost": 7,
+        "diversity": 3
+      },
+      "last_claim_update_id": "claim-frontier-021-001"
+    },
+    {
+      "id": "frontier-022",
+      "hypothesis_id": "hyp-003",
+      "experiment_spec_id": "spec-003",
+      "description": "Breadth: replace backbone ResNet50→OrthoNet50 (orthogonal channel attention); keep detector+schedule fixed; eval RSAR test mAP @ NMS=0.30.",
+      "priority": 3,
+      "status": "rejected",
+      "claim_state": "rejected",
+      "selection_reason_code": "breadth_exploration",
+      "review_reason_code": "weak_attribution",
+      "review_reason": "Backbone swap is confounded by initialization/pretraining: the anchor ResNet50 typically uses pretrained weights, but no comparable pretrained OrthoNet checkpoint/plan is specified, weakening causal attribution.",
+      "repro_required": false,
+      "attribution_focus": "backbone attention",
+      "anchor_role": "",
+      "scores": {
+        "expected_value": 6,
+        "attribution": 4,
+        "cost": 8,
+        "diversity": 7
+      }
+    },
+    {
+      "id": "frontier-023",
+      "hypothesis_id": "hyp-005",
+      "experiment_spec_id": "spec-005",
+      "description": "Method: switch RoI bbox regression SmoothL1→IoU-aware rotated loss (GDLoss/KLDLoss); keep 24ep anchor recipe; eval RSAR test mAP @ NMS=0.30.",
+      "priority": 2,
+      "status": "rejected",
+      "claim_state": "rejected",
+      "selection_reason_code": "manager_refresh",
+      "review_reason_code": "multi_axis_change",
+      "review_reason": "Preflight reject: change_plan is underspecified (allows multiple different losses: GDLoss or KLDLoss, plus tunable weights). Pin one exact loss type + fixed parameters to test a single causal claim under the evaluation contract.",
+      "repro_required": false,
+      "attribution_focus": "RoI bbox regression loss",
+      "anchor_role": "",
+      "scores": {
+        "expected_value": 6,
+        "attribution": 5,
+        "cost": 7,
+        "diversity": 4
+      }
+    },
+    {
+      "id": "frontier-024",
+      "hypothesis_id": "hyp-004",
+      "experiment_spec_id": "spec-004",
+      "description": "Breadth: backbone ResNet50→OrthoNet50 with explicit ResNet50 pretrained init for fair attribution; keep 24ep anchor recipe; eval RSAR test mAP @ NMS=0.30.",
+      "priority": 2,
+      "status": "approved",
+      "claim_state": "candidate",
+      "selection_reason_code": "breadth_exploration",
+      "review_reason_code": "approved_for_execution",
+      "review_reason": "Preflight approve: single causal target is OrthoNet attention under fair pretrained init (ResNet50 weights, strict=False). Evaluation contract is concrete (RSAR test mAP @ IoU=0.5, fixed NMS IoU=0.30) and attribution confound from missing pretraining is addressed.",
+      "repro_required": false,
+      "attribution_focus": "backbone attention",
+      "anchor_role": "",
+      "scores": {
+        "expected_value": 6,
+        "attribution": 4,
+        "cost": 8,
+        "diversity": 7
+      }
+    },
+    {
+      "id": "frontier-025",
+      "hypothesis_id": "hyp-006",
+      "experiment_spec_id": "spec-006",
+      "description": "Method: replace RPN label assignment MaxIoUAssigner -> ATSSAssigner (topk=9) under fixed 24ep anchor recipe; eval RSAR test mAP @ NMS=0.30.",
+      "priority": 1,
+      "status": "approved",
+      "claim_state": "candidate",
+      "selection_reason_code": "breadth_exploration",
+      "review_reason_code": "unspecified",
+      "review_reason": "",
+      "attribution_focus": "RPN label assignment",
+      "anchor_role": "",
+      "scores": {
+        "expected_value": 6,
+        "attribution": 5,
+        "cost": 7,
+        "diversity": 6
+      }
+    },
+    {
+      "id": "frontier-026",
+      "hypothesis_id": "hyp-007",
+      "experiment_spec_id": "spec-007",
+      "description": "Method: neck FPN -> OCA-FPN (FPN + OrthoChannelAttention on each output level) under fixed 24ep anchor recipe; eval RSAR test mAP @ NMS=0.30.",
+      "priority": 3,
+      "status": "running",
+      "claim_state": "candidate",
+      "selection_reason_code": "breadth_exploration",
+      "review_reason_code": "unspecified",
+      "review_reason": "",
+      "attribution_focus": "neck attention feature reweighting",
+      "anchor_role": "",
+      "scores": {
+        "expected_value": 6,
+        "attribution": 4,
+        "cost": 8,
+        "diversity": 7
+      }
+    }
+  ],
+  "counters": {
+    "hypothesis": 7,
+    "experiment_spec": 7,
+    "frontier": 8
+  }
+}
