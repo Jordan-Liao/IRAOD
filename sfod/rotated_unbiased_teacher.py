@@ -178,6 +178,13 @@ class UnbiasedTeacher(SemiTwoStageDetector):
                                               gt_bboxes_pred, gt_labels_pred)
         losses_unlabeled = self.parse_loss(losses_unlabeled)
 
+        # [FIX] Sanitize NaN losses from degenerate pseudo-label bboxes
+        # NaN in loss_bbox_unlabeled can corrupt BatchNorm running stats
+        # during forward pass, causing irreversible NaN death spiral.
+        for _k, _v in losses_unlabeled.items():
+            if isinstance(_v, torch.Tensor) and not torch.isfinite(_v).all():
+                losses_unlabeled[_k] = torch.zeros_like(_v)
+
         # --- Check if all pseudo labels are empty (pseudo_num == 0) ---
         total_pseudo = sum(len(b) for b in gt_bboxes_pred)
 
@@ -205,6 +212,24 @@ class UnbiasedTeacher(SemiTwoStageDetector):
             'pseudo_num(acc)': torch.Tensor([self.pseudo_num_tp.sum() / max(pseudo_sum, 1e-10)]).to(device)
         }
         losses.update(extra_info)
+
+        # [DEEP FIX] Ensure ALL ranks have identical loss keys.
+        # The supervised forward_train may return different keys when gt is empty.
+        # We enforce a canonical set of keys that MUST exist on every rank.
+        device = next(iter(losses.values())).device if losses else torch.device('cpu')
+        canonical_keys = [
+            # Supervised loss keys (from RPN + ROI head)
+            'loss_rpn_cls', 'loss_rpn_bbox', 'loss_cls', 'acc', 'loss_bbox',
+            # Unlabeled loss keys
+            'loss_rpn_cls_unlabeled', 'loss_rpn_bbox_unlabeled',
+            'loss_cls_unlabeled', 'acc_unlabeled', 'loss_bbox_unlabeled',
+            # Pseudo label stats
+            'pseudo_num', 'pseudo_num(acc)',
+        ]
+        for k in canonical_keys:
+            if k not in losses:
+                losses[k] = torch.tensor(0.0, device=device, requires_grad=False)
+
         return losses
     
     def create_pseudo_results(self, img, bbox_results, box_transform, device,
@@ -238,6 +263,16 @@ class UnbiasedTeacher(SemiTwoStageDetector):
                 self.pseudo_num[cls] += len(bboxes[-1])
             bboxes = np.concatenate(bboxes)
             labels = np.concatenate(labels)
+            # [FIX-1] Filter degenerate pseudo bboxes (w/h too small).
+            # Rotated bbox format: [cx, cy, w, h, angle].
+            # log(w/anchor_w) in bbox regression targets → log(0) = -inf → NaN loss.
+            if len(bboxes) > 0 and bboxes.ndim == 2 and bboxes.shape[1] >= 4:
+                min_size = 1.0  # pixels
+                valid = (bboxes[:, 2] > min_size) & (bboxes[:, 3] > min_size)
+                # Also reject NaN/Inf coordinates
+                valid &= np.isfinite(bboxes).all(axis=1)
+                bboxes = bboxes[valid]
+                labels = labels[valid]
             gt_bboxes_pred.append(torch.from_numpy(bboxes).float().to(device))
             gt_labels_pred.append(torch.from_numpy(labels).long().to(device))
         return gt_bboxes_pred, gt_labels_pred

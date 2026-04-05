@@ -166,9 +166,14 @@ def patch_config(cfg):
                 if split_key not in cfg.data:
                     continue
                 ds = cfg.data[split_key]
-                for field in ("img_prefix", "img_prefix_u"):
-                    if field in ds and isinstance(ds[field], str):
-                        ds[field] = _patch_images_dir(ds[field])
+                if split_key == "train":
+                    # Source-free: labeled train stays CLEAN, only unlabeled gets corrupted
+                    if "img_prefix_u" in ds and isinstance(ds["img_prefix_u"], str):
+                        ds["img_prefix_u"] = _patch_images_dir(ds["img_prefix_u"])
+                else:
+                    # val/test: use corrupted images for evaluation
+                    if "img_prefix" in ds and isinstance(ds["img_prefix"], str):
+                        ds["img_prefix"] = _patch_images_dir(ds["img_prefix"])
 
     # wrap for semi
     if cfg.get("semi_wrapper", None) is not None:

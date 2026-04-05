@@ -2440,3 +2440,134 @@
 | Artifacts | `work_dirs/exp_z_x_lower_wu/` |
 | Results | Best mAP=**0.6821** (log.json val epoch=1) |
 | Plan ref | `docs/plan.md` §6.3 SFOD Chain (row: this exp), §6.5 LoRA Iteration Table |
+
+
+---
+
+## Phase 3: RSAR 电子干扰鲁棒性评测（无源目标检测）
+
+> **方法**: SFOD + OrthoNet(depth=50) backbone + SARCLIP ViT-L-14 LoRA CGA 零样本重打分
+> **数据协议**: train(有标签,干净) + val(无标签,干扰) → 半监督学习; test(干扰) → 评估
+> **训练配置**: 24 epoch, 5×GPU, BS=40, SGD lr=0.02, step=[16,22], eval每epoch
+> **关键参数**: score_thr=0.5, EMA momentum=0.9996, weight_u=0.5
+> **LoRA**: SARDet100k 裁剪 patch + 干扰增强微调, 122,880 params (0.12%)
+> **日期**: 2026-03-29 ~ 2026-04-05
+
+
+### E0097: SFOD OrthoNet+SARCLIP — chaff（箔条干扰）
+| Field | Value |
+| --- | --- |
+| Objective | 箔条干扰下的无源旋转目标检测（source-free） |
+| Baseline | Clean RSAR mAP ≈ 0.68 (Phase 2 best) |
+| Model | UnbiasedTeacher + OrientedRCNN OrthoNet-50 + FPN + SARCLIP CGA (ViT-L-14 LoRA) |
+| Weights | ImageNet pretrained OrthoNet + SARCLIP_LoRA_Interference.pt |
+| Code path | `configs/unbiased_teacher/sfod/unbiased_teacher_oriented_rcnn_selftraining_cga_o_rsar.py` |
+| Params | `corrupt=chaff`, `score_thr=0.5`, `momentum=0.9996`, `weight_u=0.5`, `total_epoch=24`, `lr_step=[16,22]` |
+| Metrics (must save) | `mAP`; checkpoint `.pth` + `_ema.pth` |
+| Checks | mAP 输出存在且合理；每 epoch eval 正常；无 NaN 崩溃 |
+| VRAM | ~24 GB per GPU (5× RTX 4090) |
+| Time/epoch | ~40 min (train) + ~15 min (eval) |
+| Total time | ~22h |
+| Multi-GPU script | `scripts/run_7corrupt_fast.sh` |
+| Full cmd | `CUDA_VISIBLE_DEVICES=1,2,3,4,5 python -m torch.distributed.launch --nproc_per_node=5 train.py $CONFIG --cfg-options corrupt="chaff"` |
+| Full | [x] |
+| Logs | `work_dirs/exp_sfod_ortho_sarclip_chaff/train.log` |
+| Artifacts | `work_dirs/exp_sfod_ortho_sarclip_chaff/` |
+| Results | **mAP=0.4861** (Epoch 24); ship=0.507, aircraft=0.630, car=0.779, tank=0.181, bridge=0.435, harbor=0.386 |
+| Plan ref | `docs/plan.md` §D RSAR-Interference 鲁棒性评测 |
+
+
+### E0098: SFOD OrthoNet+SARCLIP — gaussian_white_noise（高斯白噪声）
+| Field | Value |
+| --- | --- |
+| Objective | 高斯白噪声干扰下的无源旋转目标检测 |
+| Baseline | Clean RSAR mAP ≈ 0.68 |
+| Model | 同 E0097 |
+| Params | `corrupt=gaussian_white_noise`，其余同 E0097 |
+| Full | [x] |
+| Logs | `work_dirs/exp_sfod_ortho_sarclip_gaussian_white_noise/train.log` |
+| Artifacts | `work_dirs/exp_sfod_ortho_sarclip_gaussian_white_noise/` |
+| Results | **mAP=0.5692** (Epoch 24); ship=0.770, aircraft=0.645, car=0.865, tank=0.178, bridge=0.481, harbor=0.475 |
+
+
+### E0099: SFOD OrthoNet+SARCLIP — point_target（点目标干扰）
+| Field | Value |
+| --- | --- |
+| Objective | 点目标干扰下的无源旋转目标检测 |
+| Model | 同 E0097 |
+| Params | `corrupt=point_target`，其余同 E0097 |
+| Full | [x] |
+| Logs | `work_dirs/exp_sfod_ortho_sarclip_point_target/train.log` |
+| Artifacts | `work_dirs/exp_sfod_ortho_sarclip_point_target/` |
+| Results | **mAP=0.5681** (Epoch 24); ship=0.771, aircraft=0.647, car=0.858, tank=0.181, bridge=0.466, harbor=0.485 |
+
+
+### E0100: SFOD OrthoNet+SARCLIP — noise_suppression（噪声抑制）
+| Field | Value |
+| --- | --- |
+| Objective | 噪声抑制干扰下的无源旋转目标检测 |
+| Model | 同 E0097 |
+| Params | `corrupt=noise_suppression`，其余同 E0097 |
+| Full | [x] |
+| Logs | `work_dirs/exp_sfod_ortho_sarclip_noise_suppression/train.log` |
+| Artifacts | `work_dirs/exp_sfod_ortho_sarclip_noise_suppression/` |
+| Results | **mAP=0.2354** (Epoch 24); ship=0.584, aircraft=0.030, car=0.055, tank=0.013, bridge=0.432, harbor=0.298 |
+
+
+### E0101: SFOD OrthoNet+SARCLIP — am_noise_horizontal（水平调幅噪声）
+| Field | Value |
+| --- | --- |
+| Objective | 水平调幅噪声干扰下的无源旋转目标检测 |
+| Model | 同 E0097 |
+| Params | `corrupt=am_noise_horizontal`，其余同 E0097 |
+| Full | [x] |
+| Logs | `work_dirs/exp_sfod_ortho_sarclip_am_noise_horizontal/train.log` |
+| Artifacts | `work_dirs/exp_sfod_ortho_sarclip_am_noise_horizontal/` |
+| Results | **mAP=0.0969** (Epoch 24); ship=0.173, aircraft=0.000, car=0.149, tank=0.030, bridge=0.219, harbor=0.010 |
+
+
+### E0102: SFOD OrthoNet+SARCLIP — smart_suppression（智能压制）
+| Field | Value |
+| --- | --- |
+| Objective | 智能压制干扰下的无源旋转目标检测 |
+| Model | 同 E0097 |
+| Params | `corrupt=smart_suppression`，其余同 E0097 |
+| Full | [x] |
+| Logs | `work_dirs/exp_sfod_ortho_sarclip_smart_suppression/train.log` |
+| Artifacts | `work_dirs/exp_sfod_ortho_sarclip_smart_suppression/` |
+| Results | **mAP=0.1880** (Epoch 24); ship=0.381, aircraft=0.058, car=0.091, tank=0.037, bridge=0.382, harbor=0.179 |
+
+
+### E0103: SFOD OrthoNet+SARCLIP — am_noise_vertical（垂直调幅噪声）
+| Field | Value |
+| --- | --- |
+| Objective | 垂直调幅噪声干扰下的无源旋转目标检测 |
+| Model | 同 E0097 |
+| Params | `corrupt=am_noise_vertical`，其余同 E0097 |
+| Full | [x] |
+| Logs | `work_dirs/exp_sfod_ortho_sarclip_am_noise_vertical/train.log` |
+| Artifacts | `work_dirs/exp_sfod_ortho_sarclip_am_noise_vertical/` |
+| Results | **mAP=0.1148** (Epoch 24); ship=0.179, aircraft=0.045, car=0.058, tank=0.093, bridge=0.297, harbor=0.017 |
+
+
+### Phase 3 汇总: 7 种干扰鲁棒性评测
+
+| 干扰类型 | mAP | ship | aircraft | car | tank | bridge | harbor | 难度 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| gaussian_white_noise | **0.569** | 0.770 | 0.645 | 0.865 | 0.178 | 0.481 | 0.475 | 轻度 |
+| point_target | **0.568** | 0.771 | 0.647 | 0.858 | 0.181 | 0.466 | 0.485 | 轻度 |
+| chaff | **0.486** | 0.507 | 0.630 | 0.779 | 0.181 | 0.435 | 0.386 | 中等 |
+| noise_suppression | **0.235** | 0.584 | 0.030 | 0.055 | 0.013 | 0.432 | 0.298 | 困难 |
+| smart_suppression | **0.188** | 0.381 | 0.058 | 0.091 | 0.037 | 0.382 | 0.179 | 困难 |
+| am_noise_vertical | **0.115** | 0.179 | 0.045 | 0.058 | 0.093 | 0.297 | 0.017 | 极难 |
+| am_noise_horizontal | **0.097** | 0.173 | 0.000 | 0.149 | 0.030 | 0.219 | 0.010 | 极难 |
+| **平均** | **0.323** | 0.481 | 0.294 | 0.408 | 0.102 | 0.387 | 0.264 | — |
+
+**关键发现**:
+1. **轻度干扰（高斯白噪声/点目标）**: mAP ≈ 0.57，仅比 clean 下降 ~16%，SFOD 伪标签自适应有效
+2. **中等干扰（箔条）**: mAP ≈ 0.49，下降 ~28%，箔条产生大量虚假散射体，影响 ship/bridge 检测
+3. **困难干扰（噪声抑制/智能压制）**: mAP ≈ 0.21，下降 ~69%，aircraft/car/tank 几乎完全丧失
+4. **极难干扰（调幅噪声）**: mAP < 0.12，下降 >82%，水平/垂直条纹严重破坏 SAR 成像
+5. **ship/bridge 鲁棒性最强**: 大目标在各种干扰下都能保持一定检测能力
+6. **aircraft/tank 最脆弱**: 小目标在强干扰下 AP 趋近 0，伪标签完全失效
+7. **OrthoNet + SARCLIP LoRA CGA 的核心价值**: 在轻/中度干扰下提供有效的域自适应能力

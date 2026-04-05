@@ -2,6 +2,8 @@
 # import torch
 # import torch.nn.functional as F
 # from PIL import Image
+
+
 # from torchvision import transforms as trans
 # import os
 #
@@ -139,6 +141,9 @@
 #
 
 import os
+
+# --- Pre-computed feature support ---
+_PRECOMPUTED_FEATURES_DIR = os.environ.get("CGA_PRECOMPUTED_DIR", "").strip()
 import numpy as np
 import torch
 from PIL import Image
@@ -392,19 +397,147 @@ class CGA:
             return None, None
         return torch.stack(image_list, dim=0), ori_image_list
 
+    _precomputed_miss_count = 0
+    _precomputed_hit_count = 0
+    _precomputed_feat_dir_resolved = None
+
+    @torch.no_grad()
+    def _load_precomputed_features(self, img_path):
+        """Load pre-computed spatial feature map for an image."""
+        feat_dir = _PRECOMPUTED_FEATURES_DIR
+        if not feat_dir:
+            return None
+
+        # Resolve to absolute path once
+        if self.__class__._precomputed_feat_dir_resolved is None:
+            if os.path.isabs(feat_dir):
+                self.__class__._precomputed_feat_dir_resolved = feat_dir
+            else:
+                # Try relative to project root (parent of sfod/)
+                project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+                self.__class__._precomputed_feat_dir_resolved = os.path.join(project_root, feat_dir)
+        feat_dir = self.__class__._precomputed_feat_dir_resolved
+
+        # Parse img_path to find corruption type, split, and filename
+        # Handles both absolute and relative paths
+        # e.g. /xxx/dataset/RSAR/train/images-chaff/0000002.png
+        # e.g. /xxx/dataset/RSAR/val/images/0000002.png
+        parts = img_path.replace("\\", "/").split("/")
+        corrupt = "clean"
+        split = "train"
+        fname = ""
+        for i, p in enumerate(parts):
+            if p.startswith("images"):
+                corrupt = p.replace("images-", "") if "-" in p else "clean"
+                # split is the directory before "images*"
+                split = parts[i - 1] if i > 0 else "train"
+                # filename is the next part
+                fname = parts[i + 1] if i + 1 < len(parts) else ""
+                break
+
+        if not fname:
+            return None
+
+        npz_name = os.path.splitext(fname)[0] + ".npz"
+        feat_path = os.path.join(feat_dir, corrupt, split, npz_name)
+
+        if not os.path.exists(feat_path):
+            cls = self.__class__
+            cls._precomputed_miss_count += 1
+            if cls._precomputed_miss_count <= 3:
+                print(f"[CGA/precomputed] MISS ({cls._precomputed_miss_count}): {feat_path}")
+                print(f"  img_path={img_path}, parsed: corrupt={corrupt}, split={split}, fname={fname}")
+            return None
+
+        self.__class__._precomputed_hit_count += 1
+        data = np.load(feat_path)
+        return data["features"]  # [grid_h, grid_w, dim], float16
+
+    def _roi_pool_features(self, feature_map, boxes, img_size):
+        """ROI average pool from pre-computed feature map for each bbox.
+
+        Args:
+            feature_map: [grid_h, grid_w, dim] spatial features
+            boxes: [N, 4] xyxy bboxes in image coordinates
+            img_size: (height, width) of original image
+
+        Returns:
+            [N, dim] pooled features (L2 normalized)
+        """
+        grid_h, grid_w, dim = feature_map.shape
+        img_h, img_w = img_size
+
+        # Scale boxes to grid coordinates
+        scale_x = grid_w / img_w
+        scale_y = grid_h / img_h
+
+        features_list = []
+        for box in boxes:
+            x1, y1, x2, y2 = box
+            # Expand by expand_ratio (same as _crop_patches)
+            bw, bh = x2 - x1, y2 - y1
+            x1 = max(0, x1 - bw * self.expand_ratio)
+            y1 = max(0, y1 - bh * self.expand_ratio)
+            x2 = min(img_w, x2 + bw * self.expand_ratio)
+            y2 = min(img_h, y2 + bh * self.expand_ratio)
+
+            # Map to grid
+            gx1 = max(0, int(x1 * scale_x))
+            gy1 = max(0, int(y1 * scale_y))
+            gx2 = min(grid_w, int(np.ceil(x2 * scale_x)))
+            gy2 = min(grid_h, int(np.ceil(y2 * scale_y)))
+
+            # Ensure at least 1x1 region
+            if gx2 <= gx1: gx2 = min(gx1 + 1, grid_w)
+            if gy2 <= gy1: gy2 = min(gy1 + 1, grid_h)
+
+            # Average pool over the region
+            region = feature_map[gy1:gy2, gx1:gx2, :]  # [h, w, dim]
+            pooled = region.reshape(-1, dim).mean(axis=0)  # [dim]
+
+            # L2 normalize
+            norm = np.linalg.norm(pooled)
+            if norm > 0:
+                pooled = pooled / norm
+
+            features_list.append(pooled)
+
+        return np.stack(features_list, axis=0).astype(np.float32)  # [N, dim]
+
     @torch.no_grad()
     def __call__(self, img_path, boxes, scores, labels):
+        # Try pre-computed features first (instant, no GPU needed)
+        feature_map = self._load_precomputed_features(img_path)
+        if feature_map is not None:
+            if len(boxes) == 0:
+                return np.empty((0, len(self.class_names))), []
+
+            # Get image size for coordinate mapping
+            from PIL import Image as _PILImage
+            with _PILImage.open(img_path) as _img:
+                img_w, img_h = _img.size
+
+            # ROI pool from pre-computed feature map
+            image_features = self._roi_pool_features(feature_map, boxes, (img_h, img_w))
+
+            # Compute logits (same as original)
+            classifier = self.classifier.detach().cpu().numpy()
+            logits_raw = self.tau * (image_features @ classifier)
+            # Softmax
+            logits_exp = np.exp(logits_raw - logits_raw.max(axis=-1, keepdims=True))
+            logits = logits_exp / logits_exp.sum(axis=-1, keepdims=True)
+
+            return logits, []
+
+        # Fallback: original forward pass (slow, runs ViT-L-14)
         images, ori_image_list = self._crop_patches(img_path, boxes, scores, labels)
         if images is None:
-            # 没有候选框
             return np.empty((0, len(self.class_names))), []
 
-        # 前向（SARCLIP 输出 dict；取 image_features）
         out = self.clip(image=images)
         image_features = out['image_features'] if isinstance(out, dict) else out[0]
-        image_features = image_features / image_features.norm(dim=-1, keepdim=True)  # [N, D]
+        image_features = image_features / image_features.norm(dim=-1, keepdim=True)
 
-        # logits: [N, C]
         logits = (self.tau * (image_features @ self.classifier)).softmax(dim=-1)
         return logits.detach().cpu().numpy(), ori_image_list
 

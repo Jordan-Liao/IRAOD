@@ -65,15 +65,19 @@ runner = dict(type="EpochBasedRunner", max_epochs=12)
 model = dict(
     type='OrientedRCNN_CGA',
     backbone=dict(
-        type='ResNet',
+        type='OrthoNet',
         depth=50,
+        in_channels=3,
+        base_channels=64,
         num_stages=4,
         out_indices=(0, 1, 2, 3),
         frozen_stages=1,
         norm_cfg=dict(type='BN', requires_grad=True),
         norm_eval=True,
-        style='pytorch',
-        init_cfg=dict(type='Pretrained', checkpoint='torchvision://resnet50')
+        with_cp=False,
+        zero_init_residual=True,
+        reduction=16,
+        init_cfg=None,
     ),
     neck=dict(
         type='FPN',

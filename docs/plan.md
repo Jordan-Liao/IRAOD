@@ -608,3 +608,57 @@ Semi-supervised iterative training experiments on RSAR with CGA/LoRA/EMA variati
 3. **SAR-CLIP LoRA** consistently improves CGA scoring (+4.9% zero-shot accuracy) and end-to-end mAP (+1.0%)
 4. **SFOD iteration chain** with LoRA-enhanced CGA reaches mAP=0.6943, stable +1% gain across iterations
 5. **OCA-FPN** (OrthoChannelAttention) experiment in progress
+
+
+---
+
+## §7 Phase 3 完成：RSAR 电子干扰鲁棒性评测
+
+> **状态**: ✅ **全部完成** (2026-04-05)
+> **实验编号**: E0097 ~ E0103
+> **详细记录**: `docs/experiment.md` Phase 3 部分, `docs/semi_supervised_experiments.md` Phase 3 部分
+
+### 7.1 实验设计
+
+**任务**: 无源目标检测（Source-Free Object Detection）— 在 7 种电子干扰下评估 RSAR 旋转目标检测
+
+**方法**: SFOD + OrthoNet backbone + SARCLIP ViT-L-14 LoRA CGA
+
+**数据协议**:
+| 数据集 | 来源 | 是否干扰 | 用途 |
+|---|---|---|---|
+| train (有标签) | train/images/ | ❌ 否 | 监督学习 |
+| val (无标签) | val/images-${corrupt}/ | ✅ 是 | 半监督学习 |
+| test (测试) | test/images-${corrupt}/ | ✅ 是 | 评估 |
+
+**训练配置**: 24ep, 5×GPU(RTX 4090), BS=40, SGD lr=0.02 step=[16,22], score_thr=0.5, momentum=0.9996, weight_u=0.5
+
+### 7.2 结果汇总
+
+| 干扰类型 | mAP | 相比 Clean 下降 | 难度 |
+|---|---|---|---|
+| gaussian_white_noise | **0.569** | -15.1% | ★☆☆ 轻度 |
+| point_target | **0.568** | -15.2% | ★☆☆ 轻度 |
+| chaff | **0.486** | -27.5% | ★★☆ 中等 |
+| noise_suppression | **0.235** | -64.9% | ★★★ 困难 |
+| smart_suppression | **0.188** | -71.9% | ★★★ 困难 |
+| am_noise_vertical | **0.115** | -82.8% | ★★★★ 极难 |
+| am_noise_horizontal | **0.097** | -85.5% | ★★★★ 极难 |
+| **平均** | **0.323** | **-51.8%** | — |
+
+### 7.3 技术突破
+
+Phase 3 过程中解决了以下关键工程问题:
+
+1. **伪标签崩溃问题**: 训练 epoch 14-15 mAP 从 0.48 暴跌至 0.005。根因: EMA 教师置信度跌破 score_thr → 伪标签归零 → 学生遗忘干扰域。修复: score_thr 0.7→0.5, momentum 0.998→0.9996, weight_u 1→0.5
+2. **NCCL 死锁**: mmcv `_get_max_memory` 的 dist.reduce + `_parse_losses` 的 all_reduce 在单 rank 异常时导致全局死锁。修复: 移除非必要集合通信
+3. **NaN 死循环**: loss_bbox_unlabeled NaN 污染 BatchNorm running stats → 永久 NaN。修复: 三层防御（退化 bbox 过滤 + loss 清零 + BN 回滚）
+4. **EMA 架构不匹配**: EMA config 用 ResNet50 而学生用 OrthoNet，导致 EMA mAP=0。修复: EMA config 改为 OrthoNet
+5. **数据协议修正**: patches.py 误将有标签 train 也替换为干扰图像。修复: 仅对 img_prefix_u 做 corrupt 替换
+
+### 7.4 下一步方向
+
+- [ ] 对强干扰（noise_suppression/smart_suppression/AM噪声）探索更强的域自适应策略
+- [ ] 引入 teacher 置信度监控 + 自适应 score_thr 避免伪标签崩溃
+- [ ] 探索 frequency-domain augmentation 提升对 AM 噪声的鲁棒性
+- [ ] 与 DIOR 数据集交叉验证鲁棒性结论

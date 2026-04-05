@@ -48,8 +48,7 @@ class SemiEvalHook(EvalHook):
             self.save_best_checkpoint(runner, key_score)
 
     def after_train_epoch(self, runner):
-        # if not self.by_epoch or not self.evaluation_flag(runner):
-        if not self.by_epoch:
+        if not self.by_epoch or not self.every_n_epochs(runner, self.interval):
             return
         self.evaluation_once(runner)
 

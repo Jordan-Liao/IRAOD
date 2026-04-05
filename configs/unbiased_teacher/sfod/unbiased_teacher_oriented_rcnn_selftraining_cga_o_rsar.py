@@ -7,9 +7,9 @@ import os.path as osp
 
 # ------------------ 基本训练超参 ------------------
 gpu = 1
-score = 0.7
+score = 0.5
 samples_per_gpu = 2
-total_epoch = 12
+total_epoch = 24
 test_interval = 1
 save_interval = 1
 
@@ -165,9 +165,9 @@ evaluation = dict(interval=test_interval, metric="mAP")
 
 optimizer = dict(type="SGD", lr=0.02, momentum=0.9, weight_decay=0.0001)
 auto_scale_lr = dict(enable=True, base_batch_size=32)
-optimizer_config = dict(type="SkipNanOptimizerHook", grad_clip=dict(max_norm=35, norm_type=2), max_skips=20)
+optimizer_config = dict(type="SkipNanOptimizerHook", grad_clip=dict(max_norm=35, norm_type=2), max_skips=500)
 
-lr_config = dict(policy="step", warmup="linear", warmup_iters=100, warmup_ratio=0.001, step=[total_epoch])
+lr_config = dict(policy="step", warmup="linear", warmup_iters=100, warmup_ratio=0.001, step=[16, 22])
 runner = dict(type="SemiEpochBasedRunner", max_epochs=total_epoch)
 
 checkpoint_config = dict(interval=save_interval)
@@ -189,8 +189,9 @@ model = dict(
     ema_config=ema_config,
     ema_ckpt=load_from,
     cfg=dict(
+        momentum=0.9996,
         weight_l=1.0,
-        weight_u=1,
+        weight_u=0.5,
         debug=False,
         score_thr=score,
         use_bbox_reg=True,

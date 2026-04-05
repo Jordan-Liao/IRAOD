@@ -273,6 +273,8 @@ def main():
             "NCCL_MAX_NCHANNELS",
         ):
             os.environ.pop(k, None)
+        from datetime import timedelta
+        cfg.dist_params.setdefault("timeout", timedelta(hours=3))
         init_dist(args.launcher, **cfg.dist_params)
         # re-set gpu_ids with distributed training mode
         _, world_size = get_dist_info()
