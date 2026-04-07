@@ -451,3 +451,64 @@
 3. **OrthoNet + SARCLIP LoRA CGA 在轻/中度干扰下有效**: 轻度干扰仅下降 15%，说明域自适应起作用
 4. **强干扰下 SFOD 伪标签机制失效**: 教师模型在强干扰下无法生成有效伪标签，学生无法自适应
 5. **大目标比小目标鲁棒**: ship/bridge 在各种干扰下都保持一定检测能力，tank/aircraft 在强干扰下完全丧失
+
+---
+
+## Phase 4: RSAR CLIP-guided SFOD 同款对照组（Clean / Direct / BN / Tent / SHOT / Self-training / CGA）
+
+> 对应实验编号: E0104 ~ E0110
+
+### 实验目标
+
+在 RSAR 上复刻 CLIP-guided SFOD 论文同款 control baselines。所有方法共享同一个 source detector、同一随机种子、同一 test pipeline：
+- **Source model**: `configs/experiments/rsar/frontier_026_ocafpn_24ep_oriented_rcnn_rsar.py` + `work_dirs/frontier_026_ocafpn_24ep/latest.pth`
+- **Detector**: 现有 oriented detector（OrthoNet-50 + OCA-FPN），不改模型结构
+- **Target adaptation data**: 仅使用 `dataset/RSAR/train/images/`（无标注，禁止 test leak）
+- **Evaluation**: `dataset/RSAR/test/images/` + 7 个 `dataset/RSAR/corruptions/*/test/images/`
+- **Seed**: `3407`
+- **Runner**: `scripts/exp_rsar_controls.sh`, `scripts/queue_rsar_long_controls.sh`
+
+### 方法定义
+
+| method | 定义 |
+|---|---|
+| clean | 不做适配，直接在 clean test 上评估 SOURCE_CKPT |
+| direct | 不做适配，直接在 clean test + 7 个 corruption test 上评估 SOURCE_CKPT |
+| bn | 冻结全部参数，只在 `train/images` 上前向一遍，更新 BN running mean/var |
+| tent | 仅更新 BN affine（gamma/beta），在 `train/images` 上最小化 RoI entropy |
+| shot | detection-approx-shot：冻结 RPN/RoI heads，仅训练 backbone+neck，损失为 RoI entropy |
+| selftrain | UnbiasedTeacher 弱/强增强自训练，EMA teacher，`tau=0.5`，不使用 CGA |
+| cga | 在 selftrain 基础上启用 SARCLIP ViT-L-14 LoRA CGA，prompt=`a SAR image of a {}`，`lambda=0.2` |
+
+### 最终总表
+
+> `mean` 为 `clean_test + 7 corruption_test` 共 8 列的算术平均。
+
+| method | clean_test | gaussian_white_noise_test | point_target_test | chaff_test | noise_suppression_test | smart_suppression_test | am_noise_vertical_test | am_noise_horizontal_test | mean |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| clean | 0.6863 | - | - | - | - | - | - | - | 0.6863 |
+| direct | 0.6863 | 0.6786 | 0.6788 | 0.6239 | 0.3026 | 0.3343 | 0.2906 | 0.2484 | 0.4804 |
+| bn | 0.6861 | 0.6787 | 0.6786 | 0.6237 | 0.3025 | 0.3342 | 0.2904 | 0.2471 | 0.4802 |
+| tent | 0.0000 | 0.0000 | 0.0000 | 0.0000 | 0.0152 | 0.0152 | 0.0000 | 0.0000 | 0.0038 |
+| shot | 0.0000 | 0.0000 | 0.0000 | 0.0000 | 0.0000 | 0.0000 | 0.0000 | 0.0000 | 0.0000 |
+| selftrain | 0.0076 | 0.0076 | 0.0076 | 0.0076 | 0.0152 | 0.0076 | 0.0152 | 0.0000 | 0.0085 |
+| cga | 0.0001 | 0.0002 | 0.0001 | 0.0001 | 0.0009 | 0.0004 | 0.0038 | 0.0000 | 0.0007 |
+
+### 对照组解读
+
+1. **direct 与 bn 基本重合**：`direct=0.4804`，`bn=0.4802`。只用 clean `train/images` 更新 BN 统计，对 corruptions/test 几乎没有帮助。
+2. **Tent 与 SHOT 在当前设定下完全不可用**：`tent=0.0038`，`shot=0.0000`。虽然 entropy 很低，但检测性能已经整体塌陷，说明“低熵”并不等于“高质量目标检测”。
+3. **Self-training 与 CGA 同样塌陷**：`selftrain=0.0085`，`cga=0.0007`。在 clean-train → corrupt-test 的 protocol 下，teacher-student 自训练没有带来正迁移，反而系统性破坏 source model。
+4. **CGA 没有挽救自训练**：`cga` 甚至低于 `selftrain`，说明当前瓶颈不是单纯的类别重打分，而是伪标签生成与目标域分布错位导致的整体失稳。
+5. **Phase 3 与 Phase 4 结果并不矛盾**：Phase 3 的无标注 target data 来自 `val/images-${corrupt}`，与测试干扰域匹配；Phase 4 则严格限定 adaptation data 为 clean `train/images`。在后者设置下，最合理的强基线反而是不做适配的 `direct test`。
+
+### 主要产物路径
+
+- 总表: `work_dirs/controls/rsar_clip_guided_sfod/results_controls.csv`, `work_dirs/controls/rsar_clip_guided_sfod/results_controls.md`
+- direct: `work_dirs/controls/rsar_clip_guided_sfod/direct/metrics.json`
+- bn: `work_dirs/controls/rsar_clip_guided_sfod/bn/run_meta.json`, `work_dirs/controls/rsar_clip_guided_sfod/bn/metrics.json`
+- tent: `work_dirs/controls/rsar_clip_guided_sfod/tent/run_meta.json`, `work_dirs/controls/rsar_clip_guided_sfod/tent_launcher.log`
+- shot: `work_dirs/controls/rsar_clip_guided_sfod/shot/run_meta.json`, `work_dirs/controls/rsar_clip_guided_sfod/shot_launcher.log`
+- selftrain: `work_dirs/controls/rsar_clip_guided_sfod/selftrain/run_meta.json`, `work_dirs/controls/rsar_clip_guided_sfod/selftrain/train_20260406_034810.log`
+- cga: `work_dirs/controls/rsar_clip_guided_sfod/cga/run_meta.json`, `work_dirs/controls/rsar_clip_guided_sfod/cga/train_20260406_172829.log`
+

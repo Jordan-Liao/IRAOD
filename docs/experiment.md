@@ -2571,3 +2571,132 @@
 5. **ship/bridge 鲁棒性最强**: 大目标在各种干扰下都能保持一定检测能力
 6. **aircraft/tank 最脆弱**: 小目标在强干扰下 AP 趋近 0，伪标签完全失效
 7. **OrthoNet + SARCLIP LoRA CGA 的核心价值**: 在轻/中度干扰下提供有效的域自适应能力
+
+---
+
+## Phase 4: RSAR CLIP-guided SFOD 同款对照组实验
+
+> **目标**: 在 RSAR 上复刻 CLIP-guided SFOD 论文同款 control baselines，并统一输出 clean test + 7 个 corruption test 的总表
+> **实验编号**: E0104 ~ E0110
+> **Source model**: `configs/experiments/rsar/frontier_026_ocafpn_24ep_oriented_rcnn_rsar.py` + `work_dirs/frontier_026_ocafpn_24ep/latest.pth`
+> **统一 detector**: 现有 RSAR oriented detector（不改结构）
+> **目标域自适应数据**: `dataset/RSAR/train/images/`（无标注；严禁使用 `test` 图像校准/自适应）
+> **统一脚本**: `scripts/exp_rsar_controls.sh`, `scripts/queue_rsar_long_controls.sh`
+> **统一随机种子**: `3407`
+> **结果汇总**: `work_dirs/controls/rsar_clip_guided_sfod/results_controls.csv`, `work_dirs/controls/rsar_clip_guided_sfod/results_controls.md`
+> **日期**: 2026-04-06 ~ 2026-04-07
+
+
+### E0104: Clean test（SOURCE_CKPT, 无适配）
+| Field | Value |
+| --- | --- |
+| Objective | 不做任何适配，直接用 SOURCE_CKPT 在 `dataset/RSAR/test/images` 上评估 clean mAP |
+| Model | OrientedRCNN + OrthoNet-50 + OCA-FPN |
+| Weights | `work_dirs/frontier_026_ocafpn_24ep/latest.pth` |
+| Code path | `tools/run_direct_test.py`, `tools/rsar_controls_common.py` |
+| Params | `method=clean`, `seed=3407` |
+| Logs/Meta | `work_dirs/controls/rsar_clip_guided_sfod/clean/metrics.json` |
+| Artifacts | `work_dirs/controls/rsar_clip_guided_sfod/clean/` |
+| Results | `clean_test=0.6863`, `mean=0.6863` |
+| Plan ref | `docs/plan.md` §8 RSAR CLIP-guided SFOD 对照组 |
+
+
+### E0105: Direct test（目标域直接测试, 无参数更新）
+| Field | Value |
+| --- | --- |
+| Objective | 对 clean test + 7 个 corruption test 直接评估 SOURCE_CKPT，不更新任何参数 |
+| Model | 同 E0104 |
+| Weights | `work_dirs/frontier_026_ocafpn_24ep/latest.pth` |
+| Code path | `tools/run_direct_test.py`, `tools/rsar_controls_common.py` |
+| Params | `method=direct`, `seed=3407`; clean + 7 corruptions 全部直接测试 |
+| Logs/Meta | `work_dirs/controls/rsar_clip_guided_sfod/direct/metrics.json` |
+| Artifacts | `work_dirs/controls/rsar_clip_guided_sfod/direct/eval_*` |
+| Results | `clean=0.6863`, `gaussian_white_noise=0.6786`, `point_target=0.6788`, `chaff=0.6239`, `noise_suppression=0.3026`, `smart_suppression=0.3343`, `am_noise_vertical=0.2906`, `am_noise_horizontal=0.2484`, `mean=0.4804` |
+
+
+### E0106: BN baseline（仅更新 BN running mean/var）
+| Field | Value |
+| --- | --- |
+| Objective | 冻结全部可学习参数，仅在 `dataset/RSAR/train/images/` 上做一次 BN 统计校准，然后在 clean + 7 corruptions 上评估 |
+| Model | 同 E0104 |
+| Weights | `SOURCE_CKPT -> BN_CALIB_CKPT=work_dirs/controls_smoke/direct_bn/bn/latest.pth` |
+| Code path | `tools/run_bn_calibration.py`, `tools/rsar_controls_common.py` |
+| Params | `samples_per_gpu=8`, `workers_per_gpu=2`, `num_batches=9855`, `seed=3407` |
+| Logs/Meta | `work_dirs/controls/rsar_clip_guided_sfod/bn/run_meta.json`, `work_dirs/controls/rsar_clip_guided_sfod/bn/metrics.json` |
+| Artifacts | `work_dirs/controls_smoke/direct_bn/bn/latest.pth`, `work_dirs/controls/rsar_clip_guided_sfod/bn/eval_*` |
+| Results | `clean=0.6861`, `gaussian_white_noise=0.6787`, `point_target=0.6786`, `chaff=0.6237`, `noise_suppression=0.3025`, `smart_suppression=0.3342`, `am_noise_vertical=0.2904`, `am_noise_horizontal=0.2471`, `mean=0.4802` |
+
+
+### E0107: Tent baseline（BN affine + RoI entropy）
+| Field | Value |
+| --- | --- |
+| Objective | 仅更新 BN affine（gamma/beta），在 `dataset/RSAR/train/images/` 上最小化 RoI 分类 entropy，然后在 clean + 7 corruptions 上评估 |
+| Model | 同 E0104 |
+| Weights | `SOURCE_CKPT -> TENT_CKPT=work_dirs/controls/rsar_clip_guided_sfod/tent/latest.pth` |
+| Code path | `tools/run_tent_adapt.py`, `tools/rsar_controls_common.py` |
+| Params | `epochs=1`, `steps=19710`, `lr=1e-4`, `topk=256`, `min_fg_conf=0.05`, `trainable=BN affine only`, `seed=3407` |
+| Logs/Meta | `work_dirs/controls/rsar_clip_guided_sfod/tent/run_meta.json`, `work_dirs/controls/rsar_clip_guided_sfod/tent/metrics.json`, `work_dirs/controls/rsar_clip_guided_sfod/tent_launcher.log` |
+| Artifacts | `work_dirs/controls/rsar_clip_guided_sfod/tent/latest.pth`, `work_dirs/controls/rsar_clip_guided_sfod/tent/eval_*` |
+| Results | `clean=0.0000`, `gaussian_white_noise=0.0000`, `point_target=0.0000`, `chaff=0.0000`, `noise_suppression=0.0152`, `smart_suppression=0.0152`, `am_noise_vertical=0.0000`, `am_noise_horizontal=0.0000`, `mean=0.0038` |
+
+
+### E0108: SHOT baseline（detection-approx-shot）
+| Field | Value |
+| --- | --- |
+| Objective | detection 近似版 SHOT：冻结 RPN/RoI heads，仅优化 backbone+neck，并用 RoI entropy 在 `dataset/RSAR/train/images/` 上做无监督自适应 |
+| Model | 同 E0104 |
+| Weights | `SOURCE_CKPT -> SHOT_CKPT=work_dirs/controls/rsar_clip_guided_sfod/shot/latest.pth` |
+| Code path | `tools/run_shot_adapt.py`, `tools/rsar_controls_common.py` |
+| Params | `definition=detection-approx-shot`, `epochs=3`, `steps=59130`, `lr=1e-4`, `topk=256`, `min_fg_conf=0.05`, `seed=3407` |
+| Logs/Meta | `work_dirs/controls/rsar_clip_guided_sfod/shot/run_meta.json`, `work_dirs/controls/rsar_clip_guided_sfod/shot/metrics.json`, `work_dirs/controls/rsar_clip_guided_sfod/shot_launcher.log` |
+| Artifacts | `work_dirs/controls/rsar_clip_guided_sfod/shot/latest.pth`, `work_dirs/controls/rsar_clip_guided_sfod/shot/eval_*` |
+| Results | `clean=0.0000`, `gaussian_white_noise=0.0000`, `point_target=0.0000`, `chaff=0.0000`, `noise_suppression=0.0000`, `smart_suppression=0.0000`, `am_noise_vertical=0.0000`, `am_noise_horizontal=0.0000`, `mean=0.0000` |
+
+
+### E0109: Self-training baseline（UnbiasedTeacher, no CGA）
+| Field | Value |
+| --- | --- |
+| Objective | 复用 UnbiasedTeacher 式 weak/strong 自训练；teacher 用 EMA 更新，伪标签阈值 `tau=0.5`，不启用 CGA |
+| Model | UnbiasedTeacher + OrientedRCNN（同 RSAR detector） |
+| Weights | `SOURCE_CKPT -> SELFTRAIN_CKPT=work_dirs/controls/rsar_clip_guided_sfod/selftrain/latest_ema.pth` |
+| Code path | `tools/run_selftrain_adapt.py`, `scripts/exp_rsar_controls.sh` |
+| Params | `max_epochs=24`, `lr=0.02`, `weight_u=0.5`, `tau=0.5`, `ema_momentum=0.998`, `samples_per_gpu=8`, `workers_per_gpu=4`, `cuda_visible_devices=2,3,4,5,6`, `seed=3407` |
+| Logs/Meta | `work_dirs/controls/rsar_clip_guided_sfod/selftrain/run_meta.json`, `work_dirs/controls/rsar_clip_guided_sfod/selftrain/metrics.json`, `work_dirs/controls/rsar_clip_guided_sfod/selftrain/train_20260406_034810.log` |
+| Artifacts | `work_dirs/controls/rsar_clip_guided_sfod/selftrain/latest_ema.pth`, `work_dirs/controls/rsar_clip_guided_sfod/selftrain/eval_*` |
+| Results | `clean=0.0076`, `gaussian_white_noise=0.0076`, `point_target=0.0076`, `chaff=0.0076`, `noise_suppression=0.0152`, `smart_suppression=0.0076`, `am_noise_vertical=0.0152`, `am_noise_horizontal=0.0000`, `mean=0.0085` |
+
+
+### E0110: Self-training + CGA（SARCLIP ViT-L-14 LoRA, λ=0.2）
+| Field | Value |
+| --- | --- |
+| Objective | 在 E0109 基础上启用 CGA：teacher 伪标签阶段加入 SARCLIP LoRA 重打分，prompt=`a SAR image of a {}`，`lambda=0.2` |
+| Model | UnbiasedTeacher + OrientedRCNN_CGA + SARCLIP ViT-L-14 LoRA |
+| Weights | `SOURCE_CKPT -> CGA_CKPT=work_dirs/controls/rsar_clip_guided_sfod/cga/latest_ema.pth`; `weights/sarclip/ViT-L-14/vit_l_14_model.safetensors`; `lora_finetune/SARCLIP_LoRA_Interference.pt` |
+| Code path | `tools/run_selftrain_adapt.py`, `sfod/cga.py`, `scripts/exp_rsar_controls.sh` |
+| Params | `max_epochs=24`, `lr=0.02`, `weight_u=0.5`, `tau=0.5`, `ema_momentum=0.998`, `cga_lambda=0.2`, `sarclip_model=ViT-L-14`, `samples_per_gpu=8`, `workers_per_gpu=4`, `cuda_visible_devices=2,3,4,5,6`, `seed=3407` |
+| Logs/Meta | `work_dirs/controls/rsar_clip_guided_sfod/cga/run_meta.json`, `work_dirs/controls/rsar_clip_guided_sfod/cga/metrics.json`, `work_dirs/controls/rsar_clip_guided_sfod/cga/train_20260406_172829.log` |
+| Artifacts | `work_dirs/controls/rsar_clip_guided_sfod/cga/latest_ema.pth`, `work_dirs/controls/rsar_clip_guided_sfod/cga/eval_*` |
+| Results | `clean=0.0001`, `gaussian_white_noise=0.0002`, `point_target=0.0001`, `chaff=0.0001`, `noise_suppression=0.0009`, `smart_suppression=0.0004`, `am_noise_vertical=0.0038`, `am_noise_horizontal=0.0000`, `mean=0.0007` |
+
+
+### Phase 4 汇总: CLIP-guided SFOD 对照组总表
+
+> `mean` 为 `clean_test + 7 corruption_test` 共 8 列的算术平均。
+
+| method | clean_test | gaussian_white_noise_test | point_target_test | chaff_test | noise_suppression_test | smart_suppression_test | am_noise_vertical_test | am_noise_horizontal_test | mean |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| clean | 0.6863 | - | - | - | - | - | - | - | 0.6863 |
+| direct | 0.6863 | 0.6786 | 0.6788 | 0.6239 | 0.3026 | 0.3343 | 0.2906 | 0.2484 | 0.4804 |
+| bn | 0.6861 | 0.6787 | 0.6786 | 0.6237 | 0.3025 | 0.3342 | 0.2904 | 0.2471 | 0.4802 |
+| tent | 0.0000 | 0.0000 | 0.0000 | 0.0000 | 0.0152 | 0.0152 | 0.0000 | 0.0000 | 0.0038 |
+| shot | 0.0000 | 0.0000 | 0.0000 | 0.0000 | 0.0000 | 0.0000 | 0.0000 | 0.0000 | 0.0000 |
+| selftrain | 0.0076 | 0.0076 | 0.0076 | 0.0076 | 0.0152 | 0.0076 | 0.0152 | 0.0000 | 0.0085 |
+| cga | 0.0001 | 0.0002 | 0.0001 | 0.0001 | 0.0009 | 0.0004 | 0.0038 | 0.0000 | 0.0007 |
+
+**关键发现**:
+1. `direct` 与 `bn` 基本重合（0.4804 vs 0.4802），说明仅用 clean `train/images` 更新 BN 统计对该 RSAR 控制组几乎没有收益。
+2. `Tent`、`SHOT`、`Self-training` 与 `Self-training+CGA` 在当前协议下全部明显劣于 `direct`，且均接近塌陷。
+3. `Self-training+CGA` 的 `mean=0.0007`，甚至低于 `Self-training=0.0085`；当前 CGA 重打分没有挽救 teacher-student 退化。
+4. 当前最强控制组实际上是“不做适配”的 source detector：`SOURCE_CKPT` 在 clean test 上 0.6863，在 8 列平均上 0.4804。
+5. 该结果表明：在“target adaptation data 仅为 clean `RSAR/train/images/`，测试为 `corruptions/test`”这一设置下，参数更新式目标自适应会系统性破坏源模型，而不是带来增益。
+

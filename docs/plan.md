@@ -662,3 +662,46 @@ Phase 3 过程中解决了以下关键工程问题:
 - [ ] 引入 teacher 置信度监控 + 自适应 score_thr 避免伪标签崩溃
 - [ ] 探索 frequency-domain augmentation 提升对 AM 噪声的鲁棒性
 - [ ] 与 DIOR 数据集交叉验证鲁棒性结论
+
+## §8 Phase 4 完成：RSAR CLIP-guided SFOD 同款对照组
+
+> **状态**: ✅ **全部完成** (2026-04-07)
+> **实验编号**: E0104 ~ E0110
+> **详细记录**: `docs/experiment.md` Phase 4 部分, `docs/semi_supervised_experiments.md` Phase 4 部分
+> **结果文件**: `work_dirs/controls/rsar_clip_guided_sfod/results_controls.csv`, `work_dirs/controls/rsar_clip_guided_sfod/results_controls.md`
+
+### 8.1 统一设置
+
+- **Source model**: `configs/experiments/rsar/frontier_026_ocafpn_24ep_oriented_rcnn_rsar.py` + `work_dirs/frontier_026_ocafpn_24ep/latest.pth`
+- **Target adaptation data**: `dataset/RSAR/train/images/`（无标注；不允许使用 `test` 图像做校准/自适应）
+- **Evaluation**: `dataset/RSAR/test/images/` + 7 个 `dataset/RSAR/corruptions/*/test/images/`
+- **统一脚本**: `scripts/exp_rsar_controls.sh`, `scripts/queue_rsar_long_controls.sh`
+- **统一随机种子**: `3407`
+- **mean 定义**: `clean_test + 7 corruption_test` 共 8 列的算术平均
+
+### 8.2 结果汇总
+
+| 方法 | mean mAP | 备注 |
+|---|---|---|
+| clean | **0.6863** | 仅 clean test；作为 source model 参考上限 |
+| direct | **0.4804** | 不做任何适配；当前最强 control |
+| bn | **0.4802** | 仅校准 BN running stats；与 direct 几乎一致 |
+| tent | **0.0038** | BN affine + entropy；基本塌陷 |
+| shot | **0.0000** | detection-approx-shot；完全塌陷 |
+| selftrain | **0.0085** | UnbiasedTeacher(no CGA)；明显退化 |
+| cga | **0.0007** | Self-training + SARCLIP CGA；进一步退化 |
+
+### 8.3 关键结论
+
+1. **最强 control 是 direct test**：`SOURCE_CKPT` 直接评测的 `mean=0.4804`，高于所有参数更新式自适应方法。
+2. **BN calibration 基本无收益**：`bn=0.4802` 与 `direct=0.4804` 近乎重合，说明在 clean `train/images` 上仅更新 BN 统计不足以改善 corruptions/test 表现。
+3. **Tent/SHOT/Self-training/CGA 全部塌陷**：当前协议下，一旦对模型参数做目标域更新，性能显著低于 source model。
+4. **CGA 没有挽救 teacher-student 退化**：`cga=0.0007` 甚至低于 `selftrain=0.0085`，问题不只是重打分，而是整个自训练闭环在该 protocol 下失稳。
+5. **Phase 3 与 Phase 4 的关键差别在 target data protocol**：Phase 3 使用 `val/images-${corrupt}` 作为干扰域无标注数据，而本控制组严格限定为 clean `train/images`；后者与 corruptions/test 存在显著分布错位。
+
+### 8.4 下一步方向
+
+- [ ] 若继续做 adaptation baseline，应提供与测试干扰分布一致的无标注 target train（或构造 train-side interference split），否则 direct test 就是更合理的强基线。
+- [ ] 为 self-training/CGA 增加 teacher 置信度监控、动态 `tau/score_thr` 与 early-stop，避免在 clean-train → corrupt-test 设定下发生整体塌陷。
+- [ ] 将 Phase 4 作为后续论文/报告中的“负对照组”，与 Phase 3 的干扰匹配式 SFOD protocol 明确区分。
+

@@ -622,6 +622,7 @@ class TestMixins:
                 self.exclude_ids = []
 
         boxes_list, scores_list, labels_list = [], [], []
+        det_records = []
         for cls_id, result in enumerate(results[0]):
             if len(result) == 0:
                 continue
@@ -630,6 +631,7 @@ class TestMixins:
             boxes_list.append(result_xyxy[:, :4])
             scores_list.append(result[:, -1])
             labels_list.append([cls_id] * len(result))
+            det_records.extend([det.copy() for det in result])
 
         if len(boxes_list) == 0:
             return results
@@ -691,21 +693,33 @@ class TestMixins:
         else:
             logits, _ = self.cga(img_path, boxes_list, scores_list, labels_list)
 
-        # 与原逻辑一致：若预测与原标签不一致，按一定权重融合
-        for i, prob in enumerate(logits):
-            pred = int(np.argmax(prob))
-            if labels_list[i] != pred:
-                if labels_list[i] not in getattr(self, "exclude_ids", []):
-                    scores_list[i] = scores_list[i] * 0.7 + float(prob[int(labels_list[i])]) * 0.3
+        lambda_clip = float(np.clip(_float_env("CGA_LAMBDA", 0.2), 0.0, 1.0))
+        det_dim = next((result.shape[1] for result in results[0] if len(result) > 0), 6)
+        refined_by_class: list[list[np.ndarray]] = [[] for _ in range(len(class_names))]
 
-        j = 0
-        for i in range(len(results[0])):
-            num_dets = len(results[0][i])
-            if num_dets == 0:
-                continue
-            for _k in range(num_dets):
-                results[0][i][_k, -1] = scores_list[j]
-                j += 1
+        for i, prob in enumerate(logits):
+            orig_label = int(labels_list[i])
+            clip_pred = int(np.argmax(prob))
+            det = det_records[i].copy()
+            teacher_score = float(det[-1])
+
+            if orig_label == clip_pred or lambda_clip <= 0.0:
+                new_label = orig_label
+                new_score = teacher_score
+            else:
+                teacher_dist = np.zeros(len(class_names), dtype=np.float32)
+                teacher_dist[orig_label] = 1.0
+                blended = (1.0 - lambda_clip) * teacher_dist + lambda_clip * prob.astype(np.float32)
+                new_label = int(np.argmax(blended))
+                new_score = float(max(0.0, teacher_score * float(blended[new_label])))
+
+            det[-1] = new_score
+            refined_by_class[new_label].append(det)
+
+        results[0] = [
+            np.stack(items, axis=0).astype(np.float32) if items else np.zeros((0, det_dim), dtype=np.float32)
+            for items in refined_by_class
+        ]
 
         return results
 
