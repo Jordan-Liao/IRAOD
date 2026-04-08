@@ -699,7 +699,11 @@ Phase 3 过程中解决了以下关键工程问题:
 4. **CGA 没有挽救 teacher-student 退化**：`cga=0.0007` 甚至低于 `selftrain=0.0085`，问题不只是重打分，而是整个自训练闭环在该 protocol 下失稳。
 5. **Phase 3 与 Phase 4 的关键差别在 target data protocol**：Phase 3 使用 `val/images-${corrupt}` 作为干扰域无标注数据，而本控制组严格限定为 clean `train/images`；后者与 corruptions/test 存在显著分布错位。
 
-### 8.4 下一步方向
+### 8.4 论文/汇报摘要
+
+在严格遵循 CLIP-guided SFOD control protocol 的 RSAR 实验中，所有方法均从同一个 source detector 出发，并且仅允许使用 clean `RSAR/train/images/` 作为无标注 adaptation data。结果显示，不做任何适配的 `direct test` 反而取得最高的 8 列平均性能（`mean mAP=0.4804`），而仅更新 BN 统计的 `bn` 与其几乎完全一致（`0.4802`）。相比之下，参数更新式目标自适应方法全部显著退化：`tent=0.0038`、`shot=0.0000`、`selftrain=0.0085`、`cga=0.0007`。这说明在 clean-train → corrupt-test 的显著分布错位下，目标域自适应没有带来正迁移，反而系统性破坏了 source model。该结论与 Phase 3 并不矛盾；二者的关键差异在于 Phase 3 使用了与测试干扰域匹配的无标注 `val/images-${corrupt}`，而 Phase 4 刻意限制为 clean `train/images`。因此，Phase 4 应作为论文中的负对照：它证明“没有干扰匹配目标域数据时，直接测试 source detector 是更强且更稳健的基线”。
+
+### 8.5 下一步方向
 
 - [ ] 若继续做 adaptation baseline，应提供与测试干扰分布一致的无标注 target train（或构造 train-side interference split），否则 direct test 就是更合理的强基线。
 - [ ] 为 self-training/CGA 增加 teacher 置信度监控、动态 `tau/score_thr` 与 early-stop，避免在 clean-train → corrupt-test 设定下发生整体塌陷。

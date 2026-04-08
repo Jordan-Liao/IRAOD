@@ -2700,3 +2700,7 @@
 4. 当前最强控制组实际上是“不做适配”的 source detector：`SOURCE_CKPT` 在 clean test 上 0.6863，在 8 列平均上 0.4804。
 5. 该结果表明：在“target adaptation data 仅为 clean `RSAR/train/images/`，测试为 `corruptions/test`”这一设置下，参数更新式目标自适应会系统性破坏源模型，而不是带来增益。
 
+### Phase 4 论文/汇报摘要
+
+在严格遵循 CLIP-guided SFOD control protocol 的 RSAR 实验中，所有方法均从同一个 source detector 出发，并且仅允许使用 clean `RSAR/train/images/` 作为无标注 adaptation data。结果显示，不做任何适配的 `direct test` 反而取得最高的 8 列平均性能（`mean mAP=0.4804`），而仅更新 BN 统计的 `bn` 与其几乎完全一致（`0.4802`）。相比之下，参数更新式目标自适应方法全部显著退化：`tent=0.0038`、`shot=0.0000`、`selftrain=0.0085`、`cga=0.0007`。这说明在 clean-train → corrupt-test 的显著分布错位下，目标域自适应没有带来正迁移，反而系统性破坏了 source model。该结论与 Phase 3 并不矛盾；二者的关键差异在于 Phase 3 使用了与测试干扰域匹配的无标注 `val/images-${corrupt}`，而 Phase 4 刻意限制为 clean `train/images`。因此，Phase 4 应作为论文中的负对照：它证明“没有干扰匹配目标域数据时，直接测试 source detector 是更强且更稳健的基线”。
+

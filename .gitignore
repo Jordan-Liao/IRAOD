@@ -35,6 +35,7 @@ docs/system_info.md
 # Open Researcher runtime artifacts
 .research_backup_*/
 .research-headless-*.pid
+.agentforge/
 _auto_eval.sh
 _codex_prompt.txt
 _full_train_prompt.txt
