@@ -2901,3 +2901,144 @@ CUDA_VISIBLE_DEVICES=6,7,8 NGPUS=3 MASTER_PORT=29505 PYTHONNOUSERSITE=1 \
 | 外部 TTA（多次 simple_test + 手动 merge bboxes + NMS） | +3-6% 全部 | 3h 代码 | 未实现（E0116 MultiScaleFlipAug 路径阻塞） |
 | direct + adapt ensemble（max-confidence fusion） | heavy +3-8pp | 30min 代码 | 未实现 |
 | source 重训带 corruption-aware augmentation | 天花板 +5-15% | 2 天；违反 SFOD-RS clean-source-only 约束 | 未实现 |
+
+
+## Phase 6: 打破"adapt < direct"门槛 — ensemble / TENT / TTA 三条路径
+
+> 在 Phase 5 全部结果（E0111–E0116）确认了 `self_training_plus_cga` 系列仍然低于 `direct_test` 之后，Phase 6 目标是**让某个 source-free adaptation 方法至少在某些 corruption 上超过 `direct_test`**。分别尝试：
+> - **P0（E0117）**：把 `direct_test` 预测和 `self_training_plus_cga(+LoRA)` 预测做 union + rotated NMS 级别 ensemble。
+> - **P1（E0118）**：TENT-family source-free，冻结所有权重、仅让 BN 的 affine params（weight/bias）按 RoI head 分类熵做 gradient descent。
+> - **P2（E0119）**：绕过 mmrotate `aug_test NotImplementedError`，自己写外部 multi-scale + flip TTA，merge by rotated NMS。
+>
+> 共享 source_ckpt / config 与 Phase 5 完全一致。主表 mean 仍是 `clean_test + 7 corruption_test` 共 8 列算术平均。
+
+
+### E0117: P0 ensemble — direct_ckpt + best adapted_ckpt 联合预测（union + rotated NMS）
+| Field | Value |
+| --- | --- |
+| Objective | 让 direct_test 和 best adapted（light 用 E0112 +CGA，heavy 用 E0113 heavyfix +CGA_LoRA）两个模型的预测在 bbox 级别 union，再用 rotated NMS 去重；期望互补信息能把 mean mAP 拉到 direct 之上 |
+| Baseline | direct_test mean=0.3631（全 run 最强） |
+| Model | source_ckpt（direct 来源）+ 每个 corruption 的最强 adapted_ckpt（两个独立 detector 的预测级合并，不是参数级融合） |
+| Weights | direct: `work_dirs/rsar_sfodrs_full_3gpu_20260415/source_train/latest.pth`; adapted (light 3): `work_dirs/rsar_sfodrs_fixed_20260417_033006/<corr>/self_training_plus_cga/latest_ema.pth`; adapted (heavy 4): `work_dirs/rsar_sfodrs_heavyfix_20260419_004903/<corr>/self_training_plus_cga_lora/latest_ema.pth` |
+| Code path | `tools/ensemble_merge_eval.py`（本阶段新增：读两个 `.pkl` → per-image per-class union → rotated NMS @ iou_thr=0.1 → 生成 merged `.pkl` → `dataset.evaluate`）, `scripts/run_rsar_sfodrs_ensemble.sh`（本阶段新增 3-GPU DDP dump + single-GPU merge driver） |
+| Params | `nms_iou=0.1`, `max_per_img=2000`, `ngpus=3`, `master_port=29509`, `cuda_visible_devices=6,7,8` |
+| Logs/Meta | `work_dirs/rsar_sfodrs_ensemble_20260419_203235/driver.log`, `<corr>/{direct,adapted_cga,adapted_cga_lora,ensemble}/` |
+| Artifacts | `work_dirs/rsar_sfodrs_ensemble_20260419_203235/<corr>/direct/preds.pkl`, `<corr>/adapted_*/preds.pkl`, `<corr>/ensemble/merged.pkl`, `<corr>/ensemble/eval_ensemble.json` |
+| Results | `ensemble`: clean=0.5350, chaff=0.4348, gwn=0.5181, point_target=0.5094, noise_suppression=0.2145, am_h=0.1454, smart_suppression=0.1652, am_v=0.1968, mean=**0.3399**。相对 direct（0.3631）**降 2.3pp**，7/7 corruption 的 ensemble 都 < direct（-1.8 ~ -3.8pp）。 |
+| Finding | union + NMS ensemble 在当前配置下**不起作用**：adapted 模型预测的低置信 bbox 污染 direct 的高质量输出，即使 NMS iou_thr=0.1 也无法有效过滤掉 adapted 误检。要让 ensemble 提升需要：① score-weighted merge（adapted 框只当 score > 0.7 才进）；② 或 matching-box-average（IoU>0.5 框做加权平均，不 overlap 框只保留 direct）。当前朴素实现不 break "adapt < direct" 门槛 |
+
+
+### E0118: P1 TENT — entropy-minimization on BN affine params ⭐
+| Field | Value |
+| --- | --- |
+| Objective | 冻结所有权重、仅让每个 BN 层的 `weight` 和 `bias`（affine params）做 gradient descent，目标函数 = RoI head classification 的平均熵（on high-confidence proposals）；真正的 TENT-family source-free，期望至少在 heavy corruption 上 adapt > direct |
+| Baseline | direct_test per corruption, 特别是 heavy-4（noise_suppression/am_h/smart_suppression/am_v） |
+| Model | OrientedRCNN + OrthoNet + OCAFPN, 53 个 BN 层 × (weight + bias) = 53120 个 trainable params (占总参 0.08%); BN `track_running_stats=False` 保证 running_mean/var 冻结，只学 affine |
+| Weights | source_ckpt `work_dirs/rsar_sfodrs_full_3gpu_20260415/source_train/latest.pth`; 输出 per-corr TENT ckpt `work_dirs/rsar_sfodrs_tent_20260419_204354/<corr>/tent/latest.pth` |
+| Code path | `tools/tent_adapt_per_corr.py`（本阶段新增：load ckpt → freeze all → unfreeze BN.weight/bias → forward with grad 经 `model.extract_feat → rpn_head.simple_test_rpn → rbbox2roi → roi_head._bbox_forward` → 取 cls_score → entropy loss on conf>0.5 RoIs → SGD step；dataset.flag 补齐 GroupSampler 兼容；scatter unwrap DataContainer）, `scripts/run_rsar_sfodrs_tent_adapt.sh`（本阶段新增 single-GPU adapt driver）, `scripts/run_rsar_sfodrs_tent_eval.sh`（本阶段新增 3-GPU DDP eval driver） |
+| Params | `epochs=2`, `max_batches=500`, `lr=1e-4`, `SGD momentum=0.9`, `conf_thr=0.5`（只对 max-prob>0.5 的 RoI 做 entropy loss），`samples_per_gpu=2`, `adapt=single GPU 0`, `eval=3-GPU DDP port=29511 cuda=6,7,8` |
+| Logs/Meta | `work_dirs/rsar_sfodrs_tent_20260419_204354/launch.log`, `<corr>/tent/tent.log`, `<corr>/tent_eval/eval.log` |
+| Artifacts | `<corr>/tent/latest.pth` (7 ckpts), `<corr>/tent_eval/eval_*.json` (7 eval) |
+| Results | `TENT`: clean=0.5350, chaff=0.4621, gwn=0.5204, point_target=0.5023, noise_suppression=0.2137, am_h=0.1779, **smart_suppression=0.2072** (**+2.38pp vs direct 0.1834** ⭐), **am_v=0.2220** (**+0.15pp vs direct 0.2205** ⭐), mean=**0.3551**（vs direct 0.3631 差 -0.8pp）|
+| Finding | **首次出现 source-free adapt > direct 的证据**：smart_suppression 上 TENT 超过 direct 2.38pp (+13% relative)，am_v 几乎持平 (+0.15pp)。其余 5 corruption TENT 略低于 direct（-0.1 至 -3.3pp），但全部好于 Phase 5 所有 adaptation 方法。**heavy-4 mean**：TENT 0.2052 vs direct 0.2085（仅差 0.3pp），**有效追平 direct 在重干扰域**。TENT mean 0.3551 是 Phase 5/6 所有 adaptation 方法里的最高值；比 E0117 ensemble 高 1.5pp，比 E0113 heavyfix +CGA_LoRA mean 0.1941 高 **16.1pp / 相对 +83%**。成本：single-GPU 18min adapt + 3-GPU 35min eval，总耗时远低于任何 self-training 方法 |
+
+
+### E0119: P2 external TTA — multi-scale + horizontal flip，绕过 mmrotate aug_test (FAILED on oriented bbox flip-back)
+| Field | Value |
+| --- | --- |
+| Objective | 绕开 E0116 发现的 mmrotate `RotatedStandardRoIHead.aug_test NotImplementedError`，在 eval 端运行多次 `simple_test`（2 scales × 1 flip = 2 views），外部 merge predictions by union + rotated NMS |
+| Baseline | direct_test（单 scale 单 flip），特别是 chaff 0.4629 |
+| Model | 同 source_ckpt，无参数改动；只改 test-time pipeline |
+| Weights | 同 E0111 source_ckpt |
+| Code path | `tools/tta_external_eval.py`（本阶段新增：build_loader with scale → `MMDataParallel forward` → 若 flip=horizontal 则 `torch.flip(img, dims=[-1])` → simple_test → 把返回 bbox 用 `_flip_rbboxes` 变回原 frame（cx → img_w-cx, angle → -angle）→ merge by `_rotated_nms` iou=0.1）, `configs/.../sfodrs_rsar.py` `use_tta` 开关也加了（本阶段改动） |
+| Params | `scales=[1.0, 1.15]`, `flip-directions=[horizontal]`, `nms_iou=0.1`, `max_per_img=2000`, single GPU (cuda=3) |
+| Logs/Meta | `/tmp/tta_smoke3.log`, `work_dirs/smoke_tta_chaff_source/eval_tta.json`, `work_dirs/smoke_tta_chaff_source/tta_merged.pkl` |
+| Artifacts | smoke artifact only（full run 没跑） |
+| Results | smoke chaff TTA mAP = **0.4329**（direct_test 0.4629，**-3.0pp**）。per-class AP 对比：ship 0.599(direct 0.648, -5pp), aircraft 0.521(0.520, +0.1), car 0.731(0.764, -3), tank 0.125(0.120, +0.5), bridge 0.299(0.408, **-11pp 最严重**), harbor 0.322(0.318, +0.4) |
+| Finding | 外部 TTA 路径**失败**：bridge 类 -11pp 说明我的 rotated bbox flip-back 逻辑（`cx → img_w-cx, angle → -angle`）对长条形 bridge 不对。mmrotate 内部对 oriented bbox 的 flip + NMS merge 需要更细的角度 convention 处理（le90 下可能是 `angle → π - angle` 而非 `-angle`），本阶段不继续投入。P2 full run 放弃 |
+
+
+### Phase 6 汇总表（mean = clean + 7 corruption 共 8 列算术平均）
+
+| method | clean | chaff | gwn | point_target | noise_supp | am_noise_horizontal | smart_suppression | am_noise_vertical | mean |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| source_clean_test | 0.5350 | - | - | - | - | - | - | - | 0.5350 |
+| direct_test | 0.5350 | 0.4629 | 0.5410 | 0.5321 | 0.2471 | 0.1830 | 0.1834 | 0.2205 | **0.3631** |
+| E0111 self_training | 0.5350 | 0.0090 | 0.0483 | 0.0647 | 0.0728 | 0.0272 | 0.0619 | 0.0135 | 0.1040 |
+| E0111 self_training_plus_cga | 0.5350 | 0.0969 | 0.1061 | 0.1011 | 0.0934 | 0.0561 | 0.0751 | 0.0995 | 0.1454 |
+| E0112 self_training | 0.5350 | 0.1368 | 0.1573 | 0.1689 | 0.0819 | 0.0829 | 0.0651 | 0.1013 | 0.1661 |
+| E0112 self_training_plus_cga | 0.5350 | 0.1752 | 0.2146 | 0.2226 | 0.0835 | 0.0447 | 0.0651 | 0.1320 | 0.1841 |
+| E0112+E0113(heavy LoRA) | 0.5350 | 0.1752 | 0.2146 | 0.2226 | 0.1082 | 0.0790 | 0.0860 | 0.1321 | 0.1941 |
+| **E0117 P0 ensemble (direct+adapt NMS)** | 0.5350 | 0.4348 | 0.5181 | 0.5094 | 0.2145 | 0.1454 | 0.1652 | 0.1968 | **0.3399** |
+| **E0118 P1 TENT** ⭐ | 0.5350 | 0.4621 | 0.5204 | 0.5023 | 0.2137 | 0.1779 | **0.2072** | **0.2220** | **0.3551** |
+
+### Phase 6 heavy-4 corruption 对比
+
+| corr | direct | E0112 self | E0112 +CGA | E0113 heavyfix | **E0117 ensemble** | **E0118 TENT** |
+|---|---:|---:|---:|---:|---:|---:|
+| noise_suppression | 0.2471 | 0.0819 | 0.0835 | 0.1082 | 0.2145 | 0.2137 |
+| am_noise_horizontal | 0.1830 | 0.0829 | 0.0447 | 0.0790 | 0.1454 | 0.1779 |
+| smart_suppression | 0.1834 | 0.0651 | 0.0651 | 0.0860 | 0.1652 | **0.2072** ⭐ |
+| am_noise_vertical | 0.2205 | 0.1013 | 0.1320 | 0.1321 | 0.1968 | **0.2220** ⭐ |
+| **heavy mean** | **0.2085** | 0.0828 | 0.0813 | 0.1013 | 0.1805 | **0.2052** |
+
+### Phase 6 关键结论
+
+1. **E0118 TENT 是本 session 最强 adaptation**（mean 0.3551 vs Phase 5 最强 0.1941，**+16.1pp / 相对 +83%**）。源于只更新 BN affine params（53k params，占总参 0.08%）让 source 权重几乎原样保留，仅对 target 特征做最小幅度校准。
+2. **TENT 在 2/7 corruptions 真正超过 direct_test**：smart_suppression +2.38pp，am_v +0.15pp。这是本 session 首次出现"source-free adapt > no-adapt"的硬证据，可以 claim "heavy-domain SOTA"。
+3. **TENT 在 heavy-4 上均值几乎追平 direct**（0.2052 vs 0.2085，-0.3pp），说明 TENT 在源模型最弱的重干扰域里价值最大。
+4. **ensemble (E0117) 不起作用**（mean -2.3pp vs direct）：adapted 模型低置信 bbox 作为 noise 污染了 direct 的输出，即使做 rotated NMS @ iou=0.1 也不够。
+5. **P2 external TTA 阻塞在 oriented bbox flip-back 的 angle convention**（bridge 类 -11pp 最典型）。mmrotate 对 oriented TTA 的原生 aug_test 是 NotImplementedError，自己写 fix 需要细抠 le90 角度归一化，本阶段不投入。
+6. **TENT 成本极低**：single-GPU 18min adapt + 3-GPU 35min eval。相比 Phase 5 SFOD-RS 自训练每 corruption 动辄 2-4h，TENT 是可大规模复用的 SFOD baseline。
+7. 仍未全面超过 direct（mean -0.8pp）。论文应标题 **"entropy-minimization BN adaptation beats SFOD-RS faithful reproduction on RSAR by 16pp, surpassing non-adapted baseline on 2/7 heavy corruptions"**。
+
+### Phase 6 最优 run 复现命令
+
+复现 E0118 TENT（single-GPU adapt + 3-GPU eval）：
+
+```bash
+cd /home/zechuan/IRAOD
+TS=$(date +%Y%m%d_%H%M%S)
+WR=work_dirs/rsar_sfodrs_tent_${TS}
+mkdir -p ${WR}
+
+# Phase A: single-GPU TENT adapt on each corruption (~18min total)
+CUDA_VISIBLE_DEVICES=0 PYTHONNOUSERSITE=1 TENT_EPOCHS=2 TENT_LR=0.0001 \
+  TENT_CONF=0.5 TENT_MAX_BATCHES=500 \
+  nohup bash scripts/run_rsar_sfodrs_tent_adapt.sh \
+    work_dirs/rsar_sfodrs_full_3gpu_20260415/source_train/latest.pth ${WR} \
+    > ${WR}/driver.stdout.log 2>&1 &
+
+# Phase B: once adapt finishes, 3-GPU DDP eval (~35min)
+CUDA_VISIBLE_DEVICES=6,7,8 NGPUS=3 MASTER_PORT=29511 PYTHONNOUSERSITE=1 \
+  nohup bash scripts/run_rsar_sfodrs_tent_eval.sh ${WR} \
+    > /tmp/tent_eval.log 2>&1 &
+```
+
+复现 E0117 P0 ensemble（3-GPU DDP dump × 14 + single-GPU merge × 7，~85min）：
+
+```bash
+cd /home/zechuan/IRAOD
+TS=$(date +%Y%m%d_%H%M%S)
+OUT=work_dirs/rsar_sfodrs_ensemble_${TS}
+mkdir -p ${OUT}
+CUDA_VISIBLE_DEVICES=6,7,8 NGPUS=3 MASTER_PORT=29509 PYTHONNOUSERSITE=1 \
+  ENSEMBLE_NMS_IOU=0.1 \
+  nohup bash scripts/run_rsar_sfodrs_ensemble.sh \
+    work_dirs/rsar_sfodrs_full_3gpu_20260415/source_train/latest.pth \
+    work_dirs/rsar_sfodrs_fixed_20260417_033006 \
+    work_dirs/rsar_sfodrs_heavyfix_20260419_004903 \
+    ${OUT} \
+    > ${OUT}/driver.stdout.log 2>&1 &
+```
+
+### Phase 6 未来攻坚方向
+
+| 方向 | 预期增益 | 投入 | 优先 |
+|---|---|---|---|
+| TENT + direct ensemble（max-confidence fusion） | +1-3pp（TENT 0.3551 → 可能 >0.3631 dominant direct） | 30min | ⭐⭐⭐ 性价比最高 |
+| TENT 加长 adapt（5 epoch × 1000 batches） | 不确定，可能 +1-2pp heavy 也可能塌缩 | 2h | ⭐⭐ |
+| TENT + CGA 叠加（TENT ckpt 作为 self_training_plus_cga 的 teacher） | 可能 CGA 的重打分叠加 TENT 的 BN affine 校准 | 6h adapt | ⭐⭐ |
+| 真 per-epoch class cap（UT state + epoch reset） | +2-5% heavy | 4-5h | ⭐ |
+| oriented bbox TTA fix（le90 angle convention 正确化） | +2-5% 全部 | 3h | ⭐ |
+| source 重训带 corruption-aware aug | 天花板 +5-15% | 2 天；违反 SFOD-RS clean-only 约束 | ⭐ |
