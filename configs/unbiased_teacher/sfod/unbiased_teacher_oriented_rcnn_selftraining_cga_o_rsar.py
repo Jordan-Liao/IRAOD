@@ -1,5 +1,13 @@
 # --- 必须项：确保注册我们在 sfod/ 和 mmdet_extension/ 里定义的模块 ---
-custom_imports = dict(imports=["sfod", "mmdet_extension", "mmrotate.datasets.pipelines"], allow_failed_imports=False)
+custom_imports = dict(
+    imports=[
+        "sfod",
+        "mmdet_extension",
+        "mmrotate.datasets.pipelines",
+        "tools.pseudo_stats_early_stop_hook",
+    ],
+    allow_failed_imports=False,
+)
 
 import torchvision.transforms as transforms
 import os
@@ -173,7 +181,12 @@ runner = dict(type="SemiEpochBasedRunner", max_epochs=total_epoch)
 checkpoint_config = dict(interval=save_interval)
 log_config = dict(interval=10, hooks=[dict(type="TextLoggerHook")])
 
-custom_hooks = [dict(type="SetEpochInfoHook")]
+custom_hooks = [
+    dict(type="SetEpochInfoHook"),
+    # Writes per-epoch pseudo-label stats to `${work_dir}/pseudo_stats.json`.
+    # Enable early stop via env: `PSEUDO_EARLYSTOP=1`.
+    dict(type="PseudoStatsAndEarlyStopHook"),
+]
 
 dist_params = dict(backend="nccl")
 log_level = "INFO"
@@ -284,4 +297,3 @@ model = dict(
         rcnn=dict(nms_pre=2000, min_bbox_size=0, score_thr=0.05, nms=dict(iou_thr=0.1), max_per_img=2000),
     ),
 )
-

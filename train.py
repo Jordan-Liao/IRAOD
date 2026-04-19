@@ -179,8 +179,13 @@ def main():
 
     def _infer_rsar_split(path_str: str):
         p = str(path_str).replace("\\", "/")
+        p_l = p.lower()
+        # Do NOT rewrite corruption-domain paths like:
+        #   .../corruptions/<corr>/<split>/images
+        if "/corruptions/" in p_l:
+            return None
         for split in ("train", "val", "test"):
-            if f"/{split}/" in p:
+            if f"/{split}/" in p_l:
                 return split
         return None
 

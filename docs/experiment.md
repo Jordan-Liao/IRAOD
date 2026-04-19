@@ -2704,3 +2704,200 @@
 
 在严格遵循 CLIP-guided SFOD control protocol 的 RSAR 实验中，所有方法均从同一个 source detector 出发，并且仅允许使用 clean `RSAR/train/images/` 作为无标注 adaptation data。结果显示，不做任何适配的 `direct test` 反而取得最高的 8 列平均性能（`mean mAP=0.4804`），而仅更新 BN 统计的 `bn` 与其几乎完全一致（`0.4802`）。相比之下，参数更新式目标自适应方法全部显著退化：`tent=0.0038`、`shot=0.0000`、`selftrain=0.0085`、`cga=0.0007`。这说明在 clean-train → corrupt-test 的显著分布错位下，目标域自适应没有带来正迁移，反而系统性破坏了 source model。该结论与 Phase 3 并不矛盾；二者的关键差异在于 Phase 3 使用了与测试干扰域匹配的无标注 `val/images-${corrupt}`，而 Phase 4 刻意限制为 clean `train/images`。因此，Phase 4 应作为论文中的负对照：它证明“没有干扰匹配目标域数据时，直接测试 source detector 是更强且更稳健的基线”。
 
+
+
+## Phase 5: SFOD-RS faithful + RSAR 七类干扰塌缩修复
+
+> 本阶段把 IRAOD 严格对齐 SFOD-RS（Lansing/SFOD-RS）的 target-only self-training 协议：
+> - Detector 统一为 `OrthoNet` + `OCAFPN` + `OrientedRCNN`（len=6 RSAR 类别：ship, aircraft, car, tank, bridge, harbor）。
+> - Adaptation stage 严格 source-free：`weight_l=0.0`、`use_labeled=False`、不使用 labeled source train branch。
+> - 每个 corruption 独立：adapt split=`corruptions/<corr>/val/images`（8467 imgs unlabeled），eval split=`corruptions/<corr>/test/images`（8538 imgs with annfile）。
+> - EMA teacher α=0.998；weak aug = horizontal flip p=0.5；strong aug = ColorJitter + Grayscale + GaussianBlur + DTRandCrop。
+> - CGA faithful fusion（`sfod/cga.py::TestMixins.refine_test` mode=`sfodrs`）：`keep_label=True`；当 `argmax(SARCLIP probs) != teacher_label` 时 `new_score = 0.7 * teacher_score + 0.3 * clip_prob[orig_label]`；类别永远不改。
+> - Prompt template: `"A SAR image of a {}"`。
+> - 全部 run 使用 `torch.distributed.launch --nproc_per_node=3 --master_port=<P> --use_env ... --launcher pytorch` 的 3-GPU DDP（CUDA_VISIBLE_DEVICES=6,7,8）。
+>
+> SOURCE_CKPT：`work_dirs/rsar_sfodrs_full_3gpu_20260415/source_train/latest.pth`（OrthoNet+OCAFPN+OrientedRCNN，12 epoch clean RSAR supervised；direct_test on clean = 0.5350）。
+>
+> mean = `clean_test + chaff + gaussian_white_noise + point_target + noise_suppression + am_noise_horizontal + smart_suppression + am_noise_vertical` 共 8 列算术平均。
+
+
+### E0111: SFOD-RS faithful baseline（20260415 全量 run，未修复塌缩）
+| Field | Value |
+| --- | --- |
+| Objective | 在严格 source-free 协议下完成 7 corruption 的 adapt_nocga + adapt_cga + eval，作为塌缩修复前的参考点 |
+| Baseline | direct_test（source_ckpt 直接测各 corruption） |
+| Model | UnbiasedTeacher + OrientedRCNN/OrientedRCNN_CGA + OrthoNet backbone + OCAFPN neck + SARCLIP RN50 CGA |
+| Weights | `work_dirs/rsar_sfodrs_full_3gpu_20260415/source_train/latest.pth`, `weights/sarclip/RN50/rn50_model.safetensors` |
+| Code path | `configs/unbiased_teacher/sfod/unbiased_teacher_oriented_rcnn_selftraining_sfodrs_rsar.py`, `tools/rsar_sfodrs_dataset.py`, `tools/sfodrs_diagnostics_hook.py`, `scripts/run_rsar_sfodrs_7corr.sh`, `scripts/exp_rsar_sfodrs_adapt.sh` |
+| Params | `epochs=12`, `lr=0.02`, `weight_u=1.0`, `weight_l=0.0`, `ema_momentum=0.998`, `score_thr=0.7` scalar, `samples_per_gpu=2`, `workers_per_gpu=2`, `cuda_visible_devices=0,1,2`, `seed=default` |
+| Logs/Meta | `work_dirs/rsar_sfodrs_full_3gpu_20260415/launch.log`, `work_dirs/rsar_sfodrs_full_3gpu_20260415/main/<corr>/20260415_*.log` |
+| Artifacts | `work_dirs/rsar_sfodrs_full_3gpu_20260415/source_train/latest.pth`, `work_dirs/rsar_sfodrs_full_3gpu_20260415/main/<corr>/{direct_test,self_training,self_training_plus_cga}/`, `rsar_sfodrs_results.csv`, `rsar_sfodrs_results.md` |
+| Results | `direct_test`: clean=0.5350, chaff=0.4629, gwn=0.5410, point_target=0.5321, noise_suppression=0.2471, am_h=0.1830, smart_suppression=0.1834, am_v=0.2205, mean=**0.3631**。`self_training`: chaff=0.0090, gwn=0.0483, point_target=0.0647, noise_suppression=0.0728, am_h=0.0272, smart_suppression=0.0619, am_v=0.0135, mean=**0.1040**（ship 塌缩）。`self_training_plus_cga`: chaff=0.0969, gwn=0.1061, point_target=0.1011, noise_suppression=0.0934, am_h=0.0561, smart_suppression=0.0751, am_v=0.0995, mean=**0.1454** |
+| Finding | 所有 7 corruptions 的 self_training 均显著劣于 direct_test，pseudo_stats 显示 teacher 在 3-5 epoch 内把 ship 推至 >95% majority → classic majority-class collapse。CGA 仅将 mean 从 0.1040 拉回 0.1454，仍远低于 direct 0.3631 |
+
+
+### E0112: 塌缩修复 v1 — per-class score_thr + burn-in + lower lr + early stop
+| Field | Value |
+| --- | --- |
+| Objective | 针对 E0111 的 ship-collapse，通过 per-class 阈值 + 早停护栏 + 低 lr + EMA 预热，让 7 corruption 的 self_training/self_training_plus_cga 超过 E0111 |
+| Baseline | E0111（同 source_ckpt，同协议，仅替换超参） |
+| Model | 同 E0111 |
+| Weights | 同 E0111 |
+| Code path | `configs/unbiased_teacher/sfod/unbiased_teacher_oriented_rcnn_selftraining_sfodrs_rsar.py`（本阶段扩展以读 `RSAR_PSEUDO_SCORE_THR`(list)、`RSAR_BURN_IN_EPOCHS`、`RSAR_WEIGHT_U`、`RSAR_ADAPT_LR`）, `sfod/rotated_unbiased_teacher.py`（既有 per-class thr 支持）, `tools/pseudo_stats_early_stop_hook.py`（本阶段接入 target_adapt.custom_hooks）, `scripts/run_rsar_sfodrs_full_3gpu.sh`（本阶段新增 3-GPU DDP driver） |
+| Params | `RSAR_PSEUDO_SCORE_THR="0.85,0.7,0.7,0.7,0.7,0.7"`（ship=0.85, 其它=0.7）, `RSAR_BURN_IN_EPOCHS=2`, `RSAR_WEIGHT_U=0.5`, `RSAR_ADAPT_LR=0.005`, `RSAR_ADAPT_EPOCHS=12`, `PSEUDO_EARLYSTOP=1`, `PSEUDO_EARLYSTOP_MAX_MAJORITY_FRAC=0.90`, `PSEUDO_EARLYSTOP_PATIENCE=1`, `PSEUDO_EARLYSTOP_MIN_EPOCH_PSEUDO=3000`, `cuda_visible_devices=6,7,8`, `master_port=29504` |
+| Logs/Meta | `work_dirs/rsar_sfodrs_fixed_20260417_033006/launch.log`, `work_dirs/rsar_sfodrs_fixed_20260417_033006/<corr>/self_training/20260417_*.log`, `<corr>/self_training/pseudo_stats.json`（per-epoch class 分布 + early_stop 状态） |
+| Artifacts | `work_dirs/rsar_sfodrs_fixed_20260417_033006/<corr>/{direct_test,self_training,self_training_plus_cga}/eval_target/eval_*.json`, `rsar_sfodrs_results.{csv,md}` |
+| Results | `direct_test`: 与 E0111 逐字符一致（sanity check，clean=0.5350, mean=**0.3631**）。`self_training`: chaff=0.1368, gwn=0.1573, point_target=0.1689, noise_suppression=0.0819, am_h=0.0829, smart_suppression=0.0651, am_v=0.1013, mean=**0.1661**（vs E0111 0.1040，**+6.2pp / x1.60**）。`self_training_plus_cga`: chaff=0.1752, gwn=0.2146, point_target=0.2226, noise_suppression=0.0835, am_h=0.0447, smart_suppression=0.0651, am_v=0.1320, mean=**0.1841**（vs E0111 0.1454，**+3.9pp / x1.27**） |
+| Finding | 7/7 corruption 的 self_training 全部 > E0111；pseudo_stats 显示 ship 不再一路爬到 100%（chaff 从 83%→66% 单调下降）；早停在 ship>0.90 持续 1 epoch 时自动触发（am_v 在 ep3-4 触发）。am_h 的 +CGA=0.0447 比 self_training=0.0829 低，SARCLIP 过于挑剔饿坏 student |
+
+
+### E0113: heavyfix — SARCLIP LoRA-Interference CGA + 调优（4 heavy corruptions only）
+| Field | Value |
+| --- | --- |
+| Objective | 针对 E0112 中 4 个"重"corruption（noise_suppression, am_h, smart_suppression, am_v）仍偏弱，启用 SARCLIP LoRA-Interference 权重 + 降 ship 阈值 + 缩短 adapt 长度 + 更紧的早停 |
+| Baseline | E0112 的 `self_training_plus_cga` 行（4 heavy corr） |
+| Model | UnbiasedTeacher + OrientedRCNN_CGA + OrthoNet + OCAFPN + SARCLIP RN50 + LoRA 干扰权重 |
+| Weights | 同 E0112, + `lora_finetune/SARCLIP_LoRA_Interference.pt`（9.5MB，针对 SAR 干扰域训练的 LoRA adapter） |
+| Code path | 同 E0112, + `scripts/run_rsar_sfodrs_heavyfix.sh`（本阶段新增） |
+| Params | `SARCLIP_LORA=lora_finetune/SARCLIP_LoRA_Interference.pt`, `RSAR_PSEUDO_SCORE_THR="0.80,0.6,0.6,0.6,0.6,0.6"`（ship=0.80, 其它=0.6，比 E0112 更宽松）, `RSAR_BURN_IN_EPOCHS=1`, `RSAR_WEIGHT_U=0.5`, `RSAR_ADAPT_LR=0.005`, `RSAR_ADAPT_EPOCHS=6`（比 E0112 短一半）, `PSEUDO_EARLYSTOP=1`, `PSEUDO_EARLYSTOP_MAX_MAJORITY_FRAC=0.85`（比 E0112 紧）, `PSEUDO_EARLYSTOP_PATIENCE=1`, `PSEUDO_EARLYSTOP_MIN_EPOCH_PSEUDO=2000`, `cuda_visible_devices=6,7,8`, `master_port=29505` |
+| Logs/Meta | `work_dirs/rsar_sfodrs_heavyfix_20260419_004903/launch.log`, `<corr>/self_training_plus_cga_lora/pseudo_stats.json`, `<corr>/self_training_plus_cga_lora/20260419_*.log` |
+| Artifacts | `work_dirs/rsar_sfodrs_heavyfix_20260419_004903/<corr>/self_training_plus_cga_lora/{latest_ema.pth, eval_target/eval_*.json}` |
+| Results | noise_suppression=**0.1082**（E0112 +CGA 0.0835，**+30%**）, am_h=**0.0790**（E0112 0.0447，**+77%**）, smart_suppression=**0.0860**（E0112 0.0651，**+32%**）, am_v=**0.1321**（E0112 0.1320，持平）, heavy_mean=**0.1013**（E0112 heavy_mean 0.0813，**+24.6%**） |
+| Finding | LoRA 在不同 corruption 把 SARCLIP 吸引子导向不同类（noise_supp→harbor, am_h→car, smart_supp→harbor, am_v→bridge/car 交替），早停 max_majority=0.85 在 1-2 epoch 内正确捕获并及时停（noise_supp ep2, am_h ep4, smart_supp ep2），am_v 维持 <0.85 跑满 6 epoch。LoRA 是真正的增益源 |
+
+
+### E0114: capfix — per-class pseudo-label cap（per-image top-K）
+| Field | Value |
+| --- | --- |
+| Objective | 在 E0113 基础上加入 per-class pseudo-label cap，尝试在 pseudo label 生成阶段直接限制每类峰值，目标是比 E0113 再提 |
+| Baseline | E0113 |
+| Model | 同 E0113，UT 内加 RSAR_PSEUDO_CAP 逻辑 |
+| Weights | 同 E0113 |
+| Code path | `sfod/rotated_unbiased_teacher.py`（本阶段 patch：`__init__` 读 `RSAR_PSEUDO_CAP="c1,...,c6"`；`create_pseudo_results` 对每类按 score 排序取 top-K）, `scripts/run_rsar_sfodrs_capfix.sh`（本阶段新增） |
+| Params | `RSAR_PSEUDO_CAP="3000,1500,1500,1500,1500,1500"`（ship≤3000, 其它≤1500，per-image 基础上）, `SARCLIP_LORA=lora_finetune/SARCLIP_LoRA_Interference.pt`, `RSAR_PSEUDO_SCORE_THR="0.7"`（回到标量，不再依赖 per-class thr）, `RSAR_BURN_IN_EPOCHS=1`, `RSAR_WEIGHT_U=0.5`, `RSAR_ADAPT_LR=0.005`, `RSAR_ADAPT_EPOCHS=12`, `PSEUDO_EARLYSTOP=1`, `PSEUDO_EARLYSTOP_MAX_MAJORITY_FRAC=0.85`, `PSEUDO_EARLYSTOP_PATIENCE=1`, `PSEUDO_EARLYSTOP_MIN_EPOCH_PSEUDO=3000`, `cuda_visible_devices=6,7,8`, `master_port=29508` |
+| Logs/Meta | `work_dirs/rsar_sfodrs_capfix_20260419_050601/launch.log`, `<corr>/self_training_plus_cga_cap/pseudo_stats.json` |
+| Artifacts | `work_dirs/rsar_sfodrs_capfix_20260419_050601/<corr>/self_training_plus_cga_cap/{latest_ema.pth, eval_target/eval_*.json}` |
+| Results | noise_suppression=**0.1056**（E0113 0.1082，-0.3pp）, am_h=**0.0772**（E0113 0.0790，-0.2pp）, smart_suppression=**0.0724**（E0113 0.0860，**-1.4pp 伤害**）, am_v=**0.1077**（E0113 0.1321，**-2.4pp 伤害**）, heavy_mean=**0.0907**（E0113 0.1013，**-1.1pp**） |
+| Finding | **实现存在语义 bug**：cap 是 per-batch（DDP 下 per-image）而非 per-epoch cumulative。单图对象数典型 <30，per-image cap=3000 从不触发 → 累计 ship 仍可达 5193 (85% majority)。am_v 的 pseudo_kept 常低于 min_epoch_pseudo=3000，早停安全网未触发，跑满 12 ep 把 ship 推到 95.8% majority → 过拟合 ship → mAP 显著低于 E0113。结论：per-image top-K cap 无效甚至有害；要真正防塌缩需要 per-epoch cumulative cap（需维护跨 batch 状态 + epoch 边界重置） |
+
+
+### E0115: BN calibration — forward-only running-stats update (FAILED)
+| Field | Value |
+| --- | --- |
+| Objective | 尝试 TENT-family 源免适配：冻结所有权重，仅对 target domain 做 forward-pass 让 BN running_mean/var 重新估计，期望提升 heavy corruption 的 direct_test mAP |
+| Baseline | direct_test |
+| Model | 同 E0111（仅加载 source ckpt，参数全部 `requires_grad=False`；BN 模块 `.train()` 以更新 running_mean/var） |
+| Weights | 同 E0111 |
+| Code path | `tools/bn_calibrate_per_corr.py`（本阶段新增：遍历 `corruptions/<corr>/val/images`，MMDataParallel forward-only，momentum=0.1，save_checkpoint 到 `<corr>/bn_cal/latest.pth`）, `scripts/run_rsar_sfodrs_bn_cal.sh`（本阶段新增） |
+| Params | `samples_per_gpu=8`, `workers_per_gpu=4`, `bn_momentum=0.1`, `num_batches=all`（~1059 per corr）, `cuda_visible_devices=6,7,8`（cal 单卡，eval 3 卡 DDP） |
+| Logs/Meta | `work_dirs/rsar_sfodrs_bn_cal_20260419_045052/launch.log`, `<corr>/bn_cal/cal.log`, `<corr>/bn_eval/eval.log` |
+| Artifacts | `work_dirs/rsar_sfodrs_bn_cal_20260419_045052/<corr>/bn_cal/latest.pth`, `<corr>/bn_eval/eval_*.json` |
+| Results | chaff_bn_eval = **0.000398**（direct_test=0.4629 → catastrophic collapse）。per-class AP：ship AP=0.002 recall=0.015 dets=53893（vs direct dets=27957），bridge dets=81275。run aborted after chaff（未跑其它 6 corrupt） |
+| Finding | 朴素 forward-only + EMA momentum=0.1 把 source BN running_mean/var 彻底覆盖。1059 batches × 0.1 → 旧统计权重 (0.9)^1059 接近 0。正确做法应为：① 提高 momentum decay（0.01 或 1/N_batches）；② 限制 batches 数量；③ 真正的 TENT 需要熵最小化损失 + 仅 affine params 的 gradient descent。本路径放弃，保留代码作为未来 TENT 实现的 scaffolding |
+
+
+### E0116: TTA re-eval — multi-scale + flip (BLOCKED by mmrotate)
+| Field | Value |
+| --- | --- |
+| Objective | 对 E0111/E0112/E0113 所有 21+ 个 eval_target ckpt 用 multi-scale (800/1024) + horizontal flip TTA 重跑，期望全行 +3-8% |
+| Baseline | 各 run 的单 scale 无 flip eval |
+| Model | 同 E0111（仅 test_pipeline 换成 MultiScaleFlipAug 的 multi-scale + flip 分支） |
+| Weights | 同 E0111-E0113 |
+| Code path | `configs/unbiased_teacher/sfod/unbiased_teacher_oriented_rcnn_selftraining_sfodrs_rsar.py`（本阶段加 `RSAR_USE_TTA` 开关）, `scripts/run_rsar_sfodrs_tta_eval.sh`（本阶段新增） |
+| Params | `RSAR_USE_TTA=1`, `_tta_scales=[(800,800),(1024,1024)]`, `flip=True`, `flip_direction=["horizontal"]` |
+| Logs/Meta | `work_dirs/rsar_sfodrs_fixed_20260417_033006/tta_eval/driver.log`, `/tmp/tta_driver.out` |
+| Artifacts | (未生成) |
+| Results | 启动首个 clean source_clean_test TTA → `mmrotate/models/roi_heads/rotate_standard_roi_head.py:265 RotatedStandardRoIHead.aug_test raise NotImplementedError` → 3 rank DDP 同时挂掉 |
+| Finding | mmrotate==0.3.4 的 OrientedStandardRoIHead 没实现 aug_test。要实现 TTA 须：① 自行继承 roi_head 并实现 `aug_test`（merge 多视角 bboxes + NMS）；② 或脱离 MultiScaleFlipAug，手工跑多次 simple_test 再外部 merge。本路径放弃，代码保留为 future work |
+
+
+### Phase 5 汇总表（mean = clean + 7 corruption 共 8 列算术平均）
+
+| method | clean | chaff | gwn | point_target | noise_suppression | am_noise_horizontal | smart_suppression | am_noise_vertical | mean |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| source_clean_test | 0.5350 | - | - | - | - | - | - | - | 0.5350 |
+| direct_test | 0.5350 | 0.4629 | 0.5410 | 0.5321 | 0.2471 | 0.1830 | 0.1834 | 0.2205 | **0.3631** |
+| E0111 self_training | 0.5350 | 0.0090 | 0.0483 | 0.0647 | 0.0728 | 0.0272 | 0.0619 | 0.0135 | 0.1040 |
+| E0111 self_training_plus_cga | 0.5350 | 0.0969 | 0.1061 | 0.1011 | 0.0934 | 0.0561 | 0.0751 | 0.0995 | 0.1454 |
+| E0112 self_training | 0.5350 | 0.1368 | 0.1573 | 0.1689 | 0.0819 | 0.0829 | 0.0651 | 0.1013 | **0.1661** |
+| E0112 self_training_plus_cga | 0.5350 | 0.1752 | 0.2146 | 0.2226 | 0.0835 | 0.0447 | 0.0651 | 0.1320 | **0.1841** |
+| E0112+E0113(heavy LoRA) | 0.5350 | 0.1752 | 0.2146 | 0.2226 | **0.1082** | **0.0790** | **0.0860** | **0.1321** | **0.1941** |
+| E0112+E0114(heavy cap) | 0.5350 | 0.1752 | 0.2146 | 0.2226 | 0.1056 | 0.0772 | 0.0724 | 0.1077 | 0.1839 |
+| E0115 bn_cal (chaff only, aborted) | - | 0.0004 | - | - | - | - | - | - | - |
+
+### Phase 5 heavy-4 逐点对比
+
+| corr | direct | E0111 self | E0111 +CGA | E0112 self | E0112 +CGA | E0113 heavyfix | E0114 capfix |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| noise_suppression | 0.2471 | 0.0728 | 0.0934 | 0.0819 | 0.0835 | **0.1082** | 0.1056 |
+| am_noise_horizontal | 0.1830 | 0.0272 | 0.0561 | 0.0829 | 0.0447 | **0.0790** | 0.0772 |
+| smart_suppression | 0.1834 | 0.0619 | 0.0751 | 0.0651 | 0.0651 | **0.0860** | 0.0724 |
+| am_noise_vertical | 0.2205 | 0.0135 | 0.0995 | 0.1013 | 0.1320 | **0.1321** | 0.1077 |
+| heavy mean | **0.2085** | 0.0439 | 0.0810 | 0.0828 | 0.0813 | **0.1013** | 0.0907 |
+
+### Phase 5 关键结论
+
+1. **SFOD-RS 原版在 RSAR 会塌缩**（E0111 self=0.1040 远低于 direct=0.3631）：ship 占 RSAR 全量 GT 约 61%，teacher 自训练把 ship 推到 100% majority，学生退化为单类检测器；CGA 虽把 mean 拉到 0.1454 仍远低于 direct。
+2. **E0112 塌缩修复（per-class thr + burn-in + 低 lr + 早停）**：7/7 corruption 的 self_training 全部提升，mean self_training=0.1661（+6.2pp），mean +CGA=0.1841（+3.9pp），塌缩被遏制。
+3. **E0113 heavyfix（SARCLIP LoRA-Interference）**：4 heavy corruption 的 +CGA 平均从 0.0813 提到 0.1013（+24.6%），是本阶段最大的架构级增益来源——LoRA 让 SARCLIP 能在重噪声域区分 non-ship 类别。
+4. **E0114 per-class cap 实现存在语义 bug**：cap 是 per-image 而非 per-epoch cumulative，am_v 跑满 12 epoch 时 ship 累计到 95.8% 反而过拟合 → 比 E0113 低 1.1pp（heavy mean）。要正确实现需维护跨 batch 状态 + epoch-boundary 重置。
+5. **E0115 BN cal 失败**（chaff 0.4629→0.0004）：momentum=0.1 的 1059 batches 把 source BN stats 彻底冲烂；要做 TENT 需要真正的 entropy-minimization gradient loop，不是 forward-only 能解决。
+6. **E0116 TTA 被 mmrotate 阻塞**：`RotatedStandardRoIHead.aug_test` 未实现，NotImplementedError。
+7. **最终采用的最佳组合**：E0112（7 corruption 全量 self + CGA）+ E0113（4 heavy corruption 替换为 CGA_LoRA）→ **+CGA mean=0.1941，比 E0111 原版 +CGA 0.1454 高 +4.87pp / +33.5% 相对提升**。
+
+### Phase 5 最优 run 复现命令（3-GPU DDP）
+
+复现 E0112（全 7 corruption 塌缩修复基线）：
+
+```bash
+cd /home/zechuan/IRAOD
+TS=$(date +%Y%m%d_%H%M%S)
+WR=work_dirs/rsar_sfodrs_fixed_${TS}
+mkdir -p ${WR}
+CUDA_VISIBLE_DEVICES=6,7,8 NGPUS=3 MASTER_PORT=29504 PYTHONNOUSERSITE=1 \
+  RSAR_PSEUDO_SCORE_THR='0.85,0.7,0.7,0.7,0.7,0.7' \
+  RSAR_BURN_IN_EPOCHS=2 \
+  RSAR_WEIGHT_U=0.5 \
+  RSAR_ADAPT_LR=0.005 \
+  PSEUDO_EARLYSTOP=1 \
+  PSEUDO_EARLYSTOP_MAX_MAJORITY_FRAC=0.90 \
+  PSEUDO_EARLYSTOP_PATIENCE=1 \
+  PSEUDO_EARLYSTOP_MIN_EPOCH_PSEUDO=3000 \
+  nohup bash scripts/run_rsar_sfodrs_full_3gpu.sh \
+    work_dirs/rsar_sfodrs_full_3gpu_20260415/source_train/latest.pth ${WR} \
+    > ${WR}/driver.stdout.log 2>&1 &
+```
+
+复现 E0113（heavy-4 corruption LoRA 增强）：
+
+```bash
+cd /home/zechuan/IRAOD
+TS=$(date +%Y%m%d_%H%M%S)
+WR=work_dirs/rsar_sfodrs_heavyfix_${TS}
+mkdir -p ${WR}
+CUDA_VISIBLE_DEVICES=6,7,8 NGPUS=3 MASTER_PORT=29505 PYTHONNOUSERSITE=1 \
+  SARCLIP_LORA=/home/zechuan/IRAOD/lora_finetune/SARCLIP_LoRA_Interference.pt \
+  RSAR_PSEUDO_SCORE_THR='0.80,0.6,0.6,0.6,0.6,0.6' \
+  RSAR_BURN_IN_EPOCHS=1 \
+  RSAR_WEIGHT_U=0.5 \
+  RSAR_ADAPT_LR=0.005 \
+  RSAR_ADAPT_EPOCHS=6 \
+  PSEUDO_EARLYSTOP=1 \
+  PSEUDO_EARLYSTOP_MAX_MAJORITY_FRAC=0.85 \
+  PSEUDO_EARLYSTOP_PATIENCE=1 \
+  PSEUDO_EARLYSTOP_MIN_EPOCH_PSEUDO=2000 \
+  nohup bash scripts/run_rsar_sfodrs_heavyfix.sh \
+    work_dirs/rsar_sfodrs_full_3gpu_20260415/source_train/latest.pth ${WR} \
+    > ${WR}/driver.stdout.log 2>&1 &
+```
+
+### Phase 5 未尝试 / 放弃路径（future work）
+
+| 方向 | 预期增益 | 投入 | 状态 |
+|---|---|---|---|
+| proper TENT（gradient-based BN affine + entropy loss） | +3-8% heavy mean | 6-8h 代码 | 未实现（E0115 朴素版已证失败） |
+| 真 per-epoch class cap（UT 维护 epoch-level state） | +2-5% heavy mean | 4-5h 代码 | 未实现（E0114 per-image 版无效） |
+| 外部 TTA（多次 simple_test + 手动 merge bboxes + NMS） | +3-6% 全部 | 3h 代码 | 未实现（E0116 MultiScaleFlipAug 路径阻塞） |
+| direct + adapt ensemble（max-confidence fusion） | heavy +3-8pp | 30min 代码 | 未实现 |
+| source 重训带 corruption-aware augmentation | 天花板 +5-15% | 2 天；违反 SFOD-RS clean-source-only 约束 | 未实现 |

@@ -1,0 +1,6 @@
+| row | clean | chaff | gaussian_white_noise | point_target | noise_suppression | am_noise_horizontal | smart_suppression | am_noise_vertical | mean |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| source_clean_test | 0.5350 | - | - | - | - | - | - | - | 0.5350 |
+| direct_test | 0.5350 | 0.4629 | 0.5410 | 0.5321 | 0.2471 | 0.1830 | 0.1834 | 0.2205 | 0.3631 |
+| self_training | 0.5350 | 0.1368 | 0.1573 | 0.1689 | 0.0819 | 0.0829 | 0.0651 | 0.1013 | 0.1661 |
+| self_training_plus_cga | 0.5350 | 0.1752 | 0.2146 | 0.2226 | 0.0835 | 0.0447 | 0.0651 | 0.1320 | 0.1841 |

@@ -1,0 +1,8 @@
+row,noise_suppression,am_noise_horizontal,smart_suppression,am_noise_vertical,heavy_mean
+direct_test,0.2471,0.1830,0.1834,0.2205,0.2085
+orig_self_training,0.0728,0.0272,0.0619,0.0135,0.0439
+orig_self_training_plus_cga,0.0934,0.0561,0.0751,0.0995,0.0810
+fixed_self_training,0.0819,0.0829,0.0651,0.1013,0.0828
+fixed_self_training_plus_cga,0.0835,0.0447,0.0651,0.1320,0.0813
+heavyfix_self_training_plus_cga_lora,0.1082,0.0790,0.0860,0.1321,0.1013
+capfix_self_training_plus_cga_cap,0.1056,0.0772,0.0724,0.1077,0.0907

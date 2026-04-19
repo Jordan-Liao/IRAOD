@@ -158,7 +158,23 @@ def _parse_templates(value: str) -> tuple[str, ...]:
     return tuple([p for p in parts if p])
 
 
+def _normalize_cga_mode(mode: str) -> str:
+    raw = (mode or "").strip().lower().replace("-", "_")
+    if raw in ("iraod_legacy", "legacy", "iraod"):
+        return "iraod_legacy"
+    return "sfodrs"
+
+
+def _score_rule_for_diag(mode: str) -> str:
+    if _normalize_cga_mode(mode) == "iraod_legacy":
+        return "iraod_legacy (may change label)"
+    return "0.7*teacher + 0.3*clip_prob_orig (keep_label=True; if clip_pred==orig_label keep teacher_score)"
+
+
 def _templates_from_env(*, default: tuple[str, ...]) -> tuple[str, ...]:
+    single = os.environ.get("CGA_PROMPT_TEMPLATE", "").strip()
+    if single:
+        return (single,)
     raw = os.environ.get("CGA_TEMPLATES", "").strip()
     if raw:
         return _parse_templates(raw)
@@ -213,7 +229,7 @@ class CGA:
         model="RN50",
         pretrained: str | None = None,
         precision="amp",
-        templates=("an SAR image of a {}", "this SAR patch shows a {}"),
+        templates=("A SAR image of a {}",),
         tau=100.0,
         expand_ratio=0.4,
         force_grayscale=False,
@@ -546,6 +562,7 @@ class TestMixins:
     def __init__(self):
         self.cga = None
         self._cga_sig = None
+        self._cga_diag_sig = None
 
     def refine_test(self, results, img_metas):
         # 在 Teacher simple_test 中被调用，见 sfod/rotated_semi_two_stage.py
@@ -556,6 +573,7 @@ class TestMixins:
             class_names = [f"class_{i}" for i in range(len(results[0]))]
 
         scorer = _str_env("CGA_SCORER", "clip").lower()
+        cga_mode = _normalize_cga_mode(_str_env("CGA_MODE", "sfodrs"))
         tau = _float_env("CGA_TAU", 100.0)
         expand_ratio = _float_env("CGA_EXPAND_RATIO", 0.4)
 
@@ -564,13 +582,10 @@ class TestMixins:
         # Rebuild when environment changes (important for experiments).
         sig = {
             "scorer": scorer,
+            "cga_mode": cga_mode,
             "classes": tuple(class_names),
             "templates": _templates_from_env(
-                default=(
-                    ("a SAR image of a {}",)
-                    if scorer == "sarclip"
-                    else ("an aerial image of a {}",)
-                )
+                default=("A SAR image of a {}",)
             ),
             "tau": tau,
             "expand_ratio": expand_ratio,
@@ -620,6 +635,20 @@ class TestMixins:
                     device=device,
                 )
                 self.exclude_ids = []
+
+        if getattr(self, "_cga_diag_sig", None) != sig:
+            self._cga_diag_sig = sig
+            try:
+                rank = int(os.environ.get("RANK", "0") or "0")
+            except Exception:
+                rank = 0
+            if rank == 0:
+                prompt_template = "|".join(sig.get("templates") or ())
+                keep_label = cga_mode != "iraod_legacy"
+                print(f"[CGA] cga_mode={cga_mode}")
+                print(f"[CGA] prompt_template={prompt_template!r}")
+                print(f"[CGA] keep_label={keep_label}")
+                print(f"[CGA] score_rule={_score_rule_for_diag(cga_mode)}")
 
         boxes_list, scores_list, labels_list = [], [], []
         det_records = []
@@ -693,6 +722,27 @@ class TestMixins:
         else:
             logits, _ = self.cga(img_path, boxes_list, scores_list, labels_list)
 
+        if cga_mode != "iraod_legacy":
+            # SFOD-RS faithful fusion: do NOT change label, only adjust orig_label score.
+            for i, prob in enumerate(logits):
+                orig_label = int(labels_list[i])
+                clip_pred = int(np.argmax(prob))
+                if orig_label != clip_pred:
+                    teacher_score = float(scores_list[i])
+                    clip_prob_orig = float(prob[orig_label])
+                    scores_list[i] = 0.7 * teacher_score + 0.3 * clip_prob_orig
+
+            # Write refined scores back in-place without changing class assignment.
+            j = 0
+            for cls_id in range(len(results[0])):
+                num_dets = int(len(results[0][cls_id]))
+                if num_dets == 0:
+                    continue
+                results[0][cls_id][:, -1] = scores_list[j : j + num_dets]
+                j += num_dets
+            return results
+
+        # --- IRAOD legacy behavior: blend then argmax to possibly change class ---
         lambda_clip = float(np.clip(_float_env("CGA_LAMBDA", 0.2), 0.0, 1.0))
         det_dim = next((result.shape[1] for result in results[0] if len(result) > 0), 6)
         refined_by_class: list[list[np.ndarray]] = [[] for _ in range(len(class_names))]

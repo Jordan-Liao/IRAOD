@@ -90,10 +90,24 @@ class UnbiasedTeacher(SemiTwoStageDetector):
         self.max_iters = cfg.get('max_iters', 47304)  # total training iters for cosine schedule
 
         # analysis
+        # --- Per-class pseudo-label cap (RSAR-specific; env RSAR_PSEUDO_CAP="ship,aircraft,car,tank,bridge,harbor") ---
+        _cap_str = os.environ.get("RSAR_PSEUDO_CAP", "").strip()
+        if _cap_str and "," in _cap_str:
+            self.pseudo_cap = [int(v.strip()) for v in _cap_str.split(",") if v.strip()]
+        else:
+            self.pseudo_cap = None
         self.image_num = 0
         self.pseudo_num = np.zeros(self.num_classes)
         self.pseudo_num_tp = np.zeros(self.num_classes)
         self.pseudo_num_gt = np.zeros(self.num_classes)
+
+        # Pseudo-label monitoring (cumulative, used by hooks for per-epoch deltas).
+        # - total_pre_thr: number of raw detections before applying score threshold
+        # - kept_post_thr: number kept after applying threshold (before any extra filtering)
+        # - kept_score_sum_post_thr: sum of scores of kept boxes
+        self._pseudo_total_pre_thr = 0
+        self._pseudo_kept_post_thr = 0
+        self._pseudo_kept_score_sum_post_thr = 0.0
 
     def set_epoch(self, epoch): 
         self.roi_head.cur_epoch = epoch 
@@ -246,6 +260,11 @@ class UnbiasedTeacher(SemiTwoStageDetector):
                 gt_bbox_scale = gt_bbox.copy()
                 gt_bbox_scale[:,:4] = gt_bbox[:,:4] / scale_factor
             for cls, r in enumerate(result):
+                # Raw teacher detections before threshold (for diagnostics only).
+                try:
+                    self._pseudo_total_pre_thr += int(r.shape[0])
+                except Exception:
+                    pass
                 label = cls * np.ones_like(r[:, 0], dtype=np.uint8)
                 # per-class threshold support (Exp E)
                 if self.class_score_thr is not None:
@@ -253,9 +272,23 @@ class UnbiasedTeacher(SemiTwoStageDetector):
                 else:
                     thr = self.score_thr
                 flag = r[:, -1] >= thr
+                try:
+                    kept = int(flag.sum())
+                    self._pseudo_kept_post_thr += kept
+                    if kept:
+                        self._pseudo_kept_score_sum_post_thr += float(r[flag][:, -1].sum())
+                except Exception:
+                    pass
                 # print(flag)
-                bboxes.append(r[flag][:, :-1])
-                labels.append(label[flag])
+                kept_r = r[flag]
+                # RSAR_PSEUDO_CAP applied: top-K by score per class
+                if self.pseudo_cap is not None and cls < len(self.pseudo_cap):
+                    cap_c = int(self.pseudo_cap[cls])
+                    if cap_c > 0 and kept_r.shape[0] > cap_c:
+                        idx = np.argsort(kept_r[:, -1])[::-1][:cap_c]
+                        kept_r = kept_r[idx]
+                bboxes.append(kept_r[:, :-1])
+                labels.append(np.full(kept_r.shape[0], cls, dtype=np.uint8))
                 if use_gt and (gt_label == cls).sum() > 0 and len(bboxes[-1]) > 0:
                     overlap = rbbox_overlaps(torch.tensor(bboxes[-1]), torch.tensor(gt_bbox_scale[gt_label == cls]))
                     self.pseudo_num_tp[cls] += (torch.max(overlap,dim=1)[0] > 0.5).sum()
