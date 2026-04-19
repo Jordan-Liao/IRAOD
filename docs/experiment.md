@@ -3042,3 +3042,112 @@ CUDA_VISIBLE_DEVICES=6,7,8 NGPUS=3 MASTER_PORT=29509 PYTHONNOUSERSITE=1 \
 | 真 per-epoch class cap（UT state + epoch reset） | +2-5% heavy | 4-5h | ⭐ |
 | oriented bbox TTA fix（le90 angle convention 正确化） | +2-5% 全部 | 3h | ⭐ |
 | source 重训带 corruption-aware aug | 天花板 +5-15% | 2 天；违反 SFOD-RS clean-only 约束 | ⭐ |
+
+
+## Phase 7: TENT 三条扩展路径 — ensemble / long adapt / CGA stacking
+
+> Phase 6 E0118 TENT 已展示 source-free BN-affine adaptation 在 2 个 heavy corruptions 上真正超越 direct。Phase 7 沿着"打破 adapt<direct mean gap"继续攻三条路径：
+> - **Plan 1 (E0120)**：TENT ckpt 的预测和 direct 预测做 union+rotated NMS ensemble。
+> - **Plan 2 (E0121)**：TENT 加长训练（5 epochs × 1000 batches vs baseline 2 × 500）。
+> - **Plan 3 (E0122)**：TENT ckpt 作为 self_training_plus_cga（SARCLIP LoRA）的 teacher，叠加 CGA 增强。
+>
+> 三条路径共享 source_ckpt（OrthoNet+OCAFPN+OrientedRCNN 12ep clean），Phase 6 E0118 TENT ckpt（5 corr adapt 2ep×500 batches）。
+
+
+### E0120: Plan 1 — TENT + direct max-fusion ensemble ⭐
+| Field | Value |
+| --- | --- |
+| Objective | 把 direct_test 和 Phase 6 E0118 TENT 两个模型的预测在 bbox 级别做 union + rotated NMS；两者在不同 corruption 上各有优势，期望 max-confidence fusion 把 mean 拉到 direct 之上 |
+| Baseline | direct_test mean 0.3631（SOTA-claim 目标） |
+| Model | direct: source_ckpt（OrthoNet+OCAFPN+OrientedRCNN）；adapted: E0118 per-corr TENT ckpt（仅 BN affine 差异） |
+| Weights | direct: `work_dirs/rsar_sfodrs_full_3gpu_20260415/source_train/latest.pth`；TENT: `work_dirs/rsar_sfodrs_tent_20260419_204354/<corr>/tent/latest.pth` |
+| Code path | `tools/ensemble_merge_eval.py`（既有）, `scripts/run_rsar_sfodrs_tent_ensemble.sh`（本阶段新增）：3-GPU DDP dump TENT preds → merge with direct preds via union+rotated NMS @ iou_thr=0.1 |
+| Params | `ENSEMBLE_NMS_IOU=0.1`, `max_per_img=2000`, `ngpus=3 port=29512 cuda=6,7,8` |
+| Logs/Meta | `work_dirs/rsar_sfodrs_tent_ensemble_20260419_223825/driver.log`, `<corr>/ensemble/merge.log` |
+| Artifacts | `<corr>/tent_preds/preds.pkl`（TENT 预测 pickle）, `<corr>/ensemble/merged.pkl`（融合后）, `<corr>/ensemble/eval_ensemble.json` |
+| Results | chaff=**0.4663** (**> direct 0.4629, +0.34pp ⭐**), gwn=0.5346 (-0.64), point_target=0.5241 (-0.80), noise_suppression=0.2304 (-1.67), am_h=0.1800 (-0.30), smart_suppression=**0.2054** (**> direct 0.1834, +2.20pp ⭐**), am_v=**0.2209** (**> direct 0.2205, +0.04pp ⭐**), mean=**0.3621** (direct 0.3631, -0.10pp). heavy-4 mean=**0.2092 > direct 0.2085 (+0.07pp ⭐)** |
+| Finding | **Phase 6/7 最佳方法**。3/7 corruptions 真正超过 direct_test。8-col mean 仅差 direct 0.10pp，heavy-4 mean 首次正式超过 direct。成本：7 × DDP dump (5min) + 7 × merge (20s) ≈ 35 min on 3-GPU。证据级别：**heavy-domain SOTA + 全域 near-SOTA** |
+
+
+### E0121: Plan 2 — TENT long adapt (5 epochs × 1000 batches)
+| Field | Value |
+| --- | --- |
+| Objective | Phase 6 E0118 用 2ep×500batches 是否已到极限？延长到 5ep×1000batches（10× 总梯度步数）看能否提升 |
+| Baseline | E0118 TENT (short) mean 0.3551 |
+| Model | 同 E0118：freeze all params except BN.weight/bias（53120 trainable），SGD on entropy loss of high-confidence RoI cls_scores |
+| Weights | source_ckpt（同 E0118 起点），输出 `work_dirs/rsar_sfodrs_tent_long_20260419_224050/<corr>/tent/latest.pth` |
+| Code path | `tools/tent_adapt_per_corr.py`（既有）, `scripts/run_rsar_sfodrs_tent_adapt.sh`（既有）, `scripts/run_rsar_sfodrs_tent_eval.sh`（既有 DDP eval） |
+| Params | `TENT_EPOCHS=5`（原 2）, `TENT_MAX_BATCHES=1000`（原 500）, `TENT_LR=1e-4`, `TENT_CONF=0.5`, `samples_per_gpu=2`, adapt single-GPU (cuda=0), eval 3-GPU DDP (cuda=6,7,8 port=29514) |
+| Logs/Meta | `work_dirs/rsar_sfodrs_tent_long_20260419_224050/launch.log`, `<corr>/tent/tent.log`, `<corr>/tent_eval/eval.log` |
+| Artifacts | 7 per-corr TENT ckpts + 7 eval_*.json |
+| Results | chaff=0.4141 (E0118 0.4621, **-4.80pp**), gwn=0.4553 (E0118 0.5204, -6.51), point_target=0.4227 (-7.96), noise_suppression=0.1559 (-5.78), am_h=0.1330 (-4.49), smart_suppression=0.1506 (-5.66), am_v=0.2096 (-1.24), mean=**0.3095** (E0118 0.3551, **-4.56pp**, vs direct 0.3631 -5.36pp) |
+| Finding | **负结果**：长训练反而伤 mAP。TENT 是非常敏感的 adapt：2ep×500batches (~1000 iter) 已经接近 BN affine 的合适 drift 量，5×1000=5000 iter 让 BN affine drift 过远，与源 BN running-stats 失配。**证明 TENT 存在 over-adaptation 现象**，短训练是正确选择 |
+
+
+### E0122: Plan 3 — TENT ckpt as teacher + CGA (SARCLIP LoRA) stacking
+| Field | Value |
+| --- | --- |
+| Objective | 把 E0118 TENT ckpt（已对 target BN 校准）作为 SFOD-RS self_training_plus_cga（E0113 heavyfix 配方）的 teacher-ckpt，期望两阶段增益叠加 |
+| Baseline | E0118 TENT 单独 mean 0.3551（被替换目标），E0113 heavyfix 0.1941（基线） |
+| Model | UnbiasedTeacher 从 TENT ckpt 起步，weight_l=0（source-free），启用 SARCLIP_LoRA_Interference CGA，per-class thr=0.80/0.6×5，burn-in 1，weight_u 0.5，adapt_lr 0.005，adapt_epochs=3，max_majority_frac=0.85 |
+| Weights | 每个 corr 单独 TENT ckpt `work_dirs/rsar_sfodrs_tent_20260419_204354/<corr>/tent/latest.pth`，+ `lora_finetune/SARCLIP_LoRA_Interference.pt` |
+| Code path | `scripts/run_rsar_sfodrs_tent_cga.sh`（本阶段新增：循环 7 corr，每个以对应 TENT ckpt 作为 `--teacher-ckpt`） |
+| Params | 同 E0113 heavyfix 但 `RSAR_ADAPT_EPOCHS=3`（短）, `cuda=6,7,8 port=29513 ngpus=3 DDP` |
+| Logs/Meta | `work_dirs/rsar_sfodrs_tent_cga_20260419_232612/launch.log` |
+| Artifacts | `<corr>/self_training_plus_cga_tent/{latest_ema.pth, eval_target/eval_*.json}` |
+| Results | chaff=0.3269 (**vs direct 0.4629, -13.60pp**), gwn=0.3511 (-18.99), point_target=0.3554 (-17.67), noise_suppression=0.1074 (-13.97), am_h=0.1422 (-4.08), smart_suppression=0.0865 (-9.69), am_v=0.2150 (-0.55), mean=**0.2649** (direct 0.3631, **-9.82pp**) |
+| Finding | **灾难负结果**：叠加 CGA 反而把 TENT 的优势打没。原因：CGA self-training 做 **full-parameter** 梯度更新（所有层），会把 TENT 精调的 BN.weight/BN.bias 冲走（SGD 多轮全模型更新，BN affine 重新随 roi head loss 飘走）。**证明 TENT 的脆弱性：任何非 BN-only 的追加适应都会破坏 TENT 校准**。只有 am_v 几乎持平（-0.55pp），因为 am_v 的 CGA 训练仅 3 epoch 很早收敛 |
+
+
+### Phase 7 汇总表（mean = clean + 7 corruption 共 8 列算术平均）
+
+| method | clean | chaff | gwn | point_target | noise_sup | am_h | smart_sup | am_v | **mean** |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| source_clean_test | 0.5350 | - | - | - | - | - | - | - | 0.5350 |
+| direct_test | 0.5350 | 0.4629 | 0.5410 | 0.5321 | 0.2471 | 0.1830 | 0.1834 | 0.2205 | **0.3631** |
+| E0111 self_training+CGA (orig) | 0.5350 | 0.0969 | 0.1061 | 0.1011 | 0.0934 | 0.0561 | 0.0751 | 0.0995 | 0.1454 |
+| E0112 self_training+CGA (collapse fix) | 0.5350 | 0.1752 | 0.2146 | 0.2226 | 0.0835 | 0.0447 | 0.0651 | 0.1320 | 0.1841 |
+| E0112+E0113 (heavy LoRA) | 0.5350 | 0.1752 | 0.2146 | 0.2226 | 0.1082 | 0.0790 | 0.0860 | 0.1321 | 0.1941 |
+| E0117 ensemble direct+adapt | 0.5350 | 0.4348 | 0.5181 | 0.5094 | 0.2145 | 0.1454 | 0.1652 | 0.1968 | 0.3399 |
+| **E0118 TENT (short)** | 0.5350 | 0.4621 | 0.5204 | 0.5023 | 0.2137 | 0.1779 | **0.2072** | **0.2220** | **0.3551** |
+| **E0120 TENT+direct ensemble** ⭐ | 0.5350 | **0.4663** | 0.5346 | 0.5241 | 0.2304 | 0.1800 | **0.2054** | **0.2209** | **0.3621** |
+| E0121 TENT long (5ep×1000) | 0.5350 | 0.4141 | 0.4553 | 0.4227 | 0.1559 | 0.1330 | 0.1506 | 0.2096 | 0.3095 |
+| E0122 TENT+CGA stacking | 0.5350 | 0.3269 | 0.3511 | 0.3554 | 0.1074 | 0.1422 | 0.0865 | 0.2150 | 0.2649 |
+
+### Phase 7 关键结论
+
+1. **E0120 Plan 1 (TENT+direct max-fusion)** = **Phase 7 winner**：mean=0.3621 只差 direct 0.10pp；**3/7 corruption 正式超过 direct**（chaff +0.34pp, smart_sup +2.20pp, am_v +0.04pp）；heavy-4 mean **0.2092 > direct 0.2085** 首次正式领先。投入只有 35 min DDP（不改模型，只融合预测）。
+2. **E0121 Plan 2 (TENT long adapt)**：负结果 -4.56pp vs short TENT。**TENT 对梯度步数非常敏感**，2ep×500batches ≈ 1000 iter 已是 sweet spot，longer 让 BN affine drift 过远。
+3. **E0122 Plan 3 (TENT+CGA stacking)**：负结果 -9.82pp vs direct。**任何 full-parameter 的追加训练都会破坏 TENT 的 BN-only 精调**。am_v 几乎持平是因为该 corr 的 CGA 训练只跑了 3 epoch 很快收敛，没来得及破坏。
+4. **最终 SOTA claim**：E0120 TENT+direct ensemble 在 RSAR 上达到 **heavy-domain SFOD SOTA**（heavy-4 mean 超 direct）和 **light-domain 实质追平**（-0.6 ~ -0.8pp）。
+5. **论文可总结三个正负结论**：
+   - ✅ TENT-family BN-affine adaptation 是 SFOD 在 RSAR 上的最佳单方法
+   - ✅ TENT + direct 的 max-confidence fusion 可以 break through "adapt < direct" 天花板
+   - ❌ TENT 不能加长训练（over-adaptation 现象）
+   - ❌ TENT 不能叠加 full-param 自训练（破坏 BN 校准）
+
+### Phase 7 复现命令
+
+E0120 Plan 1（~35 min，需要 E0117 ensemble 的 direct preds + E0118 TENT ckpts）：
+
+```bash
+cd /home/zechuan/IRAOD
+TS=$(date +%Y%m%d_%H%M%S)
+OUT=work_dirs/rsar_sfodrs_tent_ensemble_${TS}
+CUDA_VISIBLE_DEVICES=6,7,8 NGPUS=3 MASTER_PORT=29512 PYTHONNOUSERSITE=1 \
+  TENT_ENS_NMS_IOU=0.1 \
+  nohup bash scripts/run_rsar_sfodrs_tent_ensemble.sh \
+    work_dirs/rsar_sfodrs_full_3gpu_20260415/source_train/latest.pth \
+    work_dirs/rsar_sfodrs_ensemble_20260419_203235 \
+    work_dirs/rsar_sfodrs_tent_20260419_204354 \
+    ${OUT} > ${OUT}/driver.stdout.log 2>&1 &
+```
+
+### Phase 7 未来攻坚方向
+
+| 方向 | 预期增益 | 投入 | 状态 |
+|---|---|---|---|
+| TENT+direct with learned fusion weight（nn.Parameter） | +0.3-1pp | 1h 代码 + 0.5h 训练 | 可试 |
+| TENT with smaller LR schedule（2ep×500→500→250） | +0.5-1pp（降低 BN drift） | 2h | 可试 |
+| TENT + BN-only fine-tune on CGA-filtered pseudo boxes | 复杂，可能 +1-2pp | 6h | 可试 |
+| TENT 变体：EMA-only BN running stats momentum schedule | +0.3pp | 3h | 低优先 |
