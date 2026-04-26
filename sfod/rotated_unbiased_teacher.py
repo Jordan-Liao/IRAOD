@@ -95,6 +95,14 @@ class UnbiasedTeacher(SemiTwoStageDetector):
         self.pseudo_num_tp = np.zeros(self.num_classes)
         self.pseudo_num_gt = np.zeros(self.num_classes)
 
+        # Pseudo-label monitoring (cumulative, used by hooks for per-epoch deltas).
+        # - total_pre_thr: number of raw detections before applying score threshold
+        # - kept_post_thr: number kept after applying threshold (before any extra filtering)
+        # - kept_score_sum_post_thr: sum of scores of kept boxes
+        self._pseudo_total_pre_thr = 0
+        self._pseudo_kept_post_thr = 0
+        self._pseudo_kept_score_sum_post_thr = 0.0
+
     def set_epoch(self, epoch): 
         self.roi_head.cur_epoch = epoch 
         self.roi_head.bbox_head.cur_epoch = epoch
@@ -246,6 +254,11 @@ class UnbiasedTeacher(SemiTwoStageDetector):
                 gt_bbox_scale = gt_bbox.copy()
                 gt_bbox_scale[:,:4] = gt_bbox[:,:4] / scale_factor
             for cls, r in enumerate(result):
+                # Raw teacher detections before threshold (for diagnostics only).
+                try:
+                    self._pseudo_total_pre_thr += int(r.shape[0])
+                except Exception:
+                    pass
                 label = cls * np.ones_like(r[:, 0], dtype=np.uint8)
                 # per-class threshold support (Exp E)
                 if self.class_score_thr is not None:
@@ -253,6 +266,13 @@ class UnbiasedTeacher(SemiTwoStageDetector):
                 else:
                     thr = self.score_thr
                 flag = r[:, -1] >= thr
+                try:
+                    kept = int(flag.sum())
+                    self._pseudo_kept_post_thr += kept
+                    if kept:
+                        self._pseudo_kept_score_sum_post_thr += float(r[flag][:, -1].sum())
+                except Exception:
+                    pass
                 # print(flag)
                 bboxes.append(r[flag][:, :-1])
                 labels.append(label[flag])

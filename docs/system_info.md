@@ -1,31 +1,28 @@
 # System Info
-- Timestamp: 2026-04-05T22:00:00+08:00
-- Python: `3.10.19 (main, Oct 21 2025, 16:43:05) [GCC 11.2.0]`
-- Executable: `/home/zechuan/anaconda3/envs/iraod/bin/python`
-- CONDA_DEFAULT_ENV: `iraod`
-- Git: `2453ef8` (Phase 3 complete)
 
-## Key Versions
+## Snapshot
+- Timestamp: `2026-04-27 01:04 CST`
+- Host: `222.200.185.183`
+- Repo path: `/mnt/SSD1_8TB/zechuan/IRAOD`
+- Remote HEAD at snapshot: `46423ad03e78e4da040df9c9687922b9c9c5603f`
+- Remote working tree dirty files count at snapshot: `5`
+
+## Python / Framework
+- Python: `3.10.19`
+- Executable: `/home/zechuan/anaconda3/envs/iraod/bin/python`
 - mmcv: `1.7.2`
 - mmdet: `2.28.2`
 - mmrotate: `0.3.4`
 - torch: `2.0.1+cu118`
-- torch.cuda.current_device: `0`
-- torch.cuda.device_count: `10`
-- torch.cuda.get_device_name: `NVIDIA GeForce RTX 4090 D`
-- torch.cuda.is_available: `True`
-- torch.version.cuda: `11.8`
+- torch CUDA build: `11.8`
 
-## 训练环境 (Phase 3)
-- Conda env: `iraod`
-- GPU 使用: 5× RTX 4090 D (GPU 1-5), 每卡 ~24 GB VRAM
-- Batch size: 8 per GPU, 总 BS=40
-- 分布式: `torch.distributed.launch`, NCCL backend
-- SARCLIP: ViT-L-14 + LoRA (122,880 params)
-- Precomputed features: `work_dirs/sarclip_features/`
+## GPU Hardware
+- GPU count: `10`
+- Model: `NVIDIA GeForce RTX 4090 D`
+- VRAM per card: `49140 MiB`
+- Driver: `570.133.20`
 
-## nvidia-smi
-```text
-10× NVIDIA GeForce RTX 4090 D, 49140 MiB each
-Driver: 570.133.20, CUDA: 12.8
-```
+## Run-Time Notes
+1. For this project, `PYTHONNOUSERSITE=1` should be used in launch/resume scripts to avoid `~/.local` package pollution.
+2. During final completion check (`2026-04-27 00:51 CST`), IRAOD training processes were no longer active.
+3. At that same check, GPUs `0/4/8/9` were occupied by other jobs; `1/2/3/6/7` were idle and `5` had memory occupancy with `0%` utilization.
