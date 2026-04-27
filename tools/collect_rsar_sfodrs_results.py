@@ -119,7 +119,7 @@ def _write_md(rows: list[_Row], out_md: Path) -> None:
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--work-root", required=True, help="Root work dir created by scripts/run_rsar_sfodrs_7corr.sh")
+    ap.add_argument("--work-root", required=True, help="Root work dir created by scripts/run/rsar_sfodrs_full.sh")
     ap.add_argument("--out-csv", required=True)
     ap.add_argument("--out-md", required=True)
     args = ap.parse_args()
@@ -167,4 +167,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
