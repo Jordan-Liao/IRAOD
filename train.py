@@ -3,7 +3,6 @@ import argparse
 import copy
 import os
 import os.path as osp
-from pathlib import Path
 import time
 import warnings
 import torch
@@ -26,6 +25,13 @@ from mmrotate.datasets import build_dataset
 from mmrotate.models import build_detector
 from mmrotate.utils import (collect_env, get_root_logger,
                             setup_multi_processes)
+from sfod.runtime import (
+    apply_cga_runtime_env,
+    apply_max_epochs_override,
+    apply_rsar_data_root,
+    apply_teacher_ckpt,
+    apply_train_dataloader_overrides,
+)
 from sfod.utils import patch_config
 
 def parse_args():
@@ -157,80 +163,20 @@ def parse_args():
 def main():
     args = parse_args()#获取解析后的命令行参数
 
-    def _set_env_if_provided(key: str, value) -> None:
-        if value is None:
-            return
-        v = str(value).strip()
-        if v == "":
-            return
-        os.environ[key] = v
-
-    _set_env_if_provided("CGA_SCORER", args.cga_scorer)
-    _set_env_if_provided("CGA_TEMPLATES", args.cga_templates)
-    _set_env_if_provided("CGA_TAU", args.cga_tau)
-    _set_env_if_provided("CGA_EXPAND_RATIO", args.cga_expand_ratio)
-    _set_env_if_provided("SARCLIP_MODEL", args.sarclip_model)
-    _set_env_if_provided("SARCLIP_PRETRAINED", args.sarclip_pretrained)
-    _set_env_if_provided("CLIP_MODEL", args.clip_model)
+    apply_cga_runtime_env(args)
 
     cfg = Config.fromfile(args.config)
     if args.cfg_options is not None:
         cfg.merge_from_dict(args.cfg_options)
 
-    def _infer_rsar_split(path_str: str):
-        p = str(path_str).replace("\\", "/")
-        p_l = p.lower()
-        # Do NOT rewrite corruption-domain paths like:
-        #   .../corruptions/<corr>/<split>/images
-        if "/corruptions/" in p_l:
-            return None
-        for split in ("train", "val", "test"):
-            if f"/{split}/" in p_l:
-                return split
-        return None
-
-    def _apply_rsar_data_root(cfg: Config, data_root: str) -> None:
-        root = Path(data_root).expanduser().resolve()
-        if cfg.get("data", None) is None:
-            return
-        for split_key in ("train", "val", "test"):
-            if split_key not in cfg.data:
-                continue
-            ds = cfg.data[split_key]
-            if not isinstance(ds, dict):
-                continue
-            for field in ("ann_file", "ann_file_u", "img_prefix", "img_prefix_u"):
-                if field not in ds or not isinstance(ds[field], str):
-                    continue
-                split = _infer_rsar_split(ds[field])
-                if split is None:
-                    continue
-                subdir = "annfiles" if field.startswith("ann_") else "images"
-                ds[field] = str(root / split / subdir) + "/"
-
-    if args.data_root is not None:
-        _apply_rsar_data_root(cfg, args.data_root)
-
-    if args.samples_per_gpu is not None and cfg.get("data", None) is not None:
-        cfg.data.samples_per_gpu = int(args.samples_per_gpu)
-    if args.workers_per_gpu is not None and cfg.get("data", None) is not None:
-        cfg.data.workers_per_gpu = int(args.workers_per_gpu)
-
-    if args.max_epochs is not None and cfg.get("runner", None) is not None and "max_epochs" in cfg.runner:
-        new_max_epochs = int(args.max_epochs)
-        old_max_epochs = int(cfg.runner.max_epochs)
-        cfg.runner.max_epochs = new_max_epochs
-        if cfg.get("lr_config", None) is not None:
-            step = cfg.lr_config.get("step", None)
-            if isinstance(step, list) and len(step) == 1 and int(step[0]) == old_max_epochs:
-                cfg.lr_config.step = [new_max_epochs]
-
-    if args.teacher_ckpt is not None:
-        teacher_ckpt = str(args.teacher_ckpt).strip()
-        if teacher_ckpt != "" and teacher_ckpt.lower() != "none":
-            cfg.load_from = teacher_ckpt
-            if isinstance(cfg.get("model", None), dict) and "ema_ckpt" in cfg.model:
-                cfg.model.ema_ckpt = teacher_ckpt
+    apply_rsar_data_root(cfg, args.data_root)
+    apply_train_dataloader_overrides(
+        cfg,
+        samples_per_gpu=args.samples_per_gpu,
+        workers_per_gpu=args.workers_per_gpu,
+    )
+    apply_max_epochs_override(cfg, args.max_epochs)
+    apply_teacher_ckpt(cfg, args.teacher_ckpt)
 
     # set multi-process settings
     setup_multi_processes(cfg)

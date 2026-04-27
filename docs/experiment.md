@@ -1,5 +1,8 @@
 # RSAR SFOD-RS Full Rerun Experiment Log
 
+Current recommended launchers live under `scripts/run/`; the historical commands
+shown in this ledger remain valid through compatibility wrappers.
+
 ## Run Metadata
 - Run ID: `rsar_sfodrs_full_fix_20260424_172627`
 - Remote path: `/mnt/SSD1_8TB/zechuan/IRAOD/work_dirs/rsar_sfodrs_full_fix_20260424_172627`
