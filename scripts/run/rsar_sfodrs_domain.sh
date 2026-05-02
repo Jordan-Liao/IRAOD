@@ -10,6 +10,7 @@ SOURCE_CKPT="${SOURCE_CKPT:-${2:-}}"
 CONFIG="${CONFIG:-${TRAIN_CONFIG:-${3:-configs/current/rsar_sfodrs.py}}}"
 WORK_ROOT="${WORK_ROOT:-${4:-work_dirs/rsar_sfodrs}}"
 RSAR_DOMAIN_MODE="${RSAR_DOMAIN_MODE:-full}"
+RSAR_LOADER_MODE="${RSAR_LOADER_MODE:-strict}"
 MASTER_PORT="${MASTER_PORT:-29501}"
 NGPUS="${NGPUS:-1}"
 
@@ -32,7 +33,7 @@ CGA_EXPAND_RATIO_ARG="${CGA_EXPAND_RATIO:-0.4}"
 
 mkdir -p "${WORK_ROOT}"
 iraod_log_file "${LOG}" "rsar-domain" "corr=${CORR} mode=${RSAR_DOMAIN_MODE} source=${SOURCE_CKPT}"
-iraod_log_file "${LOG}" "rsar-domain" "config=${CONFIG} work_root=${WORK_ROOT} cuda=${CUDA_VISIBLE_DEVICES:-unset} ngpus=${NGPUS} port=${MASTER_PORT}"
+iraod_log_file "${LOG}" "rsar-domain" "config=${CONFIG} work_root=${WORK_ROOT} cuda=${CUDA_VISIBLE_DEVICES:-unset} ngpus=${NGPUS} port=${MASTER_PORT} loader_mode=${RSAR_LOADER_MODE}"
 
 run_direct() {
   if iraod_source_ckpt_is_null "${SOURCE_CKPT}"; then
@@ -50,11 +51,12 @@ run_direct() {
 }
 
 run_adapt() {
-  iraod_log_file "${LOG}" "rsar-domain" "step=adapt_nocga corr=${CORR}"
+  iraod_log_file "${LOG}" "rsar-domain" "step=adapt_nocga corr=${CORR} loader_mode=${RSAR_LOADER_MODE}"
   iraod_ddp_env_run \
     "RSAR_STAGE=target_adapt" \
     "RSAR_TARGET_DOMAIN=${CORR}" \
     "RSAR_USE_CGA=0" \
+    "RSAR_LOADER_MODE=${RSAR_LOADER_MODE}" \
     -- train.py "${CONFIG}" \
     --work-dir "${WD_ADAPT}" \
     --teacher-ckpt "${SOURCE_CKPT}" \
@@ -83,11 +85,12 @@ run_adapt_cga() {
   iraod_append_if_set cga_args --sarclip-pretrained "${SARCLIP_PRETRAINED:-}"
   iraod_append_if_set cga_args --clip-model "${CLIP_MODEL:-}"
 
-  iraod_log_file "${LOG}" "rsar-domain" "step=adapt_cga corr=${CORR} scorer=${CGA_SCORER_ARG}"
+  iraod_log_file "${LOG}" "rsar-domain" "step=adapt_cga corr=${CORR} scorer=${CGA_SCORER_ARG} loader_mode=${RSAR_LOADER_MODE}"
   iraod_ddp_env_run \
     "RSAR_STAGE=target_adapt" \
     "RSAR_TARGET_DOMAIN=${CORR}" \
     "RSAR_USE_CGA=1" \
+    "RSAR_LOADER_MODE=${RSAR_LOADER_MODE}" \
     -- train.py "${CONFIG}" \
     --work-dir "${WD_ADAPT_CGA}" \
     --teacher-ckpt "${SOURCE_CKPT}" \

@@ -4,6 +4,7 @@ custom_imports = dict(
         "mmrotate.datasets.pipelines",
         "mmdet_extension",
         "tools.rsar_sfodrs_dataset",
+        "tools.rsar_semi_sfodrs_dataset",
         "tools.sfodrs_diagnostics_hook",
         "tools.pseudo_stats_early_stop_hook",
     ],
@@ -28,6 +29,8 @@ stage = os.environ.get("RSAR_STAGE", "source_train").strip()
 target_domain = os.environ.get("RSAR_TARGET_DOMAIN", "clean").strip()
 use_cga = os.environ.get("RSAR_USE_CGA", "0").strip().lower() in ("1", "true", "yes", "y", "on")
 use_tta = os.environ.get("RSAR_USE_TTA", "0").strip().lower() in ("1", "true", "yes", "y", "on")
+# RSAR_LOADER_MODE: strict (target-only, SFOD-RS default) | loose (labeled-source + unlabeled-target)
+loader_mode = os.environ.get("RSAR_LOADER_MODE", "strict").strip().lower()
 
 # ------------------ Dataset paths (SFOD-RS protocol compliant layout) ------------------
 _repo_root = osp.abspath(osp.join("{{ fileDirname }}", "..", "..", ".."))
@@ -408,18 +411,37 @@ elif stage == "target_adapt":
         else "./configs/baseline/ema_config/sfodrs_oriented_rcnn_ema_rsar.py"
     )
 
-    # NOTE: annfiles are NOT used for adaptation data (unlabeled).
-    data = dict(
-        samples_per_gpu=samples_per_gpu,
-        workers_per_gpu=workers_per_gpu,
-        train=dict(
+    # RSAR_LOADER_MODE=strict : target-only (original SFOD-RS behaviour)
+    # RSAR_LOADER_MODE=loose  : faithful SFOD-RS — labeled source + unlabeled target
+    if loader_mode == "loose":
+        _train_dataset = dict(
+            type="SemiRSARSFODDataset",
+            ann_file=clean_train_ann,
+            img_prefix=clean_train_img,
+            img_prefix_u=target_val_img,
+            pipeline=source_train_pipeline,
+            pipeline_u_share=sfodrs_share,
+            pipeline_u_weak=sfodrs_weak,
+            pipeline_u_strong=sfodrs_strong,
+            classes=classes,
+        )
+        _use_labeled = True
+    else:
+        # strict: target-only self-training (no source annotations used)
+        _train_dataset = dict(
             type="RSARSourceFreeSelfTrainingDataset",
             img_prefix=target_val_img,
             pipeline_share=sfodrs_share,
             pipeline_weak=sfodrs_weak,
             pipeline_strong=sfodrs_strong,
             classes=classes,
-        ),
+        )
+        _use_labeled = False
+
+    data = dict(
+        samples_per_gpu=samples_per_gpu,
+        workers_per_gpu=workers_per_gpu,
+        train=_train_dataset,
         val=dict(
             type="DOTADatasetAnySuffix",
             ann_file=clean_test_ann,
@@ -443,8 +465,8 @@ elif stage == "target_adapt":
         ema_ckpt=load_from,
         cfg=dict(
             momentum=0.998,  # SFOD-RS EMA alpha
-            weight_l=0.0,  # STRICT: no supervised source branch in adaptation
-            use_labeled=False,
+            weight_l=0.0,  # no supervised loss regardless of loader_mode
+            use_labeled=_use_labeled,
             weight_u=weight_u,
             debug=False,
             score_thr=score_thr,
@@ -466,7 +488,7 @@ elif stage == "target_adapt":
             type="SFODRSDiagnosticsHook",
             stage=stage,
             target_domain=target_domain,
-            use_labeled_source_in_adaptation=False,
+            use_labeled_source_in_adaptation=(loader_mode == "loose"),
             cga_enabled=use_cga,
             cga_mode="sfodrs",
             prompt_template="A SAR image of a {}",
