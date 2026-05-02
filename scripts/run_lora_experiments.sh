@@ -5,8 +5,8 @@ set -Eeuo pipefail
 # P0032 + P0033: SARCLIP LoRA 5-GPU distributed training on RSAR
 # ============================================================================
 
-cd /home/zechuan/IRAOD
-export PATH=/home/zechuan/miniconda3/envs/iraod/bin:/home/zechuan/miniconda3/bin:$PATH
+cd "$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+PYTHON_BIN="${PYTHON:-python3}"
 
 log() { echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*"; }
 
@@ -64,7 +64,7 @@ log "P0033 finished. Checkpoint: $P0033_DIR/lora_final.pth"
 
 # ---- Verify both checkpoints loadable ----
 log "=== Verification: loading both checkpoints ==="
-python -c "
+"${PYTHON_BIN}" -c "
 import torch, sys
 sys.path.insert(0, 'third_party/SARCLIP')
 import sar_clip

@@ -6,8 +6,8 @@ set -Eeuo pipefail
 # Waits for current LoRA experiments to finish, then runs larger-scale
 # ============================================================================
 
-cd /home/zechuan/IRAOD
-export PATH=/home/zechuan/miniconda3/envs/iraod/bin:/home/zechuan/miniconda3/bin:$PATH
+cd "$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+PYTHON_BIN="${PYTHON:-python3}"
 
 log() { echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*"; }
 
@@ -70,7 +70,7 @@ log "P0033v2 finished. Checkpoint: $P0033_DIR/lora_final.pth"
 
 # ---- Verify ----
 log "=== Verification ==="
-python -c "
+"${PYTHON_BIN}" -c "
 import torch, sys
 sys.path.insert(0, 'third_party/SARCLIP')
 import sar_clip

@@ -6,7 +6,7 @@ set -euo pipefail
 
 CKPT=${1:-work_dirs/exp_rsar_baseline/epoch_11.pth}
 CONFIG=${2:-configs/experiments/rsar/frontier_003_nms02_oriented_rcnn_rsar.py}
-DATA_ROOT=${RSAR_DATA_ROOT:-/home/zechuan/IRAOD/dataset/RSAR}
+DATA_ROOT=${RSAR_DATA_ROOT:-dataset/RSAR}
 OUT_ROOT=${3:-work_dirs/frontier_014_nms_sweep}
 
 THRS=(0.15 0.20 0.25 0.30)
@@ -24,14 +24,11 @@ for thr in "${THRS[@]}"; do
   echo "[frontier-014] Evaluating iou_thr=$thr ..."
 
   log_path="$work_dir/stdout.log"
-  bash -lc "source /home/zechuan/miniconda3/etc/profile.d/conda.sh && \
-CUDA_VISIBLE_DEVICES=0 \
-conda run --no-capture-output -n iraod \
-python test.py $CONFIG $CKPT \
-  --eval mAP \
-  --work-dir $work_dir \
-  --data-root $DATA_ROOT \
-  --cfg-options model.test_cfg.rcnn.nms.iou_thr=$thr" 2>&1 | tee "$log_path"
+  CUDA_VISIBLE_DEVICES=0 "${PYTHON:-python3}" -u test.py "$CONFIG" "$CKPT" \
+    --eval mAP \
+    --work-dir "$work_dir" \
+    --data-root "$DATA_ROOT" \
+    --cfg-options "model.test_cfg.rcnn.nms.iou_thr=$thr" 2>&1 | tee "$log_path"
 
   map_val=$(python - "$log_path" <<'PY'
 import re

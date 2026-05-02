@@ -27,7 +27,7 @@ run_source_train_if_needed() {
     return 0
   fi
 
-  if [[ -f "${source_latest}" && ! iraod_is_dry_run ]]; then
+  if [[ -f "${source_latest}" ]] && ! iraod_is_dry_run; then
     iraod_log_file "${LOG}" "rsar-full" "reuse source_train checkpoint ${source_latest}"
   else
     iraod_log_file "${LOG}" "rsar-full" "step=source_train"

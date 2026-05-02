@@ -6,14 +6,14 @@ set -Eeuo pipefail
 # Verifies: training runs, checkpoint saved, checkpoint loadable by CGA
 # ============================================================================
 
-cd /home/zechuan/IRAOD
-export PATH=/home/zechuan/miniconda3/envs/iraod/bin:$PATH
+cd "$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+PYTHON_BIN="${PYTHON:-python3}"
 
 OUTDIR="work_dirs/sanity/sarclip_lora_smoke"
 mkdir -p "$OUTDIR"
 
 echo "[smoke] Step 1: LoRA training (2 epochs, small batch, with L_ent)..."
-python -m lora_finetune.lora_sarclip_train \
+"${PYTHON_BIN}" -m lora_finetune.lora_sarclip_train \
     --sarclip-dir third_party/SARCLIP \
     --sarclip-model RN50 \
     --data-root dataset/RSAR/train/images \
@@ -34,7 +34,7 @@ fi
 echo "[smoke] Step 1 PASSED: checkpoint saved at $CKPT"
 
 echo "[smoke] Step 2: Verify checkpoint is loadable..."
-python -c "
+"${PYTHON_BIN}" -c "
 import sys, torch
 sys.path.insert(0, 'third_party/SARCLIP')
 import sar_clip
@@ -66,7 +66,7 @@ print('[smoke] Step 2 PASSED')
 "
 
 echo "[smoke] Step 3: Verify SARCLIP_LORA env var in CGA..."
-SARCLIP_LORA="$CKPT" python -c "
+SARCLIP_LORA="$CKPT" "${PYTHON_BIN}" -c "
 import os, sys, torch
 os.environ['SARCLIP_LORA'] = '$CKPT'
 os.environ['CGA_SCORER'] = 'sarclip'
@@ -85,6 +85,6 @@ print('[smoke] Step 3 PASSED')
 echo ""
 echo "[smoke] ALL TESTS PASSED"
 echo "[smoke] LoRA checkpoint: $CKPT"
-echo "[smoke] Contains ent_weight=$(python -c "import torch; m=torch.load('$CKPT',map_location='cpu').get('meta',{}); print(m.get('ent_weight',0))")"
+echo "[smoke] Contains ent_weight=$("${PYTHON_BIN}" -c "import torch; m=torch.load('$CKPT',map_location='cpu').get('meta',{}); print(m.get('ent_weight',0))")"
 
 # Cleanup: keep the checkpoint as output artifact, don't self-delete

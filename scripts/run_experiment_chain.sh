@@ -6,8 +6,8 @@ set -Eeuo pipefail
 # Multi-GPU (5x A6000) training
 # ============================================================================
 
-cd /home/zechuan/IRAOD
-export PATH=/home/zechuan/miniconda3/envs/iraod/bin:/home/zechuan/miniconda3/bin:$PATH
+cd "$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+PYTHON_BIN="${PYTHON:-python3}"
 
 NGPU=5
 PORT=29501
@@ -46,7 +46,7 @@ UT_WORKDIR="work_dirs/ut_rsar_corrected"
 mkdir -p "${UT_WORKDIR}"
 
 log "Starting UT corrected baseline (5-GPU)..."
-CUDA_VISIBLE_DEVICES=0,1,2,3,4 python -m torch.distributed.launch \
+CUDA_VISIBLE_DEVICES=0,1,2,3,4 "${PYTHON_BIN}" -m torch.distributed.launch \
     --nproc_per_node=${NGPU} --master_port=${PORT} \
     train.py "${UT_CONFIG}" \
     --work-dir "${UT_WORKDIR}" \
@@ -87,7 +87,7 @@ EXP_M_WORKDIR="work_dirs/exp_m_wu_schedule"
 mkdir -p "${EXP_M_WORKDIR}"
 
 log "Starting Exp M (weight_u schedule, 5-GPU)..."
-CUDA_VISIBLE_DEVICES=0,1,2,3,4 python -m torch.distributed.launch \
+CUDA_VISIBLE_DEVICES=0,1,2,3,4 "${PYTHON_BIN}" -m torch.distributed.launch \
     --nproc_per_node=${NGPU} --master_port=${PORT} \
     train.py "${EXP_M_CONFIG}" \
     --work-dir "${EXP_M_WORKDIR}" \

@@ -6,8 +6,8 @@ set -Eeuo pipefail
 # 与原始 Exp M 对比，看 LoRA 对训练时 CGA 的影响
 # ============================================================================
 
-cd /home/zechuan/IRAOD
-export PATH=/home/zechuan/miniconda3/envs/iraod/bin:/home/zechuan/miniconda3/bin:$PATH
+cd "$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+PYTHON_BIN="${PYTHON:-python3}"
 
 log() { echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*"; }
 
@@ -54,7 +54,7 @@ log "EMA checkpoint: $EMA_CKPT"
 
 mkdir -p "$WORK_DIR"
 
-CUDA_VISIBLE_DEVICES=0,1,2,3,4 python -m torch.distributed.launch \
+CUDA_VISIBLE_DEVICES=0,1,2,3,4 "${PYTHON_BIN}" -m torch.distributed.launch \
     --nproc_per_node=$NGPU --master_port=$MASTER_PORT \
     train.py configs/unbiased_teacher/sfod/exp_m_wu_schedule.py \
     --work-dir "$WORK_DIR" \
