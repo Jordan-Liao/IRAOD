@@ -48,11 +48,16 @@ class SFODRSDiagnosticsHook(Hook):
         env_expand = os.environ.get("CGA_EXPAND_RATIO", "").strip()
 
         logger.info("[SFOD-RS/RSAR] stage=%s", self.stage)
+        logger.info("[SFOD-RS/RSAR] target_domain=%s", self.target_domain)
+        if self.stage == "target_adapt":
+            _lmode = "loose" if self.use_labeled_source_in_adaptation else "strict"
+            logger.info("[SFOD-RS/RSAR] loader_mode=%s", _lmode)
+            logger.info("[SFOD-RS/RSAR] labeled_source_branch_read=%s", str(self.use_labeled_source_in_adaptation))
+            logger.info("[SFOD-RS/RSAR] use_labeled_source_loss_in_adaptation=False")
         logger.info(
             "[SFOD-RS/RSAR] use_labeled_source_in_adaptation=%s",
             str(self.use_labeled_source_in_adaptation),
         )
-        logger.info("[SFOD-RS/RSAR] target_domain=%s", self.target_domain)
         logger.info("[SFOD-RS/RSAR] cga_enabled=%s cga_mode=%s", str(self.cga_enabled), self.cga_mode)
         logger.info('[SFOD-RS/RSAR] prompt_template="%s"', self.prompt_template)
         logger.info("[SFOD-RS/RSAR] pseudo_label_fusion: keep_label=%s score_rule=%s", str(self.keep_label), self.score_rule)
