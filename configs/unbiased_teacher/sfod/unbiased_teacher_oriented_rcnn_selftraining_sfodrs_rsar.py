@@ -413,6 +413,8 @@ elif stage == "target_adapt":
 
     # RSAR_LOADER_MODE=strict : target-only (original SFOD-RS behaviour)
     # RSAR_LOADER_MODE=loose  : faithful SFOD-RS — labeled source + unlabeled target
+    #   weight_l > 0 is essential: without source gradient the model still collapses.
+    #   RSAR_WEIGHT_L env var overrides the default (0.5 matches SFOD-RS convention).
     if loader_mode == "loose":
         _train_dataset = dict(
             type="SemiRSARSFODDataset",
@@ -426,6 +428,7 @@ elif stage == "target_adapt":
             classes=classes,
         )
         _use_labeled = True
+        _weight_l = float(os.environ.get("RSAR_WEIGHT_L", "0.5").strip() or "0.5")
     else:
         # strict: target-only self-training (no source annotations used)
         _train_dataset = dict(
@@ -437,6 +440,7 @@ elif stage == "target_adapt":
             classes=classes,
         )
         _use_labeled = False
+        _weight_l = 0.0
 
     data = dict(
         samples_per_gpu=samples_per_gpu,
@@ -465,7 +469,7 @@ elif stage == "target_adapt":
         ema_ckpt=load_from,
         cfg=dict(
             momentum=0.998,  # SFOD-RS EMA alpha
-            weight_l=0.0,  # no supervised loss regardless of loader_mode
+            weight_l=_weight_l,  # 0.0 for strict; 0.5 for loose (RSAR_WEIGHT_L overrides)
             use_labeled=_use_labeled,
             weight_u=weight_u,
             debug=False,
