@@ -57,6 +57,10 @@ class SemiRSARSFODDataset(Dataset):
     Intended use: weight_l=0.0, use_labeled=True in UnbiasedTeacher — the
     labeled source forward-pass guides teacher EMA without contributing a
     supervised loss.
+
+    By default ``__len__`` equals ``min(len(labeled), len(unlabeled))`` so that
+    epoch length matches the strict (target-only) baseline for a fair comparison.
+    Pass ``max_labeled`` to override.
     """
 
     _IMG_EXTS = (".jpg", ".jpeg", ".png", ".bmp", ".tif", ".tiff")
@@ -75,6 +79,7 @@ class SemiRSARSFODDataset(Dataset):
         data_root: str | None = None,
         filter_empty_gt: bool = True,
         img_exts: Sequence[str] | None = None,
+        max_labeled: int | None = None,
     ) -> None:
         super().__init__()
 
@@ -105,6 +110,13 @@ class SemiRSARSFODDataset(Dataset):
                 f"no images found under: {img_prefix_u} exts={_exts}"
             )
 
+        # Effective epoch length: match unlabeled target by default so that
+        # runtime is comparable to the strict (target-only) baseline.
+        if max_labeled is None:
+            self._eff_len = min(len(self.dota_labeled), len(self._u_relpaths))
+        else:
+            self._eff_len = min(len(self.dota_labeled), int(max_labeled))
+
         self.CLASSES = tuple(classes) if classes is not None else None
         self._pipe_u_share = _Compose(list(pipeline_u_share))
         self._pipe_u_weak = _Compose(list(pipeline_u_weak))
@@ -113,14 +125,13 @@ class SemiRSARSFODDataset(Dataset):
         import numpy as np
 
         _flag = getattr(self.dota_labeled, "flag", None)
-        self.flag = (
-            _flag
-            if _flag is not None
-            else np.zeros(len(self.dota_labeled), dtype=np.uint8)
-        )
+        if _flag is not None:
+            self.flag = _flag[: self._eff_len]
+        else:
+            self.flag = np.zeros(self._eff_len, dtype=np.uint8)
 
     def __len__(self) -> int:
-        return len(self.dota_labeled)
+        return self._eff_len
 
     def _u_base(self, idx: int) -> dict:
         return dict(
