@@ -30,10 +30,11 @@ CGA_SCORER_ARG="${CGA_SCORER:-sarclip}"
 CGA_TEMPLATES_ARG="${CGA_TEMPLATES:-A SAR image of a {}}"
 CGA_TAU_ARG="${CGA_TAU:-100}"
 CGA_EXPAND_RATIO_ARG="${CGA_EXPAND_RATIO:-0.4}"
+PSEUDO_SCORE_THR_ARG="${RSAR_PSEUDO_SCORE_THR:-0.7}"
 
 mkdir -p "${WORK_ROOT}"
 iraod_log_file "${LOG}" "rsar-domain" "corr=${CORR} mode=${RSAR_DOMAIN_MODE} source=${SOURCE_CKPT}"
-iraod_log_file "${LOG}" "rsar-domain" "config=${CONFIG} work_root=${WORK_ROOT} cuda=${CUDA_VISIBLE_DEVICES:-unset} ngpus=${NGPUS} port=${MASTER_PORT} loader_mode=${RSAR_LOADER_MODE}"
+iraod_log_file "${LOG}" "rsar-domain" "config=${CONFIG} work_root=${WORK_ROOT} cuda=${CUDA_VISIBLE_DEVICES:-unset} ngpus=${NGPUS} port=${MASTER_PORT} loader_mode=${RSAR_LOADER_MODE} score_thr=${PSEUDO_SCORE_THR_ARG}"
 
 run_direct() {
   if iraod_source_ckpt_is_null "${SOURCE_CKPT}"; then

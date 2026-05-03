@@ -60,6 +60,8 @@ class SFODRSDiagnosticsHook(Hook):
             "[SFOD-RS/RSAR] use_labeled_source_in_adaptation=%s",
             str(self.use_labeled_source_in_adaptation),
         )
+        env_score_thr = os.environ.get("RSAR_PSEUDO_SCORE_THR", "0.7").strip()
+        logger.info("[SFOD-RS/RSAR] pseudo_score_thr=%s", env_score_thr)
         logger.info("[SFOD-RS/RSAR] cga_enabled=%s cga_mode=%s", str(self.cga_enabled), self.cga_mode)
         logger.info('[SFOD-RS/RSAR] prompt_template="%s"', self.prompt_template)
         logger.info("[SFOD-RS/RSAR] pseudo_label_fusion: keep_label=%s score_rule=%s", str(self.keep_label), self.score_rule)
