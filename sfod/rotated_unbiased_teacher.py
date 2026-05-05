@@ -271,6 +271,16 @@ class UnbiasedTeacher(SemiTwoStageDetector):
                     thr = self.class_score_thr[cls]
                 else:
                     thr = self.score_thr
+                # Score distribution diagnostics (every 50 iters, rank-0 only)
+                if r.shape[0] > 0 and self.cur_iter % 50 == 0 and get_dist_info()[0] == 0:
+                    _s = r[:, -1]
+                    get_root_logger().info(
+                        "[PseudoScoreDist] iter=%d cls=%d n_pre_thr=%d thr=%.3f "
+                        "min=%.3f max=%.3f mean=%.3f p50=%.3f kept=%d",
+                        self.cur_iter, cls, len(_s), thr,
+                        float(_s.min()), float(_s.max()), float(_s.mean()),
+                        float(np.median(_s)), int((_s >= thr).sum()),
+                    )
                 flag = r[:, -1] >= thr
                 try:
                     kept = int(flag.sum())

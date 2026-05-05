@@ -297,6 +297,17 @@ class PseudoStatsAndEarlyStopHook(Hook):
                 + (f" pseudo/img={pseudo_per_img:.4f}" if pseudo_per_img is not None else "")
             )
             logger.info(msg)
+            if delta_pre > 0 and delta_kept == 0:
+                logger.warning(
+                    "[PseudoStats] ALL teacher detections filtered by score_thr "
+                    "(pre_thr=%d kept=0) — consider lowering RSAR_PSEUDO_SCORE_THR",
+                    delta_pre,
+                )
+            elif delta_pre == 0 and delta_img > 0:
+                logger.warning(
+                    "[PseudoStats] NO teacher detections at all (pre_thr=0) — "
+                    "NMS/test_cfg may be filtering everything",
+                )
             if majority_class is not None and majority_frac is not None:
                 logger.info("[PseudoStats] majority=%s frac=%.4f", majority_class, majority_frac)
             if per_class_kept:

@@ -395,6 +395,9 @@ elif stage == "target_adapt":
         score_thr = [float(v.strip()) for v in _stre.split(",") if v.strip()]
     else:
         score_thr = float(_stre or "0.7")
+    _thr_schedule    = os.environ.get("RSAR_THR_SCHEDULE", "").strip() or None
+    _score_thr_start = os.environ.get("RSAR_SCORE_THR_START", "").strip()
+    _score_thr_end   = os.environ.get("RSAR_SCORE_THR_END", "").strip()
     evaluation = dict(interval=1, metric="mAP", only_ema=True)
 
     runner = dict(type="SemiEpochBasedRunner", max_epochs=total_epoch)
@@ -468,20 +471,27 @@ elif stage == "target_adapt":
     )
 
     load_from = None
+    _adapt_cfg = dict(
+        momentum=0.998,  # SFOD-RS EMA alpha
+        weight_l=_weight_l,  # 0.0 for strict; 0.5 for loose (RSAR_WEIGHT_L overrides)
+        use_labeled=_use_labeled,
+        weight_u=weight_u,
+        debug=False,
+        score_thr=score_thr,
+        use_bbox_reg=False,
+        burn_in_epochs=burn_in_epochs,
+    )
+    if _thr_schedule:
+        # Wire linear threshold annealing (code already in rotated_unbiased_teacher.py:142-156)
+        _scalar_thr = score_thr if not isinstance(score_thr, list) else min(score_thr)
+        _adapt_cfg["thr_schedule"] = _thr_schedule
+        _adapt_cfg["score_thr_start"] = float(_score_thr_start) if _score_thr_start else _scalar_thr
+        _adapt_cfg["score_thr_end"]   = float(_score_thr_end)   if _score_thr_end   else _scalar_thr
     model = dict(
         type="UnbiasedTeacher",
         ema_config=ema_config,
         ema_ckpt=load_from,
-        cfg=dict(
-            momentum=0.998,  # SFOD-RS EMA alpha
-            weight_l=_weight_l,  # 0.0 for strict; 0.5 for loose (RSAR_WEIGHT_L overrides)
-            use_labeled=_use_labeled,
-            weight_u=weight_u,
-            debug=False,
-            score_thr=score_thr,
-            use_bbox_reg=False,
-            burn_in_epochs=burn_in_epochs,
-        ),
+        cfg=_adapt_cfg,
         backbone=_backbone,
         neck=_neck,
         rpn_head=_rpn_head,
