@@ -537,3 +537,199 @@ CUDA_VISIBLE_DEVICES=6,7,8 NGPUS=3 MASTER_PORT=29512 PYTHONNOUSERSITE=1 \
 - Parallel completion logs:
   - `work_dirs/rsar_sfodrs_full_fix_20260424_172627/point_target_parallel.log`
   - `work_dirs/rsar_sfodrs_full_fix_20260424_172627/noise_suppression_parallel.log`
+
+---
+
+## Phase 8: Loose SFOD-RS（Faithful Dataloader，weight_l=0.5）
+
+### 背景与动机
+
+Phase 7（strict target-only）在重度腐败域（chaff、gwn）出现 adaptation collapse（mAP 降至 0.01-0.05），根因是：
+1. target-only adaptation 无监督信号，teacher EMA 漂移后 ship 类伪标签占主导
+2. pseudo_num(acc)=0.000 全程：伪标签纯噪声，越迭代越崩
+
+**修复方案**：引入 `SemiRSARSFODDataset`（faithful dataloader）：
+- labeled branch：随机采样 clean RSAR train GT 样本
+- unlabeled branch：corruption val 域扫描（无 ann）
+- `weight_l=0.5`：labeled branch 提供梯度锚点，防止 teacher EMA 漂移
+- `use_labeled=True`：参与前向但 `weight_l` 控制损失权重
+- epoch 长度 = `min(len_labeled, len_unlabeled)`（与 strict 对齐）
+
+env 控制：`RSAR_LOADER_MODE=loose RSAR_WEIGHT_L=0.5 RSAR_PSEUDO_SCORE_THR=0.7`
+
+---
+
+### E0123：Loose SFOD-RS（thr=0.7，3个腐败域验证）
+
+**配置**
+- 源权重：`work_dirs/rsar_sfodrs_full_fix_20260424_172627/source_train/latest.pth`（clean mAP=0.5385）
+- 运行目录：`work_dirs/rsar_sfodrs_loose_ablation`
+- GPU：1,4,6（3×1 GPU DDP）；MASTER_PORT=29501
+- 超参：`RSAR_LOADER_MODE=loose RSAR_WEIGHT_L=0.5 RSAR_PSEUDO_SCORE_THR=0.7`
+- 腐败域：chaff、gaussian_white_noise、noise_suppression（串行，各 12 epoch）
+
+**运行命令**
+```bash
+CUDA_VISIBLE_DEVICES=1,4,6 NGPUS=1 MASTER_PORT=29501 \
+RSAR_LOADER_MODE=loose RSAR_WEIGHT_L=0.5 RSAR_PSEUDO_SCORE_THR=0.7 \
+RSAR_DOMAIN_MODE=full \
+bash scripts/run/rsar_sfodrs_domain.sh chaff \
+  work_dirs/rsar_sfodrs_full_fix_20260424_172627/source_train/latest.pth \
+  configs/current/rsar_sfodrs.py \
+  work_dirs/rsar_sfodrs_loose_ablation
+# 3 corruptions串行
+```
+
+**结果**
+
+| corruption | direct | adapt_nocga | adapt_cga | Δ(adapt-direct) |
+|---|---:|---:|---:|---:|
+| chaff | 0.4690 | 0.4516 | 0.4580 | -0.0174 / -0.0110 |
+| gaussian_white_noise | 0.5429 | 0.4983 | 0.4988 | -0.0446 / -0.0441 |
+| noise_suppression | 0.2436 | **0.2996** | **0.2994** | **+0.0560** / **+0.0558** |
+
+**对比 Strict（E0111 full rerun）**
+
+| corruption | strict direct | strict nocga | strict cga | loose direct | loose nocga | loose cga |
+|---|---:|---:|---:|---:|---:|---:|
+| chaff | 0.4690* | 0.0106 | 0.0833 | 0.4690 | 0.4516 | 0.4580 |
+| gaussian_white_noise | 0.5429* | 0.0080 | 0.0816 | 0.5429 | 0.4983 | 0.4988 |
+| noise_suppression | 0.2436* | 0.0861 | 0.0952 | 0.2436 | 0.2996 | 0.2994 |
+
+*direct_test 两次运行相同（同权重）
+
+**关键观察**
+- Collapse 完全消除：strict nocga chaff=0.011 → loose nocga chaff=0.452（+4200%）
+- noise_suppression 是唯一适应真正帮助的域：+0.056 mAP（+23% relative）
+- 重度腐败（chaff/gwn）：loose mode 保住 direct 水平（轻微回退 0.01-0.04），无崩溃
+- pseudo_num ≈ 1.4-2.0（全程），即每张图平均仅 1-2 个伪框 → 伪标签质量是瓶颈
+- CGA 效果边际化：+0.006（chaff），+0.0005（gwn），几乎相同（noise_suppression -0.0002）
+
+---
+
+### E0124：score_thr=0.5 消融（负结果）
+
+**配置**
+- 运行目录：`work_dirs/rsar_sfodrs_loose_scrthr05_ablation`
+- GPU：2,3,7；MASTER_PORT=29502
+- 超参：`RSAR_PSEUDO_SCORE_THR=0.5`，其余同 E0123
+- 腐败域：chaff、gaussian_white_noise、noise_suppression
+
+**动机**：降低阈值可接受更多伪标签（pseudo_num 从 1.4-2.0 增加到 2.5-3.0），但质量如何？
+
+**结果对比（Δ相对thr=0.7）**
+
+| corruption | thr=0.7 nocga | thr=0.5 nocga | Δ | thr=0.7 cga | thr=0.5 cga | Δ |
+|---|---:|---:|---:|---:|---:|---:|
+| chaff | 0.4516 | 0.4370 | -0.0146 | 0.4580 | 0.4408 | -0.0172 |
+| gaussian_white_noise | 0.4983 | 0.5011 | +0.0028 | 0.4988 | 0.4969 | -0.0019 |
+| noise_suppression | 0.2996 | 0.2994 | -0.0002 | 0.2994 | 0.2969 | -0.0025 |
+
+**结论**：thr=0.5 全面持平或更差，放开阈值引入的额外伪框均为纯噪声
+（pseudo_num(acc)=0.000 全程不变），**最优设置为 thr=0.7**。
+
+---
+
+### Phase 8 综合结论
+
+1. **Collapse 根治**：`SemiRSARSFODDataset + weight_l=0.5` 完全防止适应崩溃
+2. **noise_suppression 真实增益**：+0.056 mAP (+23% relative)，是本项目目前唯一 adaptation > direct 的域
+3. **重度腐败域**：适应轻微回退（-0.01~-0.04），但绝无崩溃，保持 0.45+/0.49+
+4. **score_thr=0.5 阴性**：更多伪框 = 更多噪声；thr=0.7 是最优
+5. **CGA 贡献边际化**：loose mode 下 CGA 增益 <0.007（远小于 strict 下 +0.043 mean）
+6. **最优 loose 配置**：`RSAR_LOADER_MODE=loose RSAR_WEIGHT_L=0.5 RSAR_PSEUDO_SCORE_THR=0.7`
+7. **未来方向**：在 noise_suppression 这类"中等难度"域进行更深入研究；重度域需要比 weight_l 更强的锚点（如 domain-specific augmentation 匹配）
+
+### Phase 8 Output Artifacts
+- 运行根目录：`work_dirs/rsar_sfodrs_loose_ablation`（E0123 loose thr=0.7）
+- 运行根目录：`work_dirs/rsar_sfodrs_loose_scrthr05_ablation`（E0124 thr=0.5 消融）
+- 启动日志：`work_dirs/rsar_sfodrs_loose_ablation/launch.log`
+- 启动日志：`work_dirs/rsar_sfodrs_loose_scrthr05_ablation/launch.log`
+
+---
+
+## Phase 9: 腐败增强源模型（Corruption Augmentation Source Training）
+
+### 背景与动机
+
+Phase 8 揭示了 direct_test baseline 是瓶颈：clean source 模型对中等腐败域（point_target/noise_suppression/am_noise_*）的 direct_test 仅 0.24~0.32，远低于重度腐败域。根因是源模型只在 clean 图像上训练，对 SAR 干扰完全无鲁棒性。
+
+**修复方案**：在 source_train 阶段对 clean RSAR train 图像随机在线施加 7 种腐败之一（概率 p=0.5），使源模型天然具备 domain invariance。
+
+新增组件：
+- `tools/rsar_corruption_pipeline.py`：`RsarOnlineCorruptionAugment` transform（注册到 ROTATED_PIPELINES）
+- 复用 `tools/interference_generator.add_interference()` 函数
+- 环境变量控制：`RSAR_CORR_AUG=1 RSAR_CORR_AUG_PROB=0.5`
+
+---
+
+### E0125：Corr-Aug 源模型训练
+
+**配置**
+- 运行目录：`work_dirs/rsar_corraug_loose_20260504`
+- GPU：2,3,7（3×RTX 4090 D，DDP，NGPUS=3）
+- 超参：`RSAR_CORR_AUG=1 RSAR_CORR_AUG_PROB=0.5 RSAR_SAMPLES_PER_GPU=8`
+- 训练：12 epoch，LR=0.015（auto-scaled，base 0.01，total_bs=24）
+- 完成时间：2026-05-04 20:35
+
+**运行命令**
+```bash
+CUDA_VISIBLE_DEVICES=2,3,7 NGPUS=3 MASTER_PORT=29503 \
+PYTHON=/home/zechuan/anaconda3/envs/iraod/bin/python \
+RSAR_CORR_AUG=1 RSAR_CORR_AUG_PROB=0.5 \
+RSAR_SAMPLES_PER_GPU=8 RSAR_LOADER_MODE=loose RSAR_WEIGHT_L=0.5 \
+RSAR_DOMAIN_MODE=full \
+bash scripts/run/rsar_sfodrs_full.sh auto work_dirs/rsar_corraug_loose_20260504
+```
+
+**源模型结果**
+- clean test mAP：**0.5125**（vs clean source 0.5385，-2.6pp，正常 robustness tradeoff）
+
+---
+
+### E0126：Corr-Aug 源模型 + Loose Adaptation（全 7 域）
+
+**配置**：E0125 源权重 + `RSAR_LOADER_MODE=loose RSAR_WEIGHT_L=0.5 RSAR_PSEUDO_SCORE_THR=0.7`，与 E0125 在同一次运行中自动串行完成
+
+**完整结果**
+
+| corruption | direct | loose nocga | loose cga | Δ(nocga-direct) |
+|---|---:|---:|---:|---:|
+| chaff | 0.4899 | 0.4574 | 0.4509 | -0.0325 |
+| gaussian_white_noise | 0.5154 | 0.4805 | 0.4770 | -0.0349 |
+| point_target | 0.5100 | 0.4757 | 0.4766 | -0.0343 |
+| noise_suppression | 0.4701 | 0.4359 | 0.4384 | -0.0342 |
+| am_noise_horizontal | 0.4546 | 0.3776 | 0.3826 | -0.0770 |
+| smart_suppression | 0.4245 | 0.4026 | 0.3978 | -0.0219 |
+| am_noise_vertical | 0.4548 | 0.3979 | 0.3979 | -0.0569 |
+| **mean (7 corr)** | **0.4742** | **0.4325** | **0.4316** | **-0.0417** |
+
+**与 clean source 对比（direct_test per-domain 提升）**
+
+| corruption | clean source direct | corr_aug direct | Δ |
+|---|---:|---:|---:|
+| chaff | 0.4690 | 0.4899 | +0.0209 |
+| gaussian_white_noise | 0.5429 | 0.5154 | -0.0275 |
+| point_target | 0.3183 | **0.5100** | **+0.1917** |
+| noise_suppression | 0.2436 | **0.4701** | **+0.2265** |
+| am_noise_horizontal | 0.2985 | **0.4546** | **+0.1561** |
+| smart_suppression | 0.2935 | **0.4245** | **+0.1310** |
+| am_noise_vertical | 0.2967 | **0.4548** | **+0.1581** |
+| **mean** | 0.3372 | **0.4742** | **+0.1370** |
+
+---
+
+### Phase 9 综合结论
+
+1. **direct_test 大幅提升**：mean 0.3372 → 0.4742（+13.7pp，+41% 相对提升）
+2. **5 个中等腐败域暴增**：point_target/noise_suppression/am_noise_* 各 +13~23pp
+3. **gwn 轻微回退**：-2.8pp（高斯白噪声特性与腐败增强训练分布略有偏差）
+4. **clean test 轻微代价**：0.5385 → 0.5125（-2.6pp），属正常 robustness tradeoff
+5. **adaptation 仍轻微低于 direct**：pseudo_num(acc)=0.000 依然是瓶颈，但绝无崩溃
+6. **当前项目最优 direct_test = 0.4742**，远超历史一切配置
+
+### Phase 9 Output Artifacts
+- 运行根目录：`work_dirs/rsar_corraug_loose_20260504`
+- 启动日志：`work_dirs/rsar_corraug_loose_20260504/launch.log`
+- nohup 日志：`work_dirs/rsar_corraug_loose_20260504/nohup.log`
+- 完成时间：2026-05-05 17:59

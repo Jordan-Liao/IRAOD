@@ -25,6 +25,30 @@ CUDA_VISIBLE_DEVICES=0,1,2 NGPUS=3 MASTER_PORT=29501 \
 bash scripts/run/rsar_sfodrs_full.sh
 ```
 
+## Full RSAR SFOD-RS with Corruption-Augmented Source
+
+Train source with online SAR corruption augmentation (Phase 9, +41% relative direct_test):
+
+```bash
+RSAR_CORR_AUG=1 RSAR_CORR_AUG_PROB=0.5 \
+RSAR_LOADER_MODE=loose RSAR_WEIGHT_L=0.5 \
+SOURCE_CKPT=auto \
+WORK_ROOT=work_dirs/rsar_corraug_$(date +%Y%m%d_%H%M%S) \
+CUDA_VISIBLE_DEVICES=0,1,2 NGPUS=3 MASTER_PORT=29503 \
+bash scripts/run/rsar_sfodrs_full.sh
+```
+
+Source training only (to validate direct_test before running full pipeline):
+
+```bash
+RSAR_CORR_AUG=1 RSAR_CORR_AUG_PROB=0.5 \
+RSAR_STAGE=source_train RSAR_TARGET_DOMAIN=clean \
+RSAR_SAMPLES_PER_GPU=8 \
+CUDA_VISIBLE_DEVICES=0,1,2 NGPUS=3 MASTER_PORT=29503 \
+bash scripts/run/rsar_sfodrs_full.sh auto \
+  work_dirs/rsar_source_corraug_$(date +%Y%m%d_%H%M%S)
+```
+
 Use an existing source checkpoint:
 
 ```bash

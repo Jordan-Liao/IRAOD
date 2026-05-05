@@ -5,6 +5,7 @@ custom_imports = dict(
         "mmdet_extension",
         "tools.rsar_sfodrs_dataset",
         "tools.rsar_semi_sfodrs_dataset",
+        "tools.rsar_corruption_pipeline",
         "tools.sfodrs_diagnostics_hook",
         "tools.pseudo_stats_early_stop_hook",
     ],
@@ -31,6 +32,9 @@ use_cga = os.environ.get("RSAR_USE_CGA", "0").strip().lower() in ("1", "true", "
 use_tta = os.environ.get("RSAR_USE_TTA", "0").strip().lower() in ("1", "true", "yes", "y", "on")
 # RSAR_LOADER_MODE: strict (target-only, SFOD-RS default) | loose (labeled-source + unlabeled-target)
 loader_mode = os.environ.get("RSAR_LOADER_MODE", "strict").strip().lower()
+# RSAR_CORR_AUG: 1 to enable online corruption augmentation during source_train
+_corr_aug = os.environ.get("RSAR_CORR_AUG", "0").strip() == "1"
+_corr_aug_prob = float(os.environ.get("RSAR_CORR_AUG_PROB", "0.5").strip() or "0.5")
 
 # ------------------ Dataset paths (SFOD-RS protocol compliant layout) ------------------
 _repo_root = osp.abspath(osp.join("{{ fileDirname }}", "..", "..", ".."))
@@ -82,6 +86,7 @@ workflow = [("train", 1)]
 # Source supervised training (clean labeled)
 source_train_pipeline = [
     dict(type="LoadImageFromFile"),
+    *([dict(type="RsarOnlineCorruptionAugment", prob=_corr_aug_prob)] if _corr_aug else []),
     dict(type="LoadAnnotations", with_bbox=True),
     dict(type="RResize", img_scale=image_size),
     dict(

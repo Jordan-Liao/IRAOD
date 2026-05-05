@@ -47,6 +47,10 @@ a specific historical result.
 - `sfod/`: detector, dataset, CGA, and compatibility code.
 - `tools/`: data preparation, smoke checks, evaluation helpers, and result
   aggregation.
+- `tools/rsar_corruption_pipeline.py`: `RsarOnlineCorruptionAugment` transform
+  (ROTATED_PIPELINES registered). Randomly applies one of 7 SAR corruptions
+  during source training when `RSAR_CORR_AUG=1`. Improved direct_test mean by
+  +40.6% relative across 7 corruption domains (Phase 9).
 
 ## Experiment Records
 

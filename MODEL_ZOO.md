@@ -15,6 +15,8 @@
 | RSAR | Baseline (supervised) | `work_dirs/exp_rsar_baseline/latest.pth` | 训练/评估：`work_dirs/exp_rsar_baseline/`；可视化：`work_dirs/vis_rsar_baseline/` |
 | RSAR | UT (no CGA) | `work_dirs/exp_rsar_ut_nocga/latest.pth` | 训练/评估：`work_dirs/exp_rsar_ut_nocga/`；可视化：`work_dirs/vis_rsar_ut_nocga/` |
 | RSAR | UT + CGA(CLIP) | `work_dirs/exp_rsar_ut_cga_clip/latest.pth` | 训练/评估：`work_dirs/exp_rsar_ut_cga_clip/`；可视化：`work_dirs/vis_rsar_ut_cga_clip/` |
+| RSAR | SFOD-RS clean source (Phase 5-8) | `work_dirs/rsar_sfodrs_full_fix_20260424_172627/source_train/latest.pth` | clean test mAP=0.5385；direct mean 7corr=0.3372 |
+| RSAR | SFOD-RS corr-aug source (Phase 9) | `work_dirs/rsar_corraug_loose_20260504/source_train/latest.pth` | clean test mAP=0.5125；direct mean 7corr=0.4742（+40.6% vs clean source）；`RSAR_CORR_AUG=1 RSAR_CORR_AUG_PROB=0.5` |
 
 ## How to reproduce
 

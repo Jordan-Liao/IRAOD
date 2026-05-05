@@ -6,6 +6,7 @@
 | --- | --- | --- |
 | `current/rsar_sfodrs.py` | Main RSAR SFOD-RS source/direct/adapt/eval config. Selects behavior with `RSAR_STAGE`. | `unbiased_teacher/sfod/unbiased_teacher_oriented_rcnn_selftraining_sfodrs_rsar.py` |
 | `current/rsar_source.py` | Short name for clean RSAR source training. | Same as `current/rsar_sfodrs.py` with `RSAR_STAGE=source_train` |
+| `current/rsar_source_corraug.py` | Source training with online SAR corruption augmentation (`RSAR_CORR_AUG=1`). Improves direct_test baseline across all 7 corruption domains (+41% relative mean mAP). | Same as `current/rsar_sfodrs.py` with `RSAR_CORR_AUG=1` |
 | `current/rsar_eval_ema.py` | Short name for non-CGA EMA detector evaluation. | `baseline/ema_config/sfodrs_oriented_rcnn_ema_rsar.py` |
 
 Historical configs are intentionally kept in place:

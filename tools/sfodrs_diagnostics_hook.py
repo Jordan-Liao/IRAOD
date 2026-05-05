@@ -52,10 +52,11 @@ class SFODRSDiagnosticsHook(Hook):
         if self.stage == "target_adapt":
             _lmode = "loose" if self.use_labeled_source_in_adaptation else "strict"
             _weight_l = os.environ.get("RSAR_WEIGHT_L", "0.5" if self.use_labeled_source_in_adaptation else "0.0")
+            _source_loss_active = float(_weight_l) > 0.0
             logger.info("[SFOD-RS/RSAR] loader_mode=%s", _lmode)
             logger.info("[SFOD-RS/RSAR] labeled_source_branch_read=%s", str(self.use_labeled_source_in_adaptation))
             logger.info("[SFOD-RS/RSAR] weight_l=%s", _weight_l)
-            logger.info("[SFOD-RS/RSAR] use_labeled_source_loss_in_adaptation=%s", str(self.use_labeled_source_in_adaptation))
+            logger.info("[SFOD-RS/RSAR] use_labeled_source_loss_in_adaptation=%s", str(_source_loss_active))
         logger.info(
             "[SFOD-RS/RSAR] use_labeled_source_in_adaptation=%s",
             str(self.use_labeled_source_in_adaptation),

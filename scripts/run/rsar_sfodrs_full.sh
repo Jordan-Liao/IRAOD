@@ -14,7 +14,7 @@ LOG="${WORK_ROOT}/launch.log"
 
 mkdir -p "${WORK_ROOT}"
 iraod_log_file "${LOG}" "rsar-full" "source=${SOURCE_CKPT} work_root=${WORK_ROOT}"
-iraod_log_file "${LOG}" "rsar-full" "config=${CONFIG} cuda=${CUDA_VISIBLE_DEVICES:-unset} ngpus=${NGPUS} port=${MASTER_PORT}"
+iraod_log_file "${LOG}" "rsar-full" "config=${CONFIG} cuda=${CUDA_VISIBLE_DEVICES:-unset} ngpus=${NGPUS} port=${MASTER_PORT} corr_aug=${RSAR_CORR_AUG:-0} corr_aug_prob=${RSAR_CORR_AUG_PROB:-0.5}"
 
 run_source_train_if_needed() {
   local source_dir="${WORK_ROOT}/source_train"
