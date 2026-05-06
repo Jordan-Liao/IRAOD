@@ -198,15 +198,18 @@ Run root：`work_dirs/rsar_e0128_thr04_fixed_20260506_011722`
 
 **关键发现**：更高阈值选出的伪标签 score 更高（0.76-0.80 vs 0.57-0.62），但 ship 占比反而**更高**（72% vs 65%），证明 ship 类置信度本身更高，类别不平衡是固有问题。
 
-### Per-Domain Results（已完成3域，4域进行中）
+### Per-Domain Results（已完成5域，2域进行中）
 | corruption | direct | E0128 nocga | Δ | E0128 cga | Δ |
 |---|---:|---:|---:|---:|---:|
 | chaff | 0.4899 | 0.4349 | -5.5pp | 0.4413 | -4.9pp |
-| gaussian_white_noise | 0.5154 | 0.4726 | -4.2pp | 0.4730 | -4.2pp |
+| gaussian_white_noise | 0.5154 | 0.4726 | -4.3pp | 0.4730 | -4.2pp |
 | point_target | 0.5100 | 0.4676 | -4.2pp | 0.4728 | -3.7pp |
 | noise_suppression | 0.4701 | 0.4331 | -3.7pp | 0.4369 | -3.3pp |
+| am_noise_horizontal | 0.4546 | 0.3054 | **-14.9pp** | 进行中 | — |
+| smart_suppression | 0.4245 | 进行中 | — | — | — |
+| am_noise_vertical | 0.4548 | 进行中 | — | — | — |
 
-**对比结论**：thr=0.4 比 thr=0.2 少退步 ~2.8pp，但仍全部为负，适应仍然有害。
+**对比结论**：thr=0.4 比 thr=0.2 少退步 ~2.8pp，但 am_noise_horizontal 仍严重崩溃（-14.9pp vs E0127的-19.4pp）；说明更高阈值减轻但无法消除崩溃。
 
 ---
 
@@ -224,11 +227,10 @@ Run root：`work_dirs/rsar_e0128_thr04_fixed_20260506_011722`
 | corr-aug loose cga | corr-aug | 0.4742 | 0.4316 | ✅ 无崩溃（全7域） |
 | E0127 thr=0.2→0.4 nocga | corr-aug | 0.4790 | 0.3866 | ❌ 全域退步，am/sm崩溃 |
 | E0127 thr=0.2→0.4 +cga | corr-aug | 0.4790 | 0.3869 | ❌ CGA 无实质帮助 |
-| E0128 thr=0.4 fixed nocga | corr-aug | 0.4742 | ~0.454‡| ❌ 全域退步（2域） |
+| E0128 thr=0.4 fixed nocga | corr-aug | 0.4742 | ~0.428†| ❌ 全域退步，5域已完成 |
 
 *\*3域（chaff/gwn/noise_sup）均值估算*  
-‡E0127 完整结果见 `work_dirs/rsar_e0127_thr_anneal_20260505_213455/rsar_sfodrs_results.md`  
-‡2域已完成 nocga 均值：(0.4349+0.4726)/2=0.4538（尚不完整）
+†5域已完成 nocga 均值：(0.4349+0.4726+0.4676+0.4331+0.3054)/5=0.4227（smart/am_vertical 进行中，am_horizontal 拉低均值）
 
 ### Per-Domain 全方法对比
 | corruption | strict-nocga | strict-cga | loose-nocga(orig) | corr-direct | corr-loose-nocga | E0127-nocga | E0128-nocga |
@@ -236,10 +238,10 @@ Run root：`work_dirs/rsar_e0128_thr04_fixed_20260506_011722`
 | chaff | 0.0106 | 0.0833 | 0.4516 | **0.4899** | 0.4574 | 0.4061 | 0.4349 |
 | gwn | 0.0080 | 0.0816 | 0.4983 | **0.5154** | 0.4805 | 0.4448 | 0.4726 |
 | point_target | 0.0448 | 0.1018 | — | **0.5100** | 0.4757 | 0.4501 | 0.4676 |
-| noise_suppression | 0.0861 | 0.0952 | 0.2996 | **0.4701** | 0.4359 | 0.3810 | 进行中 |
-| am_noise_horizontal | 0.0292 | 0.0587 | — | **0.4546** | 0.3776 | 0.2613 | 进行中 |
-| smart_suppression | 0.0538 | 0.0720 | — | **0.4245** | 0.4026 | 进行中 | 进行中 |
-| am_noise_vertical | 0.0301 | 0.0714 | — | **0.4548** | 0.3979 | 进行中 | 进行中 |
+| noise_suppression | 0.0861 | 0.0952 | 0.2996 | **0.4701** | 0.4359 | 0.3810 | 0.4331 |
+| am_noise_horizontal | 0.0292 | 0.0587 | — | **0.4546** | 0.3776 | 0.2613 | 0.3054 |
+| smart_suppression | 0.0538 | 0.0720 | — | **0.4245** | 0.4026 | 0.3301 | 进行中 |
+| am_noise_vertical | 0.0301 | 0.0714 | — | **0.4548** | 0.3979 | 0.3068 | 进行中 |
 
 ### 结论
 - **Corr-aug 源模型 + direct_test 是当前最优策略**（mean 0.4742）

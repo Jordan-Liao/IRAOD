@@ -169,9 +169,12 @@
 | corruption | direct | nocga | Δ | cga | Δ |
 |---|---:|---:|---:|---:|---:|
 | chaff | 0.4899 | 0.4349 | -5.5pp | 0.4413 | -4.9pp |
-| gaussian_white_noise | 0.5154 | 0.4726 | -4.2pp | 0.4730 | -4.2pp |
+| gaussian_white_noise | 0.5154 | 0.4726 | -4.3pp | 0.4730 | -4.2pp |
 | point_target | 0.5100 | 0.4676 | -4.2pp | 0.4728 | -3.7pp |
-| noise_suppression | 0.4701 | 0.4331 | -3.7pp | 进行中 | — |
+| noise_suppression | 0.4701 | 0.4331 | -3.7pp | 0.4369 | -3.3pp |
+| am_noise_horizontal | 0.4546 | 0.3054 | **-14.9pp** | 进行中 | — |
+| smart_suppression | 0.4245 | 进行中 | — | — | — |
+| am_noise_vertical | 0.4548 | 进行中 | — | — | — |
 
 ### E0127 Traceability
 - Run root: `work_dirs/rsar_e0127_thr_anneal_20260505_213455`
