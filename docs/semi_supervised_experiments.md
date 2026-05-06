@@ -171,7 +171,7 @@ vs 旧 thr=0.7：pseudo/img=1.74，mean_score=0.916。新阈值产生 3~7 倍更
 | point_target | 0.5100 | 0.4501 | -6.0pp | 0.4493 | -6.1pp |
 | noise_suppression | 0.4701 | 0.3810 | -8.9pp | 0.3803 | -9.0pp |
 | am_noise_horizontal | 0.4546 | 0.2613 | **-19.4pp** | 0.2612 | **-19.4pp** |
-| smart_suppression | 0.4245 | 0.3301 | -9.4pp | 进行中 | — |
+| smart_suppression | 0.4245 | 0.3301 | -9.4pp | 0.3324 | -9.2pp |
 | am_noise_vertical | 0.4548 | 进行中 | — | — | — |
 
 **关键发现**：am_noise_horizontal 灾难性崩溃（-19.4pp），该域 pseudo/img 高达 8.88，大量低质量伪标签导致灾难性遗忘。
