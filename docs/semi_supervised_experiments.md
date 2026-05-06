@@ -204,7 +204,7 @@ Run root：`work_dirs/rsar_e0128_thr04_fixed_20260506_011722`
 | chaff | 0.4899 | 0.4349 | -5.5pp | 0.4413 | -4.9pp |
 | gaussian_white_noise | 0.5154 | 0.4726 | -4.2pp | 0.4730 | -4.2pp |
 | point_target | 0.5100 | 0.4676 | -4.2pp | 0.4728 | -3.7pp |
-| noise_suppression | 0.4701 | 0.4331 | -3.7pp | 进行中 | — |
+| noise_suppression | 0.4701 | 0.4331 | -3.7pp | 0.4369 | -3.3pp |
 
 **对比结论**：thr=0.4 比 thr=0.2 少退步 ~2.8pp，但仍全部为负，适应仍然有害。
 
