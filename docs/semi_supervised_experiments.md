@@ -140,6 +140,71 @@
 
 ---
 
+## Experiment D: 阈值退火修复伪标签（E0127，thr=0.2→0.4 linear，进行中）
+
+**背景**：E0125/E0126 中 `pseudo_num(acc)=0.000` 被误判为"伪标签全部被过滤"。诊断后发现：
+- `pseudo_kept ≈ 1.74/img`（伪标签确实存在），`mean_score=0.916`（高置信度）
+- `pseudo_num(acc)` 是 IoU-matched TP，目标域无 GT → 该指标恒为 0，是误导性指标
+- 真实问题：thr=0.7 只选 18% NMS 输出，仅覆盖已知模式，无新适应信号
+- **修复**：将 score_thr 从 0.7 降至 0.2 并线性退火至 0.4，同时暴露 `RSAR_THR_SCHEDULE` env var 到 config
+
+**配置**：`RSAR_PSEUDO_SCORE_THR=0.2 RSAR_THR_SCHEDULE=linear RSAR_SCORE_THR_START=0.2 RSAR_SCORE_THR_END=0.4`  
+源权重：`work_dirs/rsar_corraug_loose_20260504/source_train/latest.pth`（clean=0.5125）  
+GPU：2,3,7（NGPUS=3），RSAR_SAMPLES_PER_GPU=8，MASTER_PORT=29513  
+Run root：`work_dirs/rsar_e0127_thr_anneal_20260505_213455`  
+启动时间：2026-05-05 21:34 CST
+
+### Pseudo-Label 统计（chaff，前12 epoch）
+| epoch | pseudo_kept | pseudo/img | mean_score | ship占比 |
+|---:|---:|---:|---:|---:|
+| 0 | 32,041 | 3.78 | 0.623 | 57.5% |
+| 6 | 57,405 | 6.78 | 0.556 | 66.4% |
+| 11 | 54,388 | 6.42 | 0.567 | 66.1% |
+
+vs 旧 thr=0.7：pseudo/img=1.74，mean_score=0.916。新阈值产生 3~7 倍更多伪标签但质量更低。
+
+### Per-Domain Results（已完成5域，2域进行中）
+| corruption | direct | E0127 nocga | Δ | E0127 cga | Δ |
+|---|---:|---:|---:|---:|---:|
+| chaff | 0.4899 | 0.4061 | -8.4pp | 0.4067 | -8.3pp |
+| gaussian_white_noise | 0.5154 | 0.4448 | -7.0pp | 0.4469 | -6.8pp |
+| point_target | 0.5100 | 0.4501 | -6.0pp | 0.4493 | -6.1pp |
+| noise_suppression | 0.4701 | 0.3810 | -8.9pp | 0.3803 | -9.0pp |
+| am_noise_horizontal | 0.4546 | 0.2613 | **-19.4pp** | 进行中 | — |
+| smart_suppression | 0.4245 | 进行中 | — | — | — |
+| am_noise_vertical | 0.4548 | 进行中 | — | — | — |
+
+**关键发现**：am_noise_horizontal 灾难性崩溃（-19.4pp），该域 pseudo/img 高达 8.88，大量低质量伪标签导致灾难性遗忘。
+
+---
+
+## Experiment E: 固定阈值 thr=0.4（E0128，进行中）
+
+**目标**：对照 E0127，验证更高固定阈值是否减少伪标签噪声  
+**配置**：`RSAR_PSEUDO_SCORE_THR=0.4`（无退火，无 RSAR_THR_SCHEDULE）  
+GPU：8,9（NGPUS=2），RSAR_SAMPLES_PER_GPU=8，MASTER_PORT=29517  
+Run root：`work_dirs/rsar_e0128_thr04_fixed_20260506_011722`  
+启动时间：2026-05-06 01:17 CST
+
+### Pseudo-Label 统计（chaff，前4 epoch）
+| epoch | pseudo/img | mean_score | ship占比 |
+|---:|---:|---:|---:|
+| 0 | 2.46 | 0.800 | 66.8% |
+| 3 | 3.33 | 0.763 | 72.6% |
+
+**关键发现**：更高阈值选出的伪标签 score 更高（0.76-0.80 vs 0.57-0.62），但 ship 占比反而**更高**（72% vs 65%），证明 ship 类置信度本身更高，类别不平衡是固有问题。
+
+### Per-Domain Results（已完成2域，5域进行中）
+| corruption | direct | E0128 nocga | Δ | E0128 cga | Δ |
+|---|---:|---:|---:|---:|---:|
+| chaff | 0.4899 | 0.4349 | -5.5pp | 0.4413 | -4.9pp |
+| gaussian_white_noise | 0.5154 | 0.4726 | -4.2pp | 0.4730 | -4.2pp |
+| point_target | 0.5100 | 进行中 | — | — | — |
+
+**对比结论**：thr=0.4 比 thr=0.2 少退步 ~2.8pp，但仍全部为负，适应仍然有害。
+
+---
+
 ## 综合对比：所有方法（全7域）
 
 ### Mean mAP（7 corruption domains 均值）
@@ -149,24 +214,31 @@
 | strict +cga | 原始 | 0.3372 | 0.0833 | ⚠️ 部分恢复 |
 | loose nocga | 原始 | 0.3372 | ~0.42* | ✅ 无崩溃（3域） |
 | loose +cga | 原始 | 0.3372 | ~0.42* | ✅ 无崩溃（3域） |
-| **corr-aug direct** | **corr-aug** | **0.4742** | — | **✅ 最优基线** |
+| **corr-aug direct** | **corr-aug** | **0.4742** | — | **✅ 当前最优** |
 | corr-aug loose nocga | corr-aug | 0.4742 | 0.4325 | ✅ 无崩溃（全7域） |
 | corr-aug loose cga | corr-aug | 0.4742 | 0.4316 | ✅ 无崩溃（全7域） |
+| E0127 thr=0.2→0.4 nocga | corr-aug | 0.4742 | ~0.389†| ❌ 全域退步，am_noise崩溃 |
+| E0128 thr=0.4 fixed nocga | corr-aug | 0.4742 | ~0.454‡| ❌ 全域退步（2域） |
 
-*\*3域（chaff/gwn/noise_sup）均值估算*
+*\*3域（chaff/gwn/noise_sup）均值估算*  
+†5域已完成 nocga 均值：(0.4061+0.4448+0.4501+0.3810+0.2613)/5=0.3887  
+‡2域已完成 nocga 均值：(0.4349+0.4726)/2=0.4538（尚不完整）
 
-### Per-Domain 全方法对比（已完成域）
-| corruption | strict-nocga | strict-cga | loose-nocga(orig) | corr-direct | corr-loose-nocga |
-|---|---:|---:|---:|---:|---:|
-| chaff | 0.0106 | 0.0833 | 0.4516 | **0.4899** | 0.4574 |
-| gwn | 0.0080 | 0.0816 | 0.4983 | 0.5154 | 0.4805 |
-| point_target | 0.0448 | 0.1018 | — | **0.5100** | 0.4757 |
-| noise_suppression | 0.0861 | 0.0952 | 0.2996 | **0.4701** | 0.4359 |
-| am_noise_horizontal | 0.0292 | 0.0587 | — | **0.4546** | 0.3776 |
-| smart_suppression | 0.0538 | 0.0720 | — | **0.4245** | 0.4026 |
-| am_noise_vertical | 0.0301 | 0.0714 | — | **0.4548** | 0.3979 |
+### Per-Domain 全方法对比
+| corruption | strict-nocga | strict-cga | loose-nocga(orig) | corr-direct | corr-loose-nocga | E0127-nocga | E0128-nocga |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| chaff | 0.0106 | 0.0833 | 0.4516 | **0.4899** | 0.4574 | 0.4061 | 0.4349 |
+| gwn | 0.0080 | 0.0816 | 0.4983 | **0.5154** | 0.4805 | 0.4448 | 0.4726 |
+| point_target | 0.0448 | 0.1018 | — | **0.5100** | 0.4757 | 0.4501 | 进行中 |
+| noise_suppression | 0.0861 | 0.0952 | 0.2996 | **0.4701** | 0.4359 | 0.3810 | 进行中 |
+| am_noise_horizontal | 0.0292 | 0.0587 | — | **0.4546** | 0.3776 | 0.2613 | 进行中 |
+| smart_suppression | 0.0538 | 0.0720 | — | **0.4245** | 0.4026 | 进行中 | 进行中 |
+| am_noise_vertical | 0.0301 | 0.0714 | — | **0.4548** | 0.3979 | 进行中 | 进行中 |
 
 ### 结论
-- Corr-aug 源模型 + direct_test 是当前最优策略（mean 0.4742）
-- Loose adaptation 在 corr-aug 源模型基础上仍回退（-0.04），根因是 pseudo_num(acc)=0.000
-- 提升 adaptation 效果的关键障碍：伪标签质量极低，需探索更强的伪标签滤波或在线腐败增强结合
+- **Corr-aug 源模型 + direct_test 是当前最优策略**（mean 0.4742）
+- **伪标签阈值调优无法修复适应问题**：thr=0.2（+247%伪标签）和 thr=0.4 均系统性退步，根因是类别不平衡（ship 占 66-73%）
+- **am_noise_horizontal 为极端失败案例**：pseudo/img=8.88 导致 E0127 nocga -19.4pp 灾难性遗忘
+- **E0128 优于 E0127** 约 2.8pp（更高阈值减少噪声），但仍无法超越 direct
+- **根本障碍**：UnbiasedTeacher 在无 GT 监督下向 ship 主导崩溃，伪标签质量/类平衡无法通过阈值解决
+- **下一步方向**：TENT（只更新 BN 统计量，零伪标签，无优化漂移风险）

@@ -5,6 +5,7 @@
 
 ## 2) Ambiguities
 - A0002: Whether CGA weight rule (`0.7*teacher + 0.3*clip_prob_orig`) should be tuned per corruption.
+- A0003: Whether TENT (BN statistics update only) can outperform corr-aug direct_test on any RSAR corruption domain. E0127/E0128 confirmed self-training is systematically harmful; TENT is the next candidate.
 
 ## Resolved (archive)
 - [x] A0001: Whether the next round should keep strict target-only adaptation or allow controlled source replay.
@@ -27,3 +28,8 @@
   - Evidence: generated
     - `work_dirs/rsar_sfodrs_full_fix_20260424_172627/rsar_sfodrs_results.csv`
     - `work_dirs/rsar_sfodrs_full_fix_20260424_172627/rsar_sfodrs_results.md`
+
+- [x] M0036: `pseudo_num(acc)=0.000` 全程被误判为"伪标签全部被过滤"。
+  - Evidence（Phase 10 诊断）: `pseudo_num(acc)` 是 IoU TP 指标，目标域无 GT 注释 → 分母为 0 → 恒为 0。实际 pseudo/img=1.74，mean_score=0.916（thr=0.7），伪标签正常生成。真实问题是高置信度伪标签缺乏新适应信号，不是过滤 bug。
+  - Fix: 新增 `[PseudoScoreDist]` 日志 + `PseudoStatsAndEarlyStopHook` 警告，暴露 `RSAR_THR_SCHEDULE` 到 config。
+  - Outcome: E0127（thr=0.2→0.4）和 E0128（thr=0.4 fixed）均验证阈值调优无法修复，类别不平衡是根本障碍。
