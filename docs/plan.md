@@ -159,8 +159,8 @@
 | noise_suppression | 0.4701 | 0.3810 | -8.9pp | 0.3803 | -9.0pp |
 | am_noise_horizontal | 0.4546 | 0.2613 | **-19.4pp** | 0.2612 | **-19.4pp** |
 | smart_suppression | 0.4245 | 0.3301 | -9.4pp | 0.3324 | -9.2pp |
-| am_noise_vertical | 0.4548 | 0.3068 | **-14.8pp** | 进行中 | — |
-| **Mean (7域)** | **0.4742** | **0.3686** | **-10.6pp** | — | — |
+| am_noise_vertical | 0.4548 | 0.3068 | **-14.8pp** | 0.3063 | **-14.9pp** |
+| **Mean (7域)** | **0.4790** | **0.3866** | **-9.2pp** | **0.3869** | **-9.2pp** |
 
 ### E0128（thr=0.4 fixed，对照组）
 - 运行目录：`work_dirs/rsar_e0128_thr04_fixed_20260506_011722`
@@ -173,7 +173,12 @@
 | point_target | 0.5100 | 0.4676 | -4.2pp | 0.4728 | -3.7pp |
 | noise_suppression | 0.4701 | 0.4331 | -3.7pp | 进行中 | — |
 
-### Phase 10 结论（截至 2026-05-06 12:20 CST）
+### E0127 Traceability
+- Run root: `work_dirs/rsar_e0127_thr_anneal_20260505_213455`
+- 完整结果：`rsar_sfodrs_results.csv` / `rsar_sfodrs_results.md`
+- 完成时间：2026-05-06 19:32 CST
+
+### Phase 10 结论（截至 2026-05-06 19:32 CST）
 1. **阈值调优无法修复适应问题**：thr=0.2、0.4 均全域退步，幅度 4~19pp
 2. **am_noise_horizontal 灾难性崩溃**（E0127 -19.4pp）：pseudo/img=8.88，大量低质量伪标签造成灾难性遗忘
 3. **类别不平衡是根本障碍**：ship 占伪标签 66-73%，更高阈值反而加剧（ship 置信度本身更高）
