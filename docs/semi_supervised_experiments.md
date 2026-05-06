@@ -172,9 +172,13 @@ vs 旧 thr=0.7：pseudo/img=1.74，mean_score=0.916。新阈值产生 3~7 倍更
 | noise_suppression | 0.4701 | 0.3810 | -8.9pp | 0.3803 | -9.0pp |
 | am_noise_horizontal | 0.4546 | 0.2613 | **-19.4pp** | 0.2612 | **-19.4pp** |
 | smart_suppression | 0.4245 | 0.3301 | -9.4pp | 0.3324 | -9.2pp |
-| am_noise_vertical | 0.4548 | 进行中 | — | — | — |
+| am_noise_vertical | 0.4548 | 0.3068 | **-14.8pp** | 进行中 | — |
+| **Mean (7域)** | **0.4742** | **0.3686** | **-10.6pp** | — | — |
 
-**关键发现**：am_noise_horizontal 灾难性崩溃（-19.4pp），该域 pseudo/img 高达 8.88，大量低质量伪标签导致灾难性遗忘。
+**关键发现**：
+- am_noise_horizontal（-19.4pp）和 am_noise_vertical（-14.8pp）灾难性崩溃，两域 pseudo/img 分别为 8.88 和 10.0
+- 7域 nocga 均值 0.3686，远低于旧 E0125/E0126（0.4325），降低阈值反而大幅加剧退步
+- CGA 对崩溃域无任何帮助（am_noise_horizontal cga=0.2612 ≈ nocga=0.2613）
 
 ---
 
@@ -218,11 +222,11 @@ Run root：`work_dirs/rsar_e0128_thr04_fixed_20260506_011722`
 | **corr-aug direct** | **corr-aug** | **0.4742** | — | **✅ 当前最优** |
 | corr-aug loose nocga | corr-aug | 0.4742 | 0.4325 | ✅ 无崩溃（全7域） |
 | corr-aug loose cga | corr-aug | 0.4742 | 0.4316 | ✅ 无崩溃（全7域） |
-| E0127 thr=0.2→0.4 nocga | corr-aug | 0.4742 | ~0.389†| ❌ 全域退步，am_noise崩溃 |
+| E0127 thr=0.2→0.4 nocga | corr-aug | 0.4742 | 0.3686‡| ❌ 全域退步，am/sm崩溃 |
 | E0128 thr=0.4 fixed nocga | corr-aug | 0.4742 | ~0.454‡| ❌ 全域退步（2域） |
 
 *\*3域（chaff/gwn/noise_sup）均值估算*  
-†5域已完成 nocga 均值：(0.4061+0.4448+0.4501+0.3810+0.2613)/5=0.3887  
+‡E0127 7域 nocga 均值（am_noise_vertical cga 进行中）：(0.4061+0.4448+0.4501+0.3810+0.2613+0.3301+0.3068)/7=0.3686  
 ‡2域已完成 nocga 均值：(0.4349+0.4726)/2=0.4538（尚不完整）
 
 ### Per-Domain 全方法对比
