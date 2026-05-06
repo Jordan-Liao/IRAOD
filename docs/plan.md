@@ -157,9 +157,9 @@
 | gaussian_white_noise | 0.5154 | 0.4448 | -7.0pp | 0.4469 | -6.8pp |
 | point_target | 0.5100 | 0.4501 | -6.0pp | 0.4493 | -6.1pp |
 | noise_suppression | 0.4701 | 0.3810 | -8.9pp | 0.3803 | -9.0pp |
-| am_noise_horizontal | 0.4546 | 0.2613 | **-19.4pp** | 进行中 | — |
-| smart_suppression | — | 进行中 | — | — | — |
-| am_noise_vertical | — | 进行中 | — | — | — |
+| am_noise_horizontal | 0.4546 | 0.2613 | **-19.4pp** | 0.2612 | **-19.4pp** |
+| smart_suppression | 0.4245 | 进行中 | — | — | — |
+| am_noise_vertical | 0.4548 | 进行中 | — | — | — |
 
 ### E0128（thr=0.4 fixed，对照组）
 - 运行目录：`work_dirs/rsar_e0128_thr04_fixed_20260506_011722`
@@ -169,7 +169,8 @@
 |---|---:|---:|---:|---:|---:|
 | chaff | 0.4899 | 0.4349 | -5.5pp | 0.4413 | -4.9pp |
 | gaussian_white_noise | 0.5154 | 0.4726 | -4.2pp | 0.4730 | -4.2pp |
-| point_target+ | — | 进行中 | — | — | — |
+| point_target | 0.5100 | 0.4676 | -4.2pp | 进行中 | — |
+| noise_suppression | — | 进行中 | — | — | — |
 
 ### Phase 10 结论（截至 2026-05-06 12:20 CST）
 1. **阈值调优无法修复适应问题**：thr=0.2、0.4 均全域退步，幅度 4~19pp
