@@ -733,3 +733,35 @@ bash scripts/run/rsar_sfodrs_full.sh auto work_dirs/rsar_corraug_loose_20260504
 - 启动日志：`work_dirs/rsar_corraug_loose_20260504/launch.log`
 - nohup 日志：`work_dirs/rsar_corraug_loose_20260504/nohup.log`
 - 完成时间：2026-05-05 17:59
+
+---
+
+## Phase 10–11 Summary (详见 docs/plan.md 和 docs/semi_supervised_experiments.md)
+
+### Phase 10: 伪标签阈值修复实验（E0127/E0128，已完成）
+
+| Experiment | config | mean nocga | mean cga | Δ vs direct |
+|---|---|---:|---:|---:|
+| E0127 thr=0.2→0.4 anneal | RSAR_PSEUDO_SCORE_THR=0.2, RSAR_THR_SCHEDULE=linear | 0.3866 | 0.3869 | -9.2pp |
+| E0128 thr=0.4 fixed | RSAR_PSEUDO_SCORE_THR=0.4 | 0.4034 | 0.4058 | -7.1pp |
+
+**结论**：阈值调优无效，am_noise_horizontal/vertical 灾难性崩溃（-13~-19pp）。UnbiasedTeacher 自训练路线关闭。
+
+### Phase 11: TENT 测试时适应（E0129，已完成）
+
+Run root: `work_dirs/rsar_e0129_tent_20260507_113840`  
+Config: `TENT_EPOCHS=2 TENT_LR=1e-4 TENT_CONF=0.5 TENT_MAX_BATCHES=500`  
+Script: `bash scripts/run/rsar_tent.sh`
+
+| corruption | direct | TENT | Δ |
+|---|---:|---:|---:|
+| chaff | 0.4899 | 0.4856 | -0.43pp |
+| gaussian_white_noise | 0.5154 | 0.5118 | -0.36pp |
+| point_target | 0.5100 | 0.5090 | -0.10pp |
+| noise_suppression | 0.4701 | 0.4557 | -1.44pp |
+| am_noise_horizontal | 0.4546 | 0.4440 | -1.06pp |
+| smart_suppression | 0.4245 | 0.4068 | -1.77pp |
+| am_noise_vertical | 0.4548 | 0.4459 | -0.89pp |
+| **Mean** | **0.4742** | **0.4656** | **-0.86pp** |
+
+**结论**：TENT 是当前最优适应方法（mean -0.86pp vs direct），无崩溃，am 系列从 -14.9pp 收窄到 -1.06pp。

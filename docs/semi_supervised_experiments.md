@@ -140,7 +140,7 @@
 
 ---
 
-## Experiment D: 阈值退火修复伪标签（E0127，thr=0.2→0.4 linear，进行中）
+## Experiment D: 阈值退火修复伪标签（E0127，thr=0.2→0.4 linear，已完成）
 
 **背景**：E0125/E0126 中 `pseudo_num(acc)=0.000` 被误判为"伪标签全部被过滤"。诊断后发现：
 - `pseudo_kept ≈ 1.74/img`（伪标签确实存在），`mean_score=0.916`（高置信度）
@@ -182,7 +182,7 @@ vs 旧 thr=0.7：pseudo/img=1.74，mean_score=0.916。新阈值产生 3~7 倍更
 
 ---
 
-## Experiment E: 固定阈值 thr=0.4（E0128，进行中）
+## Experiment E: 固定阈值 thr=0.4（E0128，已完成）
 
 **目标**：对照 E0127，验证更高固定阈值是否减少伪标签噪声  
 **配置**：`RSAR_PSEUDO_SCORE_THR=0.4`（无退火，无 RSAR_THR_SCHEDULE）  
@@ -245,10 +245,11 @@ Run root：`work_dirs/rsar_e0128_thr04_fixed_20260506_011722`
 | smart_suppression | 0.0538 | 0.0720 | — | **0.4245** | 0.4026 | 0.3301 | 0.3868 | 0.4068 |
 | am_noise_vertical | 0.0301 | 0.0714 | — | **0.4548** | 0.3979 | 0.3068 | 0.3237 | 0.4459 |
 
-### 结论（E0127/E0128 全部完成）
+### 结论（E0127/E0128/E0129 全部完成）
 - **Corr-aug 源模型 + direct_test 是当前最优无适应策略**（mean 0.4742）
+- **TENT（E0129）是当前最优适应方法**（mean 0.4656，Δ=-0.86pp），远优于伪标签方案
 - **伪标签阈值调优无法修复适应问题**：thr=0.2→0.4（E0127，mean -9.2pp）和 thr=0.4 fixed（E0128，mean -7.1pp）均系统性退步
-- **am_noise_horizontal/vertical 持续灾难性崩溃**：两域在两个实验均退步 -13~-19pp
+- **am_noise_horizontal/vertical 持续灾难性崩溃**（在伪标签方案中），TENT 将其收窄到 -1.06pp/-0.89pp
 - **根本障碍**：UnbiasedTeacher 在无 GT 监督下向 ship 主导崩溃，伪标签质量/类平衡无法通过阈值解决
 
 ---
@@ -278,4 +279,10 @@ Run root：`work_dirs/rsar_e0128_thr04_fixed_20260506_011722`
 2. **am_noise_horizontal 无崩溃**：-1.06pp（E0128 为 -14.9pp），完全稳定
 3. **point_target 近似无损**：-0.10pp
 4. **最差域为 smart_suppression**（-1.77pp），仍远优于任何伪标签方案
-- **下一步方向**：TENT（只更新 BN 统计量，零伪标签，无优化漂移风险）
+5. **TENT 未能超越 direct_test**（mean -0.86pp），但是迄今所有适应方法中最接近 direct 的
+
+### 结论
+- **TENT 是当前最优适应方法**（mean 0.4656，Δ=-0.86pp vs direct）
+- **无崩溃、无伪标签、无漂移风险**：BN affine 参数熵最小化是 RSAR 适应的可行路线
+- **UnbiasedTeacher 自训练路线已关闭**：三次独立实验（E0123~E0128）一致表明伪标签方案系统性有害
+- **下一步方向**：TENT + direct ensemble 融合，或针对特定崩溃域（smart_suppression）的专项调优

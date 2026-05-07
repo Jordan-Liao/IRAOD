@@ -5,9 +5,12 @@
 
 ## 2) Ambiguities
 - A0002: Whether CGA weight rule (`0.7*teacher + 0.3*clip_prob_orig`) should be tuned per corruption.
-- A0003: Whether TENT (BN statistics update only) can outperform corr-aug direct_test on any RSAR corruption domain. E0127/E0128 confirmed self-training is systematically harmful; TENT is the next candidate.
 
 ## Resolved (archive)
+
+- [x] A0003: Whether TENT (BN affine entropy minimization) can outperform corr-aug direct_test on any RSAR corruption domain.
+  - Evidence（E0129）: TENT mean mAP=0.4656（Δ=-0.86pp vs direct 0.4742）。未能超越 direct，但是所有适应方法中最接近 direct 的（vs E0128 -7.1pp）。point_target 仅 -0.10pp，am_noise_horizontal 从伪标签方案的 -14.9pp 收窄到 -1.06pp。
+  - Conclusion: TENT 是最优适应方法，但无适应（corr-aug direct）仍是最高 mAP 策略。下一候选：TENT+direct ensemble 融合。
 - [x] A0001: Whether the next round should keep strict target-only adaptation or allow controlled source replay.
   - Evidence: Phase 8 (loose + weight_l=0.5) eliminated strict collapse; Phase 9 (corr-aug source) raised direct_test mean from 0.337 to 0.474. Conclusion: loose mode resolves collapse; corr-aug source is the stronger lever. Strict target-only is deprecated for RSAR.
 

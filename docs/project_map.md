@@ -52,9 +52,31 @@ a specific historical result.
   during source training when `RSAR_CORR_AUG=1`. Improved direct_test mean by
   +40.6% relative across 7 corruption domains (Phase 9).
 
+## Key Tools
+
+- `tools/tent_adapt_per_corr.py`: TENT adaptation script (BN affine entropy
+  minimization, no pseudo-labels). Used by `scripts/run/rsar_tent.sh`.
+- `tools/rsar_semi_sfodrs_dataset.py`: `SemiRSARSFODDataset` — faithful SFOD-RS
+  dataloader (labeled source + unlabeled target). Activated by `RSAR_LOADER_MODE=loose`.
+- `tools/sfodrs_diagnostics_hook.py`: hook logging CGA mode, keep_label, score rule.
+- `tools/pseudo_stats_early_stop_hook.py`: pseudo-label per-epoch statistics.
+- `tools/collect_rsar_sfodrs_results.py`: aggregate eval JSONs into CSV/MD table.
+
 ## Experiment Records
 
-- `docs/experiment.md`: complete ledger with commands, artifacts, and metrics.
+- `docs/plan.md`: phased experiment history (Phase 5–11) with results and conclusions.
+- `docs/semi_supervised_experiments.md`: full method comparison table (all Exp A–F).
+- `docs/mohu.md`: open ambiguities and resolved decisions.
 - `docs/phase5_results/`: frozen CSV/Markdown result snapshots.
 - `work_dirs/`: local generated training/eval artifacts, not an authority source
   for Git history.
+
+## Current Best Results (2026-05-07)
+
+| Strategy | Source Model | Mean mAP (7 corr) | Notes |
+|---|---|---:|---|
+| direct_test | corr-aug | **0.4742** | Best overall |
+| TENT (E0129) | corr-aug | 0.4656 | Best adaptation method (-0.86pp) |
+| corr-aug loose nocga | corr-aug | 0.4325 | Pseudo-label with faithful loader |
+| E0128 thr=0.4 nocga | corr-aug | 0.4034 | Best pseudo-label with threshold tuning |
+| strict nocga | original | 0.0402 | Complete collapse |
