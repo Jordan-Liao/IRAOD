@@ -205,14 +205,21 @@
 - Run root：`work_dirs/rsar_e0129_tent_20260507_113840`
 - 启动时间：2026-05-07 11:38 CST
 
-### 结果（进行中）
-| corruption | direct | tent | Δ |
+### 结果（全部完成，2026-05-07 15:19 CST）
+| corruption | direct | TENT | Δ |
 |---|---:|---:|---:|
-| chaff | 0.4899 | 进行中 | — |
-| gaussian_white_noise | 0.5154 | — | — |
-| point_target | 0.5100 | — | — |
-| noise_suppression | 0.4701 | — | — |
-| am_noise_horizontal | 0.4546 | — | — |
-| smart_suppression | 0.4245 | — | — |
-| am_noise_vertical | 0.4548 | — | — |
-| **Mean** | **0.4742** | — | — |
+| chaff | 0.4899 | 0.4856 | -0.43pp |
+| gaussian_white_noise | 0.5154 | 0.5118 | -0.36pp |
+| point_target | 0.5100 | 0.5090 | **-0.10pp** |
+| noise_suppression | 0.4701 | 0.4557 | -1.44pp |
+| am_noise_horizontal | 0.4546 | 0.4440 | -1.06pp |
+| smart_suppression | 0.4245 | 0.4068 | -1.77pp |
+| am_noise_vertical | 0.4548 | 0.4459 | -0.89pp |
+| **Mean (7域)** | **0.4742** | **0.4656** | **-0.86pp** |
+
+### Phase 11 结论
+1. **TENT 大幅优于伪标签方法**：mean -0.86pp（vs E0128 -7.1pp，vs E0127 -9.2pp）
+2. **无崩溃**：am_noise_horizontal 仅 -1.06pp（E0128 为 -14.9pp），am 系列完全稳定
+3. **point_target 几乎无损**：-0.10pp，近似 direct
+4. **TENT 成为当前最优适应方法**（direct 仍更高 0.86pp，但 TENT 是迄今最接近 direct 的适应方案）
+5. **下一步**：TENT + direct ensemble（两者预测融合）或 TENT 超参调优（epochs/lr/conf_thr）

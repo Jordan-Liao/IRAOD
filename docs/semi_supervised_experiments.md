@@ -230,25 +230,52 @@ Run root：`work_dirs/rsar_e0128_thr04_fixed_20260506_011722`
 | E0127 thr=0.2→0.4 +cga | corr-aug | 0.4790 | 0.3869 | ❌ CGA 无实质帮助 |
 | E0128 thr=0.4 fixed nocga | corr-aug | 0.4742 | 0.4034 | ❌ 全域退步，mean -7.1pp |
 | E0128 thr=0.4 fixed +cga | corr-aug | 0.4742 | 0.4058 | ❌ 全域退步，mean -6.8pp |
+| **E0129 TENT** | **corr-aug** | **0.4742** | **0.4656** | **✅ mean -0.86pp，最优适应方法** |
 
 *\*3域（chaff/gwn/noise_sup）均值估算*
 
 ### Per-Domain 全方法对比
-| corruption | strict-nocga | strict-cga | loose-nocga(orig) | corr-direct | corr-loose-nocga | E0127-nocga | E0128-nocga |
-|---|---:|---:|---:|---:|---:|---:|---:|
-| chaff | 0.0106 | 0.0833 | 0.4516 | **0.4899** | 0.4574 | 0.4061 | 0.4349 |
-| gwn | 0.0080 | 0.0816 | 0.4983 | **0.5154** | 0.4805 | 0.4448 | 0.4726 |
-| point_target | 0.0448 | 0.1018 | — | **0.5100** | 0.4757 | 0.4501 | 0.4676 |
-| noise_suppression | 0.0861 | 0.0952 | 0.2996 | **0.4701** | 0.4359 | 0.3810 | 0.4331 |
-| am_noise_horizontal | 0.0292 | 0.0587 | — | **0.4546** | 0.3776 | 0.2613 | 0.3054 |
-| smart_suppression | 0.0538 | 0.0720 | — | **0.4245** | 0.4026 | 0.3301 | 0.3868 |
-| am_noise_vertical | 0.0301 | 0.0714 | — | **0.4548** | 0.3979 | 0.3068 | 0.3237 |
+| corruption | strict-nocga | strict-cga | loose-nocga(orig) | corr-direct | corr-loose-nocga | E0127-nocga | E0128-nocga | **E0129-TENT** |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| chaff | 0.0106 | 0.0833 | 0.4516 | **0.4899** | 0.4574 | 0.4061 | 0.4349 | 0.4856 |
+| gwn | 0.0080 | 0.0816 | 0.4983 | **0.5154** | 0.4805 | 0.4448 | 0.4726 | 0.5118 |
+| point_target | 0.0448 | 0.1018 | — | **0.5100** | 0.4757 | 0.4501 | 0.4676 | 0.5090 |
+| noise_suppression | 0.0861 | 0.0952 | 0.2996 | **0.4701** | 0.4359 | 0.3810 | 0.4331 | 0.4557 |
+| am_noise_horizontal | 0.0292 | 0.0587 | — | **0.4546** | 0.3776 | 0.2613 | 0.3054 | 0.4440 |
+| smart_suppression | 0.0538 | 0.0720 | — | **0.4245** | 0.4026 | 0.3301 | 0.3868 | 0.4068 |
+| am_noise_vertical | 0.0301 | 0.0714 | — | **0.4548** | 0.3979 | 0.3068 | 0.3237 | 0.4459 |
 
 ### 结论（E0127/E0128 全部完成）
-- **Corr-aug 源模型 + direct_test 是当前最优策略**（mean 0.4742）
+- **Corr-aug 源模型 + direct_test 是当前最优无适应策略**（mean 0.4742）
 - **伪标签阈值调优无法修复适应问题**：thr=0.2→0.4（E0127，mean -9.2pp）和 thr=0.4 fixed（E0128，mean -7.1pp）均系统性退步
-- **am_noise_horizontal/vertical 持续灾难性崩溃**：两域在两个实验均退步 -13~-19pp，是 am 类域的固有脆弱性
-- **E0128 优于 E0127** 约 2.1pp（更高阈值减少噪声），但仍无法超越 direct
+- **am_noise_horizontal/vertical 持续灾难性崩溃**：两域在两个实验均退步 -13~-19pp
 - **根本障碍**：UnbiasedTeacher 在无 GT 监督下向 ship 主导崩溃，伪标签质量/类平衡无法通过阈值解决
-- **下一步**：TENT（BN统计量更新，无伪标签）已实现于 `tools/tent_adapt_per_corr.py`
+
+---
+
+## Experiment F: TENT 测试时熵最小化（E0129，全7域）
+
+**配置**：BN affine 参数熵最小化，冻结其余所有参数，无伪标签  
+**源权重**：`work_dirs/rsar_corraug_loose_20260504/source_train/latest.pth`（clean=0.5125）  
+**超参**：`TENT_EPOCHS=2 TENT_LR=1e-4 TENT_CONF=0.5 TENT_MAX_BATCHES=500`  
+**Run root**：`work_dirs/rsar_e0129_tent_20260507_113840`  
+**完成时间**：2026-05-07 15:19 CST
+
+### Per-Domain Results
+| corruption | direct | TENT | Δ |
+|---|---:|---:|---:|
+| chaff | 0.4899 | 0.4856 | -0.43pp |
+| gaussian_white_noise | 0.5154 | 0.5118 | -0.36pp |
+| point_target | 0.5100 | 0.5090 | **-0.10pp** |
+| noise_suppression | 0.4701 | 0.4557 | -1.44pp |
+| am_noise_horizontal | 0.4546 | 0.4440 | -1.06pp |
+| smart_suppression | 0.4245 | 0.4068 | -1.77pp |
+| am_noise_vertical | 0.4548 | 0.4459 | -0.89pp |
+| **Mean (7域)** | **0.4742** | **0.4656** | **-0.86pp** |
+
+### Observations
+1. **TENT 大幅优于伪标签方法**：mean -0.86pp vs E0128 -7.1pp vs E0127 -9.2pp
+2. **am_noise_horizontal 无崩溃**：-1.06pp（E0128 为 -14.9pp），完全稳定
+3. **point_target 近似无损**：-0.10pp
+4. **最差域为 smart_suppression**（-1.77pp），仍远优于任何伪标签方案
 - **下一步方向**：TENT（只更新 BN 统计量，零伪标签，无优化漂移风险）
