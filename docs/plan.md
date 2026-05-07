@@ -189,3 +189,30 @@
 4. **E0128 优于 E0127** 约 2.1pp（mean nocga 0.4034 vs 0.3866），更少但更高质量的伪标签略优
 5. **UnbiasedTeacher 自训练在无 GT 监督下系统性有害**，不是超参数问题
 6. **下一步**：TENT 方案（`tools/tent_adapt_per_corr.py` 已实现），只更新 BN 统计量，无伪标签，无漂移风险
+
+---
+
+## Phase 11: TENT 测试时适应（E0129，进行中）
+
+### 目标
+- 验证 TENT（BN affine 参数熵最小化）是否能超越 corr-aug direct_test 基线
+- 无伪标签、无源域回放，只在 target val 上最小化 RoI head 分类熵
+
+### 运行配置
+- 源权重：`work_dirs/rsar_corraug_loose_20260504/source_train/latest.pth`（clean=0.5125）
+- TENT 超参：`TENT_EPOCHS=2 TENT_LR=1e-4 TENT_CONF=0.5 TENT_MAX_BATCHES=500`
+- GPU：3（adapt 单卡），3,7,8,9（eval DDP×4），MASTER_PORT=29521
+- Run root：`work_dirs/rsar_e0129_tent_20260507_113840`
+- 启动时间：2026-05-07 11:38 CST
+
+### 结果（进行中）
+| corruption | direct | tent | Δ |
+|---|---:|---:|---:|
+| chaff | 0.4899 | 进行中 | — |
+| gaussian_white_noise | 0.5154 | — | — |
+| point_target | 0.5100 | — | — |
+| noise_suppression | 0.4701 | — | — |
+| am_noise_horizontal | 0.4546 | — | — |
+| smart_suppression | 0.4245 | — | — |
+| am_noise_vertical | 0.4548 | — | — |
+| **Mean** | **0.4742** | — | — |
