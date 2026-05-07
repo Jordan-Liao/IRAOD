@@ -164,7 +164,7 @@
 
 ### E0128（thr=0.4 fixed，对照组）
 - 运行目录：`work_dirs/rsar_e0128_thr04_fixed_20260506_011722`
-- GPU：8,9（NGPUS=2），启动：2026-05-06 01:17 CST
+- GPU：8,9（NGPUS=2），启动：2026-05-06 01:17 CST，完成：2026-05-07 08:28 CST
 
 | corruption | direct | nocga | Δ | cga | Δ |
 |---|---:|---:|---:|---:|---:|
@@ -172,19 +172,20 @@
 | gaussian_white_noise | 0.5154 | 0.4726 | -4.3pp | 0.4730 | -4.2pp |
 | point_target | 0.5100 | 0.4676 | -4.2pp | 0.4728 | -3.7pp |
 | noise_suppression | 0.4701 | 0.4331 | -3.7pp | 0.4369 | -3.3pp |
-| am_noise_horizontal | 0.4546 | 0.3054 | **-14.9pp** | 进行中 | — |
-| smart_suppression | 0.4245 | 进行中 | — | — | — |
-| am_noise_vertical | 0.4548 | 进行中 | — | — | — |
+| am_noise_horizontal | 0.4546 | 0.3054 | **-14.9pp** | 0.3032 | **-15.1pp** |
+| smart_suppression | 0.4245 | 0.3868 | -3.8pp | 0.3863 | -3.8pp |
+| am_noise_vertical | 0.4548 | 0.3237 | **-13.1pp** | 0.3268 | **-12.8pp** |
+| **Mean (7域)** | **0.4742** | **0.4034** | **-7.1pp** | **0.4058** | **-6.8pp** |
 
 ### E0127 Traceability
 - Run root: `work_dirs/rsar_e0127_thr_anneal_20260505_213455`
 - 完整结果：`rsar_sfodrs_results.csv` / `rsar_sfodrs_results.md`
 - 完成时间：2026-05-06 19:32 CST
 
-### Phase 10 结论（截至 2026-05-06 19:32 CST）
-1. **阈值调优无法修复适应问题**：thr=0.2、0.4 均全域退步，幅度 4~19pp
-2. **am_noise_horizontal 灾难性崩溃**（E0127 -19.4pp）：pseudo/img=8.88，大量低质量伪标签造成灾难性遗忘
-3. **类别不平衡是根本障碍**：ship 占伪标签 66-73%，更高阈值反而加剧（ship 置信度本身更高）
-4. **E0128 优于 E0127** 约 2.8pp，说明更少但更高质量的伪标签好于数量多但嘈杂
+### Phase 10 结论（E0127/E0128 全部完成，2026-05-07 08:28 CST）
+1. **阈值调优无法修复适应问题**：thr=0.2（E0127）和 thr=0.4（E0128）均全域退步，mean Δ分别为 -9.2pp 和 -7.1pp
+2. **am_noise_horizontal / am_noise_vertical 持续崩溃**：两域在两个实验中均严重退步（-13~-19pp），E0128 略好但仍灾难性
+3. **类别不平衡是根本障碍**：ship 占伪标签 66-73%，阈值调优无法解决
+4. **E0128 优于 E0127** 约 2.1pp（mean nocga 0.4034 vs 0.3866），更少但更高质量的伪标签略优
 5. **UnbiasedTeacher 自训练在无 GT 监督下系统性有害**，不是超参数问题
 6. **下一步**：TENT 方案（`tools/tent_adapt_per_corr.py` 已实现），只更新 BN 统计量，无伪标签，无漂移风险

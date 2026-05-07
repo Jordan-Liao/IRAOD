@@ -198,18 +198,19 @@ Run root：`work_dirs/rsar_e0128_thr04_fixed_20260506_011722`
 
 **关键发现**：更高阈值选出的伪标签 score 更高（0.76-0.80 vs 0.57-0.62），但 ship 占比反而**更高**（72% vs 65%），证明 ship 类置信度本身更高，类别不平衡是固有问题。
 
-### Per-Domain Results（已完成5域，2域进行中）
+### Per-Domain Results（全7域完成，2026-05-07 08:28 CST）
 | corruption | direct | E0128 nocga | Δ | E0128 cga | Δ |
 |---|---:|---:|---:|---:|---:|
 | chaff | 0.4899 | 0.4349 | -5.5pp | 0.4413 | -4.9pp |
 | gaussian_white_noise | 0.5154 | 0.4726 | -4.3pp | 0.4730 | -4.2pp |
 | point_target | 0.5100 | 0.4676 | -4.2pp | 0.4728 | -3.7pp |
 | noise_suppression | 0.4701 | 0.4331 | -3.7pp | 0.4369 | -3.3pp |
-| am_noise_horizontal | 0.4546 | 0.3054 | **-14.9pp** | 进行中 | — |
-| smart_suppression | 0.4245 | 进行中 | — | — | — |
-| am_noise_vertical | 0.4548 | 进行中 | — | — | — |
+| am_noise_horizontal | 0.4546 | 0.3054 | **-14.9pp** | 0.3032 | **-15.1pp** |
+| smart_suppression | 0.4245 | 0.3868 | -3.8pp | 0.3863 | -3.8pp |
+| am_noise_vertical | 0.4548 | 0.3237 | **-13.1pp** | 0.3268 | **-12.8pp** |
+| **Mean (7域)** | **0.4742** | **0.4034** | **-7.1pp** | **0.4058** | **-6.8pp** |
 
-**对比结论**：thr=0.4 比 thr=0.2 少退步 ~2.8pp，但 am_noise_horizontal 仍严重崩溃（-14.9pp vs E0127的-19.4pp）；说明更高阈值减轻但无法消除崩溃。
+**对比结论**：thr=0.4（E0128）vs thr=0.2→0.4（E0127）：mean -7.1pp vs -9.2pp，E0128 好 2.1pp。但 am_noise_horizontal/vertical 仍灾难性崩溃（-13~-15pp），说明阈值调优无法从根本解决适应问题。
 
 ---
 
@@ -227,10 +228,10 @@ Run root：`work_dirs/rsar_e0128_thr04_fixed_20260506_011722`
 | corr-aug loose cga | corr-aug | 0.4742 | 0.4316 | ✅ 无崩溃（全7域） |
 | E0127 thr=0.2→0.4 nocga | corr-aug | 0.4790 | 0.3866 | ❌ 全域退步，am/sm崩溃 |
 | E0127 thr=0.2→0.4 +cga | corr-aug | 0.4790 | 0.3869 | ❌ CGA 无实质帮助 |
-| E0128 thr=0.4 fixed nocga | corr-aug | 0.4742 | ~0.428†| ❌ 全域退步，5域已完成 |
+| E0128 thr=0.4 fixed nocga | corr-aug | 0.4742 | 0.4034 | ❌ 全域退步，mean -7.1pp |
+| E0128 thr=0.4 fixed +cga | corr-aug | 0.4742 | 0.4058 | ❌ 全域退步，mean -6.8pp |
 
-*\*3域（chaff/gwn/noise_sup）均值估算*  
-†5域已完成 nocga 均值：(0.4349+0.4726+0.4676+0.4331+0.3054)/5=0.4227（smart/am_vertical 进行中，am_horizontal 拉低均值）
+*\*3域（chaff/gwn/noise_sup）均值估算*
 
 ### Per-Domain 全方法对比
 | corruption | strict-nocga | strict-cga | loose-nocga(orig) | corr-direct | corr-loose-nocga | E0127-nocga | E0128-nocga |
@@ -240,13 +241,14 @@ Run root：`work_dirs/rsar_e0128_thr04_fixed_20260506_011722`
 | point_target | 0.0448 | 0.1018 | — | **0.5100** | 0.4757 | 0.4501 | 0.4676 |
 | noise_suppression | 0.0861 | 0.0952 | 0.2996 | **0.4701** | 0.4359 | 0.3810 | 0.4331 |
 | am_noise_horizontal | 0.0292 | 0.0587 | — | **0.4546** | 0.3776 | 0.2613 | 0.3054 |
-| smart_suppression | 0.0538 | 0.0720 | — | **0.4245** | 0.4026 | 0.3301 | 进行中 |
-| am_noise_vertical | 0.0301 | 0.0714 | — | **0.4548** | 0.3979 | 0.3068 | 进行中 |
+| smart_suppression | 0.0538 | 0.0720 | — | **0.4245** | 0.4026 | 0.3301 | 0.3868 |
+| am_noise_vertical | 0.0301 | 0.0714 | — | **0.4548** | 0.3979 | 0.3068 | 0.3237 |
 
-### 结论
+### 结论（E0127/E0128 全部完成）
 - **Corr-aug 源模型 + direct_test 是当前最优策略**（mean 0.4742）
-- **伪标签阈值调优无法修复适应问题**：thr=0.2（+247%伪标签）和 thr=0.4 均系统性退步，根因是类别不平衡（ship 占 66-73%）
-- **am_noise_horizontal 为极端失败案例**：pseudo/img=8.88 导致 E0127 nocga -19.4pp 灾难性遗忘
-- **E0128 优于 E0127** 约 2.8pp（更高阈值减少噪声），但仍无法超越 direct
+- **伪标签阈值调优无法修复适应问题**：thr=0.2→0.4（E0127，mean -9.2pp）和 thr=0.4 fixed（E0128，mean -7.1pp）均系统性退步
+- **am_noise_horizontal/vertical 持续灾难性崩溃**：两域在两个实验均退步 -13~-19pp，是 am 类域的固有脆弱性
+- **E0128 优于 E0127** 约 2.1pp（更高阈值减少噪声），但仍无法超越 direct
 - **根本障碍**：UnbiasedTeacher 在无 GT 监督下向 ship 主导崩溃，伪标签质量/类平衡无法通过阈值解决
+- **下一步**：TENT（BN统计量更新，无伪标签）已实现于 `tools/tent_adapt_per_corr.py`
 - **下一步方向**：TENT（只更新 BN 统计量，零伪标签，无优化漂移风险）
